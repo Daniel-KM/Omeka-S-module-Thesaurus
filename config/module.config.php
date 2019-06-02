@@ -10,6 +10,11 @@ return [
             'ViewJsonStrategy',
         ],
     ],
+    'view_helpers' => [
+        'factories' => [
+            'thesaurus' => Service\ViewHelper\ThesaurusFactory::class,
+        ],
+    ],
     'form_elements' => [
         'invokables' => [
             Form\ConvertForm::class => Form\ConvertForm::class,
