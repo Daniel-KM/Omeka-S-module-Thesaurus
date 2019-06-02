@@ -31,6 +31,7 @@ namespace Thesaurus;
 require_once dirname(__DIR__) . '/Generic/AbstractModule.php';
 
 use Generic\AbstractModule;
+use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
  * Thesaurus
@@ -43,4 +44,43 @@ use Generic\AbstractModule;
 class Module extends AbstractModule
 {
     const NAMESPACE = __NAMESPACE__;
+
+    public function install(ServiceLocatorInterface $serviceLocator)
+    {
+        parent::install($serviceLocator);
+
+        $this->setServiceLocator($serviceLocator);
+        $this->installResources();
+    }
+
+    protected function installResources()
+    {
+        require_once dirname(__DIR__) . '/Generic/InstallResources.php';
+
+        $services = $this->getServiceLocator();
+        $installResources = new \Generic\InstallResources($services);
+        $installResources = $installResources();
+
+        // @url https://lov.linkeddata.es/dataset/lov/vocabs/skos/versions/2009-08-18.n3
+        $vocabulary = [
+            'vocabulary' => [
+                'o:namespace_uri' => 'http://www.w3.org/2004/02/skos/core#',
+                'o:prefix' => 'skos',
+                'o:label' => 'Simple Knowledge Organization System', // @translate
+                'o:comment' => "An RDF vocabulary for describing the basic structure and content of concept schemes such as thesauri, classification schemes, subject heading lists, taxonomies, 'folksonomies', other types of controlled vocabulary, and also concept schemes embedded in glossaries and terminologies.", // @translate
+            ],
+            'strategy' => 'file',
+            'file' => __DIR__ . '/data/vocabularies/skos_2009-08-18.n3',
+            'format' => 'turtle',
+        ];
+        $installResources->createVocabulary($vocabulary);
+
+        // Create resource templates.
+        $resourceTemplatePaths = [
+            __DIR__ . '/data/resource-templates/Thesaurus_Concept.json',
+        ];
+        foreach ($resourceTemplatePaths as $filepath) {
+            $installResources->createResourceTemplate($filepath);
+        }
+    }
 }
