@@ -6,6 +6,9 @@ use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Mvc\Controller\Plugin\Api;
 use Zend\Mvc\Controller\Plugin\AbstractPlugin;
 
+/**
+ * @todo Optimize structure building via direct queries to the database. See module Ead.
+ */
 class Thesaurus extends AbstractPlugin
 {
     const ROOT_CLASS = 'skos:ConceptScheme';

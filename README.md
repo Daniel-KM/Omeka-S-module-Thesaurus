@@ -5,11 +5,14 @@ Thesaurus (module for Omeka S)
 (ISO 25964: Thesauri and interoperability with other vocabularies) inside Omeka
 in order to describe documents.
 
+Thesaurus can be a list of term in a [Custom vocab], or item themselves.
+
 
 Installation
 ------------
 
-First, install the module [Custom Vocab].
+If you want to use the module in the first way (see below), install the module
+[Custom Vocab].
 
 Uncompress files and rename module folder `Thesaurus`. Then install it like any
 other Omeka module and follow the config instructions.
@@ -20,8 +23,15 @@ See general end user documentation for [Installing a module].
 Usage
 -----
 
-Currently, the module can only convert a flat list into a flat thesaurus to be
-used with CustomVocab. Just go to `https://example.org/admin/thesaurus/convert`.
+This mpodule can be used in two ways: the thesaurus can be a custom vocab or a
+list of items witht ontology [skos].
+
+### Convert a thesaurus into a flat list
+
+The use of a thesaurus as a custom vocab allows to set it as subject in the
+resource template, so to normalize the subjects.
+
+To convert a flat list into a flat thesaurus, just got to `https://example.org/admin/thesaurus/convert`.
 
 The input file should be a hierarchical text, with tabulation that indicate the
 hierarchy:
@@ -52,7 +62,22 @@ Asia :: Japan
 Asia :: Japan :: Tokyo
 ```
 
-Then, you can add it as a custom vocab.
+Then, you can add it as a custom vocab. In the theme, use the module [Metadata Browse]
+to create links automatically for the subjects.
+
+### Use of concepts as related items
+
+You can create your own thesaurus (or import it via module such [Bulk Import]).
+For that, use the integrated ontology `skos`, that contains the classes and the
+properties to manage items as concepts.
+
+Then, in your theme, use the various methods of the view helper `$this->thesaurus($item)`.
+
+
+TODO
+----
+
+* Optimize structure building via direct queries to the database. See module EAD.
 
 
 Warning
