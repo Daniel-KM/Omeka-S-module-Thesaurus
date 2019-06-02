@@ -1,0 +1,17 @@
+<?php
+/**
+ * @var \Zend\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\ItemRepresentation[] $data
+ * @var array $options
+ */
+
+?>
+<ul>
+    <?php foreach ($data as $current): ?>
+    <li><?= $current['self']->linkPretty() ?>
+        <?php if (!empty($current['children'])): ?>
+        <?= $this->partial('common/thesaurus-tree-recursive', ['data' => $current['children'], 'options' => $options]); ?>
+        <?php endif; ?>
+   </li>
+   <?php endforeach; ?>
+</ul>

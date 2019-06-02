@@ -340,21 +340,26 @@ class Thesaurus extends AbstractPlugin
         $result = [];
         foreach ($this->tops() as $item) {
             $result[] = [
-                'current' => $item,
-                'narrowers' => $this->recursiveBranch($item),
+                'self' => $item,
+                'children' => $this->recursiveBranch($item),
             ];
         }
         return $result;
     }
 
     /**
-     * Get the hierarchy branch of this item.
+     * Get the hierarchy branch of this item, self included.
      *
      * @return array
      */
     public function branch()
     {
-        return $this->recursiveBranch($this->item);
+        $result = [];
+        $result[] = [
+            'self' => $this->item,
+            'children' => $this->recursiveBranch($this->item),
+        ];
+        return $result;
     }
 
     /**
@@ -502,8 +507,8 @@ class Thesaurus extends AbstractPlugin
             $id = $child->id();
             if (!isset($branch[$id])) {
                 $branch[$id] = [
-                    'current' => $child,
-                    'narrowers' => $this->recursiveBranch($child),
+                    'self' => $child,
+                    'children' => $this->recursiveBranch($child),
                 ];
             }
         }

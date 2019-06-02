@@ -224,7 +224,7 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
-     * Get the hierarchy branch of this item.
+     * Get the hierarchy branch of this item, self included.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::tree()
      * @return ItemRepresentation[]
