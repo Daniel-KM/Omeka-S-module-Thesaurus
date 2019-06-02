@@ -1,0 +1,38 @@
+{
+    "name": "daniel-km/omeka-s-module-thesaurus",
+    "description": "Thesaurus (module for Omeka S)",
+    "type": "library",
+    "license": "CECILL-2.1",
+    "authors": [
+        {
+            "name": "Daniel Berthereau",
+            "email": "Daniel.packagist@Berthereau.net"
+        }
+    ],
+    "homepage": "https://github.com/Daniel-KM/Omeka-S-module-Thesaurus",
+    "support": {
+        "issues": "https://github.com/Daniel-KM/Omeka-S-module-Thesaurus/issues",
+        "forum": "https://forum.omeka.org/"
+    },
+    "keywords": [
+        "Omeka S",
+        "module",
+        "indexing",
+        "glossary",
+        "tree view",
+        "lexicon"
+    ],
+    "require-dev": {
+        "biblibre/omeka-s-test-helper": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "Thesaurus\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ThesaurusTest\\": "test/ThesaurusTest/"
+        }
+    }
+}

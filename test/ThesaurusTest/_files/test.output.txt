@@ -1,0 +1,9 @@
+Europe
+Europe :: France
+Europe :: France :: Paris
+Europe :: United Kingdom
+Europe :: United Kingdom :: England
+Europe :: United Kingdom :: England :: London
+Asia
+Asia :: Japan
+Asia :: Japan :: Tokyo
