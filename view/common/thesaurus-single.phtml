@@ -13,15 +13,15 @@ if (empty($data) && !empty($options['hideIfEmpty'])):
     return;
 endif;
 
-if (empty($options['title'])):
+if (isset($options['title'])):
+    $title = $options['title'];
+else:
     $title = [
         'root' => $translate('Root concept'),
         'broader' => $translate('Broader concept'),
         'custom' =>  $translate('Specific concept'),
     ];
     $title = $title[$type];
-else:
-    $title = $options['title'];
 endif;
 ?>
 
