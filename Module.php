@@ -61,6 +61,8 @@ class Module extends AbstractModule
         $installResources = new \Generic\InstallResources($services);
         $installResources = $installResources();
 
+        // The original files may not be imported fully in Omeka S, so use a
+        // simplified but full version of Skos.
         // @url https://lov.linkeddata.es/dataset/lov/vocabs/skos/versions/2009-08-18.n3
         $vocabulary = [
             'vocabulary' => [
@@ -70,7 +72,7 @@ class Module extends AbstractModule
                 'o:comment' => "An RDF vocabulary for describing the basic structure and content of concept schemes such as thesauri, classification schemes, subject heading lists, taxonomies, 'folksonomies', other types of controlled vocabulary, and also concept schemes embedded in glossaries and terminologies.", // @translate
             ],
             'strategy' => 'file',
-            'file' => __DIR__ . '/data/vocabularies/skos_2009-08-18.n3',
+            'file' => __DIR__ . '/data/vocabularies/skos_2009-08-18.ttl',
             'format' => 'turtle',
         ];
         $installResources->createVocabulary($vocabulary);
