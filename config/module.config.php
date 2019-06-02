@@ -20,6 +20,11 @@ return [
             Controller\Admin\ThesaurusController::class => Controller\Admin\ThesaurusController::class,
         ],
     ],
+    'controller_plugins' => [
+        'factories' => [
+            'thesaurus' => Service\ControllerPlugin\ThesaurusFactory::class,
+        ],
+    ],
     'router' => [
         'routes' => [
             'admin' => [
