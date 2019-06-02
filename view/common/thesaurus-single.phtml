@@ -10,21 +10,21 @@
 $translate = $this->plugin('translate');
 
 if (empty($data) && !empty($options['hideIfEmpty'])):
-return;
+    return;
 endif;
-
 
 if (empty($options['title'])):
-$title = [
-    'root' => $translate('Root concept'),
-    'broader' => $translate('Broader concept'),
-];
-$title = $title[$type];
+    $title = [
+        'root' => $translate('Root concept'),
+        'broader' => $translate('Broader concept'),
+        'custom' =>  $translate('Specific concept'),
+    ];
+    $title = $title[$type];
 else:
-$title = $options['title'];
+    $title = $options['title'];
 endif;
-
 ?>
+
 <div class="thesaurus thesaurus-single">
     <h4><?= $title ?></h4>
     <?php if (empty($data)): ?>

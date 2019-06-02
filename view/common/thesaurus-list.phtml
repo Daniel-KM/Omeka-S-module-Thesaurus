@@ -13,7 +13,6 @@ if (empty($data) && !empty($options['hideIfEmpty'])):
     return;
 endif;
 
-
 if (empty($options['title'])):
     $title = [
         'tops' => $translate('Top concepts'),
@@ -28,8 +27,8 @@ if (empty($options['title'])):
 else:
     $title = $options['title'];
 endif;
-
 ?>
+
 <div class="thesaurus thesaurus-list">
     <h4><?= $title ?></h4>
     <?php if (empty($data)): ?>

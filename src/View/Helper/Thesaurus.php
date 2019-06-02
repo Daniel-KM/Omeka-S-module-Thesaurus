@@ -41,7 +41,7 @@ class Thesaurus extends AbstractHelper
     /**
      * This item is a skos item if it has at a skos class or a skos property.
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isSkos()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isSkos()
      * @return bool
      */
     public function isSkos()
@@ -52,7 +52,7 @@ class Thesaurus extends AbstractHelper
     /**
      * This item is a scheme if it has the class ConceptScheme or a top concept.
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isScheme()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isScheme()
      * @return bool
      */
     public function isScheme()
@@ -61,10 +61,10 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
-     * This item is a scheme if it has the class Concept or a required property
+     * This item is a concept if it has the class Concept or a required property
      * of a concept (skos:broader, skos:narrower or skos:topConceptOf).
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isConcept()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isConcept()
      * @return bool
      */
     public function isConcept()
@@ -78,7 +78,7 @@ class Thesaurus extends AbstractHelper
      *
      * Note: an OrderedCollection is a collection.
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isCollection()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isCollection()
      * @param bool $strict
      * @return bool
      */
@@ -91,7 +91,7 @@ class Thesaurus extends AbstractHelper
      * This item is an ordered collection if it has the class OrderedCollection,
      * or a property skos:memberList.
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isOrderedCollection()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isOrderedCollection()
      * @return bool
      */
     public function isOrderedCollection()
@@ -102,7 +102,7 @@ class Thesaurus extends AbstractHelper
     /**
      * Get the scheme of this item.
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::scheme()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::scheme()
      * @return ItemRepresentation|null
      */
     public function scheme()
@@ -113,7 +113,7 @@ class Thesaurus extends AbstractHelper
     /**
      * Get the top concepts of the scheme.
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::tops()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::tops()
      * @return ItemRepresentation[]
      */
     public function tops()
@@ -124,7 +124,7 @@ class Thesaurus extends AbstractHelper
     /**
      * Check if a concept is a root (top concept).
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isRoot()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isRoot()
      * @return bool
      */
     public function isRoot()
@@ -135,7 +135,7 @@ class Thesaurus extends AbstractHelper
     /**
      * Get the root concept of this item.
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::root()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::root()
      * @return ItemRepresentation|null
      */
     public function root()
@@ -146,7 +146,7 @@ class Thesaurus extends AbstractHelper
     /**
      * Get the broader concept of this item.
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::broader()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::broader()
      * @return ItemRepresentation|null
      */
     public function broader()
@@ -157,7 +157,7 @@ class Thesaurus extends AbstractHelper
     /**
      * Get the narrower concepts of this item.
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::narrowers()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::narrowers()
      * @return ItemRepresentation[]
      */
     public function narrowers()
@@ -168,7 +168,7 @@ class Thesaurus extends AbstractHelper
     /**
      * Get the related concepts of this item.
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::relateds()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::relateds()
      * @return ItemRepresentation[]
      */
     public function relateds()
@@ -182,7 +182,7 @@ class Thesaurus extends AbstractHelper
      * To include this concept, get the children (narrower concepts) of the
      * broader item.
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::siblings()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::siblings()
      * @return ItemRepresentation[]
      */
     public function siblings()
@@ -193,7 +193,7 @@ class Thesaurus extends AbstractHelper
     /**
      * Get the list of ascendants of this item, from closest to top concept.
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::ascendants()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::ascendants()
      * @return ItemRepresentation[]
      */
     public function ascendants()
@@ -204,7 +204,7 @@ class Thesaurus extends AbstractHelper
     /**
      * Get the list of descendants of this item.
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::descendants()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::descendants()
      * @return ItemRepresentation[]
      */
     public function descendants()
@@ -213,9 +213,9 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
-     * Get the hierarchy of this item from the root.
+     * Get the hierarchy of this item from the root (top concept).
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::tree()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::tree()
      * @return ItemRepresentation[]
      */
     public function tree()
@@ -226,7 +226,7 @@ class Thesaurus extends AbstractHelper
     /**
      * Get the hierarchy branch of this item.
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::tree()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::tree()
      * @return ItemRepresentation[]
      */
     public function branch()

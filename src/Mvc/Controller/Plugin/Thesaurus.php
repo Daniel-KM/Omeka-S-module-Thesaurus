@@ -8,6 +8,11 @@ use Zend\Mvc\Controller\Plugin\AbstractPlugin;
 
 class Thesaurus extends AbstractPlugin
 {
+    const ROOT_CLASS = 'skos:ConceptScheme';
+    const ITEM_CLASS = 'skos:Concept';
+    const PARENT_TERM = 'skos:broader';
+    const CHILD_TERM = 'skos:narrower';
+
     /**
      * @var ItemRepresentation
      */
@@ -114,14 +119,14 @@ class Thesaurus extends AbstractPlugin
     public function isScheme()
     {
         if (is_null($this->isScheme)) {
-            $this->isScheme = $this->resourceClassName($this->item) === 'skos:ConceptScheme'
+            $this->isScheme = $this->resourceClassName($this->item) === self::ROOT_CLASS
                 || isset($this->item->values()['skos:hasTopConcept']);
         }
         return $this->isScheme;
     }
 
     /**
-     * This item is a scheme if it has the class Concept or a required property
+     * This item is a concept if it has the class Concept or a required property
      * of a concept (skos:broader, skos:narrower or skos:topConceptOf).
      *
      * @return bool
@@ -129,12 +134,12 @@ class Thesaurus extends AbstractPlugin
     public function isConcept()
     {
         if (is_null($this->isConcept)) {
-            if ($this->resourceClassName($this->item) === 'skos:Concept') {
+            if ($this->resourceClassName($this->item) === self::ITEM_CLASS) {
                 $this->isConcept = true;
             } else {
                 $values = $this->item->values();
-                $this->isConcept = isset($values['skos:broader'])
-                    || isset($values['skos:narrower'])
+                $this->isConcept = isset($values[self::PARENT_TERM])
+                    || isset($values[self::CHILD_TERM])
                     || isset($values['skos:topConceptOf']);
             }
         }
@@ -326,7 +331,7 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
-     * Get the hierarchy of this item from the root.
+     * Get the hierarchy of this item from the root (top concept).
      *
      * @return ItemRepresentation[]
      */
@@ -418,7 +423,7 @@ class Thesaurus extends AbstractPlugin
      */
     protected function parent(ItemRepresentation $item)
     {
-        return $this->resourceFromValue($item, 'skos:broader');
+        return $this->resourceFromValue($item, self::PARENT_TERM);
     }
 
     /**
@@ -429,7 +434,7 @@ class Thesaurus extends AbstractPlugin
      */
     protected function children(ItemRepresentation $item)
     {
-        return $this->resourcesFromValue($item, 'skos:narrower');
+        return $this->resourcesFromValue($item, self::CHILD_TERM);
     }
 
     /**

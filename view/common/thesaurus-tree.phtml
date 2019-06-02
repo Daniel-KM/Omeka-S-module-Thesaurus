@@ -17,13 +17,14 @@ if (empty($options['title'])):
     $title = [
         'tree' => $translate('Tree of concepts'),
         'branch' => $translate('Branch of current concept'),
+        'custom' => $translate('Tree of concepts'),
     ];
     $title = $title[$type];
 else:
     $title = $options['title'];
 endif;
-
 ?>
+
 <div class="thesaurus thesaurus-tree">
     <h4><?= $title ?></h4>
     <?php if (empty($data)): ?>
@@ -32,7 +33,7 @@ endif;
     </p>
     <?php else: ?>
     <?php // This process doesn't use a recursive function, but supposes that the depth is < 10. ?>
-    <?php // TODO Add an option for depth of the tree. ?>
+    <?php // TODO Add an option for depth of the tree and use a recursive function. ?>
     <ul>
         <?php foreach ($data as $concept_1): ?>
         <li><?= $concept_1['current']->linkPretty() ?>
