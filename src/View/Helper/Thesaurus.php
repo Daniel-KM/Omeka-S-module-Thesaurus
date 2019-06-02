@@ -13,6 +13,11 @@ class Thesaurus extends AbstractHelper
     protected $thesaurus;
 
     /**
+     * @param ItemRepresentation
+     */
+    protected $item;
+
+    /**
      * @param ThesaurusPlugin $thesaurus
      */
     public function __construct(ThesaurusPlugin $thesaurus)
@@ -229,6 +234,59 @@ class Thesaurus extends AbstractHelper
         return $this->thesaurus->branch();
     }
 
+    /**
+     * Display part of a thesaurus.
+     *
+     * @param string|array|ItemRepresentation $typeOrData Type may be "root" or
+     * "broader" (single), "tops", "narrowers", "relateds", "siblings",
+     * "ascendants", or "descendants" (list), or "tree" or "branch" (tree).
+     * @param array $options Options for the partial. Managed default are
+     * "title", "hideIfEmpty", and "partial".
+     * @return string
+     */
+    public function display($typeOrData, array $options = [])
+    {
+        $type = $data = $typeOrData;
+        if (is_string($typeOrData)) {
+            $partialTypes = [
+                'root' => 'single',
+                'broader' => 'single',
+                'tops' => 'list',
+                'narrowers' => 'list',
+                'relateds' => 'list',
+                'siblings' => 'list',
+                'ascendants' => 'list',
+                'descendants' => 'list',
+                'tree' => 'tree',
+                'branch' => 'tree',
+            ];
+            if (isset($partialTypes[$type])) {
+                $data = $this->{$type}();
+                $partial = $partialTypes[$type];
+            } else {
+                return '';
+            }
+        } else {
+            $type = 'custom';
+            if (is_array($data)) {
+                $partial = is_array(reset($data)) ? 'tree' : 'list';
+            } else {
+                $partial = 'single';
+            }
+        }
 
+        $partial = empty($options['partial'])
+            ? 'common/thesaurus-' . $partial
+            : $options['partial'];
+        unset($options['partial']);
 
+        $options += ['title' => '', 'hideIfEmpty' => false];
+
+        return $this->getView()->partial($partial, [
+            'item' => $this->item,
+            'type' => $type,
+            'data' => $data,
+            'options' => $options,
+        ]);
+    }
 }

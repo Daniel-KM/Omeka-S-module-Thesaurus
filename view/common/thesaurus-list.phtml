@@ -1,0 +1,46 @@
+<?php
+/**
+ * @var \Zend\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\ItemRepresentation $item
+ * @var \Omeka\Api\Representation\ItemRepresentation[] $data
+ * @var string $type
+ * @var array $options
+ */
+
+$translate = $this->plugin('translate');
+
+if (empty($data) && !empty($options['hideIfEmpty'])):
+    return;
+endif;
+
+
+if (empty($options['title'])):
+    $title = [
+        'tops' => $translate('Top concepts'),
+        'narrowers' => $translate('Narrower concepts'),
+        'relateds' => $translate('Related concepts'),
+        'siblings' => $translate('Sibling concepts'),
+        'ascendants' => $translate('Ascendant concepts'),
+        'descendants' => $translate('Descendant concepts'),
+        'custom' => $translate('Linked concepts'),
+    ];
+    $title = $title[$type];
+else:
+    $title = $options['title'];
+endif;
+
+?>
+<div class="thesaurus thesaurus-list">
+    <h4><?= $title ?></h4>
+    <?php if (empty($data)): ?>
+    <p>
+        <?= $translate('No concept.') ?>
+    </p>
+    <?php else: ?>
+    <ul>
+        <?php foreach ($data as $concept): ?>
+        <li><?= $concept->linkPretty() ?></li>
+        <?php endforeach; ?>
+    </ul>
+    <?php endif; ?>
+</div>
