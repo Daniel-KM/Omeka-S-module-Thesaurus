@@ -33,6 +33,7 @@ class Thesaurus extends AbstractHelper
      */
      public function __invoke(ItemRepresentation $item)
      {
+        $this->item = $item;
         $thesaurus = $this->thesaurus;
         $thesaurus($item);
         return $this;
@@ -179,15 +180,23 @@ class Thesaurus extends AbstractHelper
     /**
      * Get the sibling concepts of this item (self not included).
      *
-     * To include this concept, get the children (narrower concepts) of the
-     * broader item.
-     *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::siblings()
      * @return ItemRepresentation[]
      */
     public function siblings()
     {
         return $this->thesaurus->siblings();
+    }
+
+    /**
+     * Get the sibling concepts of this item (self included).
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::siblingsOrSelf()
+     * @return ItemRepresentation[]
+     */
+    public function siblingsOrSelf()
+    {
+        return $this->thesaurus->siblingsOrSelf();
     }
 
     /**
@@ -255,6 +264,7 @@ class Thesaurus extends AbstractHelper
                 'narrowers' => 'list',
                 'relateds' => 'list',
                 'siblings' => 'list',
+                'siblingsOrSelf' => 'list',
                 'ascendants' => 'list',
                 'descendants' => 'list',
                 'tree' => 'tree',

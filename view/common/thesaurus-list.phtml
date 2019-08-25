@@ -21,12 +21,16 @@ else:
         'narrowers' => $translate('Narrower concepts'),
         'relateds' => $translate('Related concepts'),
         'siblings' => $translate('Sibling concepts'),
+        // The title is the same than siblings.
+        'siblingsOrSelf' => $translate('Sibling concepts'),
         'ascendants' => $translate('Ascendant concepts'),
         'descendants' => $translate('Descendant concepts'),
         'custom' => $translate('Linked concepts'),
     ];
     $title = $title[$type];
 endif;
+
+$itemId = $item ? $item->id() : null;
 ?>
 
 <div class="thesaurus thesaurus-list">
@@ -38,7 +42,8 @@ endif;
     <?php else: ?>
     <ul>
         <?php foreach ($data as $concept): ?>
-        <li><?= $concept->linkPretty() ?></li>
+        <?php $isItem = $concept->id() === $itemId; ?>
+        <li<?php if ($isItem) echo ' class="active"'; ?>><?= $concept->linkPretty() ?></li>
         <?php endforeach; ?>
     </ul>
     <?php endif; ?>

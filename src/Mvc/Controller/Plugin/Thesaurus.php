@@ -277,9 +277,6 @@ class Thesaurus extends AbstractPlugin
     /**
      * Get the sibling concepts of this item (self not included).
      *
-     * To include this concept, get the children (narrower concepts) of the
-     * broader item.
-     *
      * @return ItemRepresentation[]
      */
     public function siblings()
@@ -307,6 +304,34 @@ class Thesaurus extends AbstractPlugin
             if ($narrower->id() === $id) {
                 unset($result[$key]);
                 break;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get the sibling concepts of this item (self included).
+     *
+     * @return ItemRepresentation[]
+     */
+    public function siblingsOrSelf()
+    {
+        $result = [];
+
+        if ($this->isRoot()) {
+            $scheme = $this->scheme();
+            if ($scheme) {
+                $result = $scheme->tops();
+            } else {
+                return $result;
+            }
+        } else {
+            $broader = $this->broader();
+            if ($broader) {
+                $result = $this->children($broader);
+            } else {
+                return $result;
             }
         }
 
