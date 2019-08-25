@@ -33,7 +33,7 @@ endif;
 $itemId = $item ? $item->id() : null;
 ?>
 
-<div class="thesaurus thesaurus-list">
+<div class="thesaurus thesaurus-list <?= $options['class'] ?>">
     <h4><?= $title ?></h4>
     <?php if (empty($data)): ?>
     <p>
