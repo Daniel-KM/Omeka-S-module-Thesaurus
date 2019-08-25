@@ -106,7 +106,7 @@ class ThesaurusController extends AbstractActionController
 
         $text = file_get_contents($filename);
         // The str_replace() allows to fix Apple copy/paste.
-        $lines = array_filter(array_map('rtrim', explode(PHP_EOL, str_replace(["\r\n", "\n\r", "\r", "\n"], PHP_EOL, $text))), function ($v) {
+        $lines = array_filter(array_map('trim', explode("\n", str_replace(["\r\n", "\n\r", "\r"], ["\n", "\n", "\n"], $text))), function ($v) {
             return (bool) strlen($v);
         });
 
