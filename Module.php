@@ -35,25 +35,21 @@ if (!class_exists(\Generic\AbstractModule::class)) {
 }
 
 use Generic\AbstractModule;
-use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
  * Thesaurus
  *
  * Allows to use standard thesaurus (ISO 25964 to describe documents.
  *
- * @copyright Daniel Berthereau, 2018
+ * @copyright Daniel Berthereau, 2018-2019
  * @license http://www.cecill.info/licences/Licence_CeCILL_V2.1-en.txt
  */
 class Module extends AbstractModule
 {
     const NAMESPACE = __NAMESPACE__;
 
-    public function install(ServiceLocatorInterface $serviceLocator)
+    protected function postInstall()
     {
-        parent::install($serviceLocator);
-
-        $this->setServiceLocator($serviceLocator);
         $this->installResources();
     }
 
