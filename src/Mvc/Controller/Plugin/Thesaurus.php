@@ -166,8 +166,10 @@ class Thesaurus extends AbstractPlugin
                     || isset($this->item->values()['skos:member']);
             } else {
                 $class = $this->resourceClassName($this->item);
-                $this->isScheme = $class === 'skos:Collection' || $class === 'skos:OrderedCollection'
-                    || isset($this->item->values()['skos:member']) || isset($this->item->values()['skos:memberList']);
+                $this->isScheme = $class === 'skos:Collection'
+                    || $class === 'skos:OrderedCollection'
+                    || isset($this->item->values()['skos:member'])
+                    || isset($this->item->values()['skos:memberList']);
             }
         }
         return $this->isCollection;

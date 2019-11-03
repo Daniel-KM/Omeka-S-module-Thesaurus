@@ -31,8 +31,8 @@ class Thesaurus extends AbstractHelper
      * @param ItemRepresentation $item
      * @return mixed.
      */
-     public function __invoke(ItemRepresentation $item)
-     {
+    public function __invoke(ItemRepresentation $item)
+    {
         $this->item = $item;
         $thesaurus = $this->thesaurus;
         $thesaurus($item);
