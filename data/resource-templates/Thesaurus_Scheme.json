@@ -54,8 +54,8 @@
             "o:alternate_comment": null,
             "o:is_required": false,
             "o:is_private": false,
-            "data_type_name": null,
-            "data_type_label": null,
+            "data_type_name": "resource:item",
+            "data_type_label": "Item",
             "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
             "vocabulary_label": "Simple Knowledge Organization System",
             "local_name": "hasTopConcept",
@@ -79,5 +79,17 @@
         "vocabulary_label": "Simple Knowledge Organization System",
         "local_name": "ConceptScheme",
         "label": "Concept Scheme"
+    },
+    "o:title_property": {
+        "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
+        "vocabulary_label": "Simple Knowledge Organization System",
+        "local_name": "prefLabel",
+        "label": "preferred label"
+    },
+    "o:description_property": {
+        "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
+        "vocabulary_label": "Simple Knowledge Organization System",
+        "local_name": "definition",
+        "label": "definition"
     }
 }
