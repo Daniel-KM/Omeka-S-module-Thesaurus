@@ -10,6 +10,7 @@ The helpers are:
   (deprecated);
 - a resource template to build the thesaurus as a list of items (recommended);
 - a view helper to display the tree of concepts in the theme, or part of it.
+- a block template to display the thesaurus as a tree (via module [Block Plus]).
 
 The view helper can be used for any purpose, for example to build a hierarchical
 list of item sets.
@@ -20,6 +21,8 @@ other vocabularies).
 
 Installation
 ------------
+
+Optional modules are [Generic] and [Block Plus].
 
 Uncompress files and rename module folder `Thesaurus`. Then install it like any
 other Omeka module and follow the config instructions.
@@ -87,6 +90,11 @@ properties to manage items as concepts.
 Then, in your theme, use the various methods of the view helper `$this->thesaurus($item)`
 in order to display full tree, ascendants, descendants, siblings, etc.
 
+### Page block
+
+A template is added for the simple block of module [Block Plus]. Just set `item = id`
+where id is the thesaurus you want to display.
+
 
 TODO
 ----
@@ -146,6 +154,7 @@ for the [Institut national d’histoire de l’art] (INHA).
 [skos]: https://www.w3.org/2004/02/skos
 [Installing a module]: https://omeka.org/s/docs/user-manual/modules/#installing-modules
 [Custom Vocab]: https://github.com/omeka-s-modules/CustomVocab
+[Block Plus]: https://github.com/Daniel-KM/Omeka-S-module-BlockPlus
 [LibreOffice]: https://libreoffice.org
 [module issues]: https://github.com/Daniel-KM/Omeka-S-module-Thesaurus/issues
 [CeCILL v2.1]: https://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html

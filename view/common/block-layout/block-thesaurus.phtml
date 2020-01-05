@@ -1,0 +1,22 @@
+<?php
+/**
+ * @var \Zend\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\SitePageBlockRepresentation $block
+ * @var string $heading
+ * @var string $params
+ */
+
+$escape = $this->plugin('escapeHtml');
+
+$params = parse_ini_string($params);
+$item = empty($params['item'])
+    ? null
+    : $this->api()->read('items', ['id' => $params['item']])->getContent();
+?>
+
+<div class="block-simple">
+    <?php if ($heading): ?>
+    <h2><?= $escape($heading) ?></h2>
+    <?php endif; ?>
+    <?= $this->thesaurus($item)->display('tree', ['title' => '']) ?>
+</div>
