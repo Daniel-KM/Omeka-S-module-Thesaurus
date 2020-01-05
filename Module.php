@@ -84,6 +84,7 @@ class Module extends AbstractModule
 
         // Create resource templates.
         $resourceTemplatePaths = [
+            __DIR__ . '/data/resource-templates/Thesaurus_Scheme.json',
             __DIR__ . '/data/resource-templates/Thesaurus_Concept.json',
         ];
         foreach ($resourceTemplatePaths as $filepath) {

@@ -1,0 +1,83 @@
+{
+    "o:label": "Thesaurus Scheme",
+    "o:resource_template_property": [
+        {
+            "o:alternate_label": null,
+            "o:alternate_comment": null,
+            "o:is_required": true,
+            "o:is_private": false,
+            "data_type_name": "literal",
+            "data_type_label": "Text",
+            "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
+            "vocabulary_label": "Simple Knowledge Organization System",
+            "local_name": "prefLabel",
+            "label": "preferred label"
+        },
+        {
+            "o:alternate_label": null,
+            "o:alternate_comment": null,
+            "o:is_required": false,
+            "o:is_private": false,
+            "data_type_name": "literal",
+            "data_type_label": "Text",
+            "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
+            "vocabulary_label": "Simple Knowledge Organization System",
+            "local_name": "altLabel",
+            "label": "alternative label"
+        },
+        {
+            "o:alternate_label": null,
+            "o:alternate_comment": null,
+            "o:is_required": false,
+            "o:is_private": false,
+            "data_type_name": "literal",
+            "data_type_label": "Text",
+            "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
+            "vocabulary_label": "Simple Knowledge Organization System",
+            "local_name": "definition",
+            "label": "definition"
+        },
+        {
+            "o:alternate_label": null,
+            "o:alternate_comment": null,
+            "o:is_required": false,
+            "o:is_private": false,
+            "data_type_name": "literal",
+            "data_type_label": "Text",
+            "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
+            "vocabulary_label": "Simple Knowledge Organization System",
+            "local_name": "notation",
+            "label": "notation"
+        },
+        {
+            "o:alternate_label": null,
+            "o:alternate_comment": null,
+            "o:is_required": false,
+            "o:is_private": false,
+            "data_type_name": null,
+            "data_type_label": null,
+            "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
+            "vocabulary_label": "Simple Knowledge Organization System",
+            "local_name": "hasTopConcept",
+            "label": "has top concept"
+        },
+        {
+            "o:alternate_label": null,
+            "o:alternate_comment": null,
+            "o:is_required": false,
+            "o:is_private": false,
+            "data_type_name": null,
+            "data_type_label": null,
+            "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
+            "vocabulary_label": "Simple Knowledge Organization System",
+            "local_name": "note",
+            "label": "note"
+        }
+    ],
+    "o:resource_class": {
+        "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
+        "vocabulary_label": "Simple Knowledge Organization System",
+        "local_name": "ConceptScheme",
+        "label": "Concept Scheme"
+    }
+}
