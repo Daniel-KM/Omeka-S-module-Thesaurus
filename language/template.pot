@@ -1,0 +1,225 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-12-30 00:00+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/Generic/AbstractModule.php:518
+#, php-format
+msgid "This module requires the module \"%s\"."
+msgstr ""
+
+#: src/Generic/AbstractModule.php:538
+#, php-format
+msgid "This module requires modules \"%s\"."
+msgstr ""
+
+#: src/Generic/AbstractModule.php:606
+#, php-format
+msgid ""
+"The module \"%s\" was automatically deactivated because the dependencies are "
+"unavailable."
+msgstr ""
+
+#: view/common/thesaurus-list.phtml:20
+msgid "Top concepts"
+msgstr ""
+
+#: view/common/thesaurus-list.phtml:21
+msgid "Narrower concepts"
+msgstr ""
+
+#: view/common/thesaurus-list.phtml:22
+msgid "Related concepts"
+msgstr ""
+
+#: view/common/thesaurus-list.phtml:23 view/common/thesaurus-list.phtml:25
+msgid "Sibling concepts"
+msgstr ""
+
+#: view/common/thesaurus-list.phtml:26
+msgid "Ascendant concepts"
+msgstr ""
+
+#: view/common/thesaurus-list.phtml:27
+msgid "Descendant concepts"
+msgstr ""
+
+#: view/common/thesaurus-list.phtml:28
+msgid "Linked concepts"
+msgstr ""
+
+#: view/common/thesaurus-list.phtml:40 view/common/thesaurus-single.phtml:32
+#: view/common/thesaurus-tree.phtml:32
+msgid "No concept."
+msgstr ""
+
+#: view/common/thesaurus-single.phtml:20
+msgid "Root concept"
+msgstr ""
+
+#: view/common/thesaurus-single.phtml:21
+msgid "Broader concept"
+msgstr ""
+
+#: view/common/thesaurus-single.phtml:22
+msgid "Specific concept"
+msgstr ""
+
+#: view/common/thesaurus-tree.phtml:20 view/common/thesaurus-tree.phtml:22
+msgid "Tree of concepts"
+msgstr ""
+
+#: view/common/thesaurus-tree.phtml:21
+msgid "Branch of current concept"
+msgstr ""
+
+#: view/thesaurus/admin/thesaurus/convert.phtml:11
+msgid "Thesaurus convert"
+msgstr ""
+
+#: view/thesaurus/admin/thesaurus/convert.phtml:12
+msgid "Convert"
+msgstr ""
+
+#: view/thesaurus/admin/thesaurus/convert.phtml:14
+msgid "Convert a flat list into a flat thesaurus."
+msgstr ""
+
+#: Module.php:76
+msgid "Simple Knowledge Organization System"
+msgstr ""
+
+#: Module.php:77
+msgid ""
+"An RDF vocabulary for describing the basic structure and content of concept "
+"schemes such as thesauri, classification schemes, subject heading lists, "
+"taxonomies, 'folksonomies', other types of controlled vocabulary, and also "
+"concept schemes embedded in glossaries and terminologies."
+msgstr ""
+
+#: src/Form/ConvertForm.php:17
+msgid "Thesaurus text file"
+msgstr ""
+
+#: src/Form/ConvertForm.php:18
+msgid ""
+"The thesaurus is a simple txt file, with one term by line, and tabulations "
+"to indicate the hierarchic level."
+msgstr ""
+
+#: src/Form/ConvertForm.php:30
+msgid "Upload thesaurus"
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:34
+msgid "Unallowed request."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:42
+msgid "Missing file."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:44
+msgid "convert"
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:64
+msgid "An error occurred when uploading the file."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:68
+#, php-format
+msgid "Wrong media type (\"%s\") for file."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:73
+msgid "The file is empty."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:80
+msgid "Unable to convert the file."
+msgstr ""
+
+#: src/Generic/InstallResources.php:76
+#, php-format
+msgid "The file \"%s\" cannot be read. Check your file system."
+msgstr ""
+
+#: src/Generic/InstallResources.php:102
+#, php-format
+msgid ""
+"An error occured when adding the prefix \"%s\": another vocabulary exists. "
+"Resolve the conflict before installing this module."
+msgstr ""
+
+#: src/Generic/InstallResources.php:132
+#, php-format
+msgid ""
+"A resource template named \"%s\" exists: rename it or remove it before "
+"installing this module."
+msgstr ""
+
+#: src/Generic/InstallResources.php:162
+msgid "The current version of this module requires the module Custom Vocab."
+msgstr ""
+
+#: src/Generic/InstallResources.php:169
+#, php-format
+msgid ""
+"A custom vocab named \"%s\" exists and has not the needed terms: rename it "
+"or remove it before installing this module."
+msgstr ""
+
+#: src/Generic/InstallResources.php:179
+#, php-format
+msgid ""
+"A custom vocab named \"%s\" exists and has not the needed language (\"%s\"): "
+"check it or remove it before installing this module."
+msgstr ""
+
+#: src/Generic/InstallResources.php:219
+#, php-format
+msgid "The vocabulary \"%s\" was already installed and was kept."
+msgstr ""
+
+#: src/Generic/InstallResources.php:229
+#, php-format
+msgid ""
+"An error occured when adding the prefix \"%s\": another vocabulary exists "
+"with the same prefix. Resolve the conflict before installing this module."
+msgstr ""
+
+#: src/Generic/InstallResources.php:249
+#, php-format
+msgid ""
+"An error occured when adding the prefix \"%s\" and the associated "
+"properties: %s"
+msgstr ""
+
+#: src/Generic/InstallResources.php:279
+#, php-format
+msgid "The resource template named \"%s\" is already available and is skipped."
+msgstr ""
+
+#: src/Generic/InstallResources.php:304 src/Generic/InstallResources.php:437
+#, php-format
+msgid "The custom vocab named \"%s\" is not available."
+msgstr ""
+
+#: config/module.config.php:58
+msgid "Thesaurus"
+msgstr ""
