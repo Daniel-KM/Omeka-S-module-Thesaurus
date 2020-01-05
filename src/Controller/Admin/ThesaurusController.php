@@ -15,13 +15,14 @@ class ThesaurusController extends AbstractActionController
 
     public function convertAction()
     {
-        $view = new ViewModel;
-
+        /** @var \Thesaurus\Form\ConvertForm $form */
         $form = $this->getForm(ConvertForm::class);
-        $form->setAttribute('action', $this->url()->fromRoute('admin/thesaurus', ['action' => 'upload']));
-        $form->init();
+        $form
+            ->setAttribute('action', $this->url()->fromRoute('admin/thesaurus', ['action' => 'upload']))
+            ->init();
 
-        $view->form = $form;
+        $view = new ViewModel;
+        $view->setVariable('form', $form);
         return $view;
     }
 
@@ -105,10 +106,7 @@ class ThesaurusController extends AbstractActionController
         $separator = ' :: ';
 
         $text = file_get_contents($filename);
-        // The str_replace() allows to fix Apple copy/paste.
-        $lines = array_filter(array_map('trim', explode("\n", str_replace(["\r\n", "\n\r", "\r"], ["\n", "\n", "\n"], $text))), function ($v) {
-            return (bool) strlen($v);
-        });
+        $lines = $this->stringToList($text);
 
         $levels = [];
         foreach ($lines as $line) {
@@ -187,19 +185,47 @@ class ThesaurusController extends AbstractActionController
         $fileSize = strlen($text);
 
         // Write HTTP headers
+        /** @var \Zend\Stdlib\ResponseInterface $response */
         $response = $this->getResponse();
         $headers = $response->getHeaders();
-        $headers->addHeaderLine('Content-type: ' . $mediaType);
-        $headers->addHeaderLine('Content-Disposition: ' . $mode . '; filename="' . $filename . '"');
-        $headers->addHeaderLine('Content-Transfer-Encoding', 'binary');
-        $headers->addHeaderLine('Content-length: ' . $fileSize);
-        $headers->addHeaderLine('Cache-control: private');
-        $headers->addHeaderLine('Content-Description: ' . 'File Transfer');
+        $headers
+            ->addHeaderLine('Content-type: ' . $mediaType)
+            ->addHeaderLine('Content-Disposition: ' . $mode . '; filename="' . $filename . '"')
+            ->addHeaderLine('Content-Transfer-Encoding', 'binary')
+            ->addHeaderLine('Content-length: ' . $fileSize)
+            ->addHeaderLine('Cache-control: private')
+            ->addHeaderLine('Content-Description: ' . 'File Transfer');
 
         // Write file content.
         $response->setContent($text);
 
         // Return Response to avoid default view rendering
         return $response;
+    }
+
+    /**
+     * Get each line of a string separately.
+     *
+     * @param string $string
+     * @return array
+     */
+    public function stringToList($string)
+    {
+        return array_filter(array_map('trim', explode("\n", $this->fixEndOfLine($string))), function ($v) {
+            return (bool) strlen($v);
+        });
+    }
+
+    /**
+     * Clean the text area from end of lines.
+     *
+     * This method fixes Windows and Apple copy/paste from a textarea input.
+     *
+     * @param string $string
+     * @return string
+     */
+    protected function fixEndOfLine($string)
+    {
+        return str_replace(["\r\n", "\n\r", "\r"], ["\n", "\n", "\n"], $string);
     }
 }

@@ -68,6 +68,7 @@ class Module extends AbstractModule
         // The original files may not be imported fully in Omeka S, so use a
         // simplified but full version of Skos.
         // @url https://lov.linkeddata.es/dataset/lov/vocabs/skos/versions/2009-08-18.n3
+        // TODO Remove in Omeka 2.1.
         $vocabulary = [
             'vocabulary' => [
                 'o:namespace_uri' => 'http://www.w3.org/2004/02/skos/core#',
