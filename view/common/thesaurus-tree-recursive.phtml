@@ -3,6 +3,7 @@
  * @var \Zend\View\Renderer\PhpRenderer $this
  * @var \Omeka\Api\Representation\ItemRepresentation[] $data
  * @var array $options
+ * @var int $level
  */
 
 ?>
@@ -10,7 +11,7 @@
     <?php foreach ($data as $current): ?>
     <li><?= $current['self']->link($current['self']->displayTitle()) ?>
         <?php if (!empty($current['children'])): ?>
-        <?= $this->partial('common/thesaurus-tree-recursive', ['data' => $current['children'], 'options' => $options]); ?>
+        <?= $this->partial('common/thesaurus-tree-recursive', ['data' => $current['children'], 'options' => $options, 'level' => $level + 1]) ?>
         <?php endif; ?>
    </li>
    <?php endforeach; ?>

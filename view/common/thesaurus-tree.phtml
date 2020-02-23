@@ -32,6 +32,6 @@ endif;
         <?= $translate('No concept.') ?>
     </p>
     <?php else: ?>
-        <?= $this->partial('common/thesaurus-tree-recursive', ['data' => $data, 'options' => $options]); ?>
+        <?= $this->partial('common/thesaurus-tree-recursive', ['data' => $data, 'options' => $options, 'level' => 0]) ?>
     <?php endif; ?>
 </div>
