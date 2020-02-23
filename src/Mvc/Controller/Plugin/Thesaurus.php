@@ -369,9 +369,7 @@ class Thesaurus extends AbstractPlugin
      */
     public function ascendantsOrSelf()
     {
-        $list = $this->ascendants();
-        array_unshift($this->item, $list);
-        return $list;
+        return [$this->item->id() => $this->item] + $this->ascendants();
     }
 
     /**
@@ -535,7 +533,7 @@ class Thesaurus extends AbstractPlugin
     {
         $parent = $this->parent($item);
         if ($parent) {
-            $list[] = $parent;
+            $list[$parent->id()] = $parent;
             return $this->ancestors($parent, $list);
         }
         return $list;
