@@ -2,7 +2,7 @@
 namespace Thesaurus;
 
 /*
- * Copyright Daniel Berthereau, 2019
+ * Copyright Daniel Berthereau, 2019-2020
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -34,7 +34,10 @@ if (!class_exists(\Generic\AbstractModule::class)) {
         : __DIR__ . '/src/Generic/AbstractModule.php';
 }
 
+use Doctrine\ORM\Query\Expr\Join;
 use Generic\AbstractModule;
+use Zend\EventManager\Event;
+use Zend\EventManager\SharedEventManagerInterface;
 
 /**
  * Thesaurus
@@ -51,6 +54,151 @@ class Module extends AbstractModule
     protected function postInstall()
     {
         $this->installResources();
+    }
+
+    public function attachListeners(SharedEventManagerInterface $sharedEventManager)
+    {
+        // Add the search query filters for resources.
+        $sharedEventManager->attach(
+            \Omeka\Api\Adapter\ItemAdapter::class,
+            'api.search.query',
+            [$this, 'handleApiSearchQuery']
+        );
+        $sharedEventManager->attach(
+            \Omeka\Api\Adapter\ItemSetAdapter::class,
+            'api.search.query',
+            [$this, 'handleApiSearchQuery']
+        );
+        $sharedEventManager->attach(
+            \Omeka\Api\Adapter\MediaAdapter::class,
+            'api.search.query',
+            [$this, 'handleApiSearchQuery']
+        );
+
+        // See module Next: an issue may occur when there are multiple properties.
+        // Anyway, it's a selection of categories, so other properties can be set
+        // separately, but not in the form.
+        // $controllers = [
+        //     'Omeka\Controller\Admin\Item',
+        //     'Omeka\Controller\Admin\ItemSet',
+        //     'Omeka\Controller\Admin\Media',
+        //     'Omeka\Controller\Site\Item',
+        //     'Omeka\Controller\Site\ItemSet',
+        //     'Omeka\Controller\Site\Media',
+        // ];
+        // foreach ($controllers as $controller) {
+        //     // Add the search field to the advanced search pages.
+        //     $sharedEventManager->attach(
+        //         $controller,
+        //         'view.advanced_search',
+        //         [$this, 'displayAdvancedSearch']
+        //     );
+        //     // Filter the search filters for the advanced search pages.
+        //     $sharedEventManager->attach(
+        //         $controller,
+        //         'view.search.filters',
+        //         [$this, 'filterSearchFilters']
+        //     );
+        // }
+    }
+
+    /**
+     * Helper to filter search queries.
+     *
+     * @param Event $event
+     */
+    public function handleApiSearchQuery(Event $event)
+    {
+        $query = $event->getParam('request')->getContent();
+        if (!isset($query['property']) || !is_array($query['property'])) {
+            return;
+        }
+
+        $plugins = $this->getServiceLocator()->get('ControllerPluginManager');
+        /**
+         * @var \Omeka\Mvc\Controller\Plugin\Api $api
+         * @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus
+         */
+        $api = $plugins->get('api');
+        $thesaurus = $plugins->get('thesaurus');
+
+        /**
+         * @var \Doctrine\ORM\QueryBuilder $qb
+         * @var \Omeka\Api\Adapter\ItemAdapter $adapter
+         */
+        $qb = $event->getParam('queryBuilder');
+        $adapter = $event->getTarget();
+
+        $isOldOmeka = \Omeka\Module::VERSION < 2;
+        $alias = $isOldOmeka ? $adapter->getEntityClass() : 'omeka_root';
+        $expr = $qb->expr();
+
+        $valuesJoin = $alias . '.values';
+        $where = '';
+
+        foreach ($query['property'] as $queryProperty) {
+            if (@$queryProperty['type'] !== 'cat'
+                || empty($queryProperty['property'])
+                || empty($queryProperty['text'])
+                || !is_numeric($queryProperty['text'])
+            ) {
+                continue;
+            }
+
+            // TODO Improve performance: currently, the thesaurus is built manually each time.
+            $item = $api->searchOne('items', ['id' => (int) $queryProperty['text']])->getContent();
+            if (!$item) {
+                continue;
+            }
+
+            $thesaurus = $thesaurus($item);
+            if (!$thesaurus->isSkos()) {
+                continue;
+            }
+            $list = array_keys($thesaurus->descendantsOrSelf());
+
+            $valuesAlias = $adapter->createAlias();
+            $predicateExpr = $expr->in(
+                "$valuesAlias.valueResource",
+                $adapter->createNamedParameter($qb, $list)
+            );
+
+            $joinConditions = [];
+            // Narrow to specific property, if one is selected
+            if ($queryProperty['property']) {
+                if (is_numeric($queryProperty['property'])) {
+                    $propertyId = (int) $queryProperty['property'];
+                } else {
+                    $property = $adapter->getPropertyByTerm($queryProperty['property']);
+                    if ($property) {
+                        $propertyId = $property->getId();
+                    } else {
+                        $propertyId = 0;
+                    }
+                }
+                $joinConditions[] = $expr->eq("$valuesAlias.property", (int) $propertyId);
+            }
+
+            $whereClause = '(' . $predicateExpr . ')';
+
+            if ($joinConditions) {
+                $qb->leftJoin($valuesJoin, $valuesAlias, Join::WITH, $expr->andX(...$joinConditions));
+            } else {
+                $qb->leftJoin($valuesJoin, $valuesAlias);
+            }
+
+            if ($where == '') {
+                $where = $whereClause;
+            } elseif ($queryProperty['property'] == 'or') {
+                $where .= " OR $whereClause";
+            } else {
+                $where .= " AND $whereClause";
+            }
+        }
+
+        if ($where) {
+            $qb->andWhere($where);
+        }
     }
 
     protected function installResources()
