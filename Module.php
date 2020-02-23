@@ -157,7 +157,8 @@ class Module extends AbstractModule
             }
             $list = array_keys($thesaurus->descendantsOrSelf());
 
-            $valuesAlias = $adapter->createAlias();
+            // TODO Fix the issue with the index of the alias of the adapter without "cat_" (when site_id is used in  the query too).
+            $valuesAlias = $adapter->createAlias('omeka_cat_');
             $predicateExpr = $expr->in(
                 "$valuesAlias.valueResource",
                 $adapter->createNamedParameter($qb, $list)
