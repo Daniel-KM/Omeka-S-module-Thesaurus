@@ -178,6 +178,17 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
+     * Get the related concepts of this item, with self.
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::relatedsOrSelf()
+     * @return ItemRepresentation[]
+     */
+    public function relatedsOrSelf()
+    {
+        return $this->thesaurus->relatedsOrSelf();
+    }
+
+    /**
      * Get the sibling concepts of this item (self not included).
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::siblings()
@@ -211,6 +222,17 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
+     * Get the list of ascendants of this item, from self first to top concept.
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::ascendantsOrSelf()
+     * @return ItemRepresentation[]
+     */
+    public function ascendantsOrSelf()
+    {
+        return $this->thesaurus->ascendantsOrSelf();
+    }
+
+    /**
      * Get the list of descendants of this item.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::descendants()
@@ -219,6 +241,17 @@ class Thesaurus extends AbstractHelper
     public function descendants()
     {
         return $this->thesaurus->descendants();
+    }
+
+    /**
+     * Get the list of descendants of this item, with self last.
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::descendantsOrSelf()
+     * @return ItemRepresentation[]
+     */
+    public function descendantsOrSelf()
+    {
+        return $this->thesaurus->descendantsOrSelf();
     }
 
     /**

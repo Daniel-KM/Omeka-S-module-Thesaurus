@@ -277,6 +277,18 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
+     * Get the related concepts of this item, with self.
+     *
+     * @return ItemRepresentation[]
+     */
+    public function relatedsOrSelf()
+    {
+        $list = $this->resourcesFromValue($this->item, 'skos:related');
+        $list[$this->item->id()] = $this->item;
+        return $list;
+    }
+
+    /**
      * Get the sibling concepts of this item (self not included).
      *
      * @return ItemRepresentation[]
@@ -351,6 +363,18 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
+     * Get the list of ascendants of this item, from self first to top concept.
+     *
+     * @return ItemRepresentation[]
+     */
+    public function ascendantsOrSelf()
+    {
+        $list = $this->ascendants();
+        array_unshift($this->item, $list);
+        return $list;
+    }
+
+    /**
      * Get the list of descendants of this item.
      *
      * @return ItemRepresentation[]
@@ -358,6 +382,18 @@ class Thesaurus extends AbstractPlugin
     public function descendants()
     {
         return $this->listDescendants($this->item);
+    }
+
+    /**
+     * Get the list of descendants of this item, with self last.
+     *
+     * @return ItemRepresentation[]
+     */
+    public function descendantsOrSelf()
+    {
+        $list = $this->descendants();
+        $list[$this->item->id()] = $this->item;
+        return $list;
     }
 
     /**
