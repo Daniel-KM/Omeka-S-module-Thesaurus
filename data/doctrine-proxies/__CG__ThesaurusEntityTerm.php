@@ -235,7 +235,7 @@ class Term extends \Thesaurus\Entity\Term implements \Doctrine\ORM\Proxy\Proxy
     /**
      * {@inheritDoc}
      */
-    public function setRoot(\Thesaurus\Entity\Term $root)
+    public function setRoot(\Thesaurus\Entity\Term $root = NULL)
     {
 
         $this->__initializer__ && $this->__initializer__->__invoke($this, 'setRoot', [$root]);

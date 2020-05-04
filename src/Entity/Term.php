@@ -68,13 +68,16 @@ class Term extends AbstractEntity
     protected $scheme;
 
     /**
+     * Root is not nullable, but doctrine use two queries internally to create
+     * the entity with a self-referencing for the root items.
+     *
      * @var Term
      * @ManyToOne(
      *     targetEntity="Term",
      *     inversedBy="root"
      * )
      * @JoinColumn(
-     *     nullable=false,
+     *     nullable=true,
      *     onDelete="CASCADE"
      * )
      */
@@ -171,7 +174,7 @@ class Term extends AbstractEntity
      * @param Term $root
      * @return self
      */
-    public function setRoot(Term $root)
+    public function setRoot(Term $root = null)
     {
         $this->root = $root;
         return $this;

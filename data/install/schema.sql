@@ -2,7 +2,7 @@ CREATE TABLE term (
     id INT AUTO_INCREMENT NOT NULL,
     item_id INT NOT NULL,
     scheme_id INT NOT NULL,
-    root_id INT NOT NULL,
+    root_id INT DEFAULT NULL,
     broader_id INT DEFAULT NULL,
     position INT DEFAULT NULL,
     INDEX IDX_A50FE78D126F525E (item_id),
