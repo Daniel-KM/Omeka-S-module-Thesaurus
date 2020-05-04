@@ -1,0 +1,11 @@
+{
+    "vocabulary": {
+        "o:namespace_uri": "http://www.w3.org/2004/02/skos/core#",
+        "o:prefix": "skos",
+        "o:label": "Simple Knowledge Organization System",
+        "o:comment": "An RDF vocabulary for describing the basic structure and content of concept schemes such as thesauri, classification schemes, subject heading lists, taxonomies, 'folksonomies', other types of controlled vocabulary, and also concept schemes embedded in glossaries and terminologies."
+    },
+    "strategy": "file",
+    "file": "skos_2009-08-18.ttl",
+    "format": "turtle"
+}

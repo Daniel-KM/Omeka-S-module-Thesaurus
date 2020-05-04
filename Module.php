@@ -51,11 +51,6 @@ class Module extends AbstractModule
 {
     const NAMESPACE = __NAMESPACE__;
 
-    protected function postInstall()
-    {
-        $this->installResources();
-    }
-
     public function attachListeners(SharedEventManagerInterface $sharedEventManager)
     {
         // Add the search query filters for resources.
@@ -160,7 +155,7 @@ class Module extends AbstractModule
             // TODO Fix the issue with the index of the alias of the adapter without "cat_" (when site_id is used in  the query too).
             $valuesAlias = $adapter->createAlias('omeka_cat_');
             $predicateExpr = $expr->in(
-                "$valuesAlias.valueResource",
+                $valuesAlias . '.valueResource',
                 $adapter->createNamedParameter($qb, $list)
             );
 
@@ -177,7 +172,7 @@ class Module extends AbstractModule
                         $propertyId = 0;
                     }
                 }
-                $joinConditions[] = $expr->eq("$valuesAlias.property", (int) $propertyId);
+                $joinConditions[] = $expr->eq($valuesAlias . '.property', (int) $propertyId);
             }
 
             $whereClause = '(' . $predicateExpr . ')';
@@ -199,45 +194,6 @@ class Module extends AbstractModule
 
         if ($where) {
             $qb->andWhere($where);
-        }
-    }
-
-    protected function installResources()
-    {
-        if (!class_exists(\Generic\InstallResources::class)) {
-            require_once file_exists(dirname(__DIR__) . '/Generic/InstallResources.php')
-                ? dirname(__DIR__) . '/Generic/InstallResources.php'
-                : __DIR__ . '/src/Generic/InstallResources.php';
-        }
-
-        $services = $this->getServiceLocator();
-        $installResources = new \Generic\InstallResources($services);
-        $installResources = $installResources();
-
-        // The original files may not be imported fully in Omeka S, so use a
-        // simplified but full version of Skos.
-        // @url https://lov.linkeddata.es/dataset/lov/vocabs/skos/versions/2009-08-18.n3
-        // TODO Remove in Omeka 2.1.
-        $vocabulary = [
-            'vocabulary' => [
-                'o:namespace_uri' => 'http://www.w3.org/2004/02/skos/core#',
-                'o:prefix' => 'skos',
-                'o:label' => 'Simple Knowledge Organization System', // @translate
-                'o:comment' => "An RDF vocabulary for describing the basic structure and content of concept schemes such as thesauri, classification schemes, subject heading lists, taxonomies, 'folksonomies', other types of controlled vocabulary, and also concept schemes embedded in glossaries and terminologies.", // @translate
-            ],
-            'strategy' => 'file',
-            'file' => __DIR__ . '/data/vocabularies/skos_2009-08-18.ttl',
-            'format' => 'turtle',
-        ];
-        $installResources->createVocabulary($vocabulary);
-
-        // Create resource templates.
-        $resourceTemplatePaths = [
-            __DIR__ . '/data/resource-templates/Thesaurus_Scheme.json',
-            __DIR__ . '/data/resource-templates/Thesaurus_Concept.json',
-        ];
-        foreach ($resourceTemplatePaths as $filepath) {
-            $installResources->createResourceTemplate($filepath);
         }
     }
 }
