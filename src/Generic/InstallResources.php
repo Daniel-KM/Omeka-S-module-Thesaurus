@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright Daniel Berthereau, 2018-2019
+ * Copyright Daniel Berthereau, 2018-2020
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -55,6 +55,80 @@ class InstallResources
     public function __invoke()
     {
         return $this;
+    }
+
+    /**
+     * Check all resources that are in the path data/ of a module.
+     *
+     * @param string $module
+     * @throws \Omeka\Module\Exception\ModuleCannotInstallException
+     * @return bool
+     */
+    public function checkAllResources($module)
+    {
+        $filepathData = OMEKA_PATH . '/modules/' . $module . '/data/';
+
+        // Vocabularies.
+        foreach ($this->listFilesInDir($filepathData . 'vocabularies', ['json']) as $filepath) {
+            $data = file_get_contents($filepath);
+            $data = json_decode($data, true);
+            if ($data) {
+                if ($data['file'] && strpos($data['file'], 'https://') === false && strpos($data['file'], 'http://') === false) {
+                    $data['file'] = dirname($filepath) . '/' . $data['file'];
+                }
+                $this->checkVocabulary($data);
+            }
+        }
+
+        // Custom vocabs.
+        foreach ($this->listFilesInDir($filepathData . 'custom-vocabs') as $filepath) {
+            $this->checkCustomVocab($filepath);
+        }
+
+        // Resource templates.
+        foreach ($this->listFilesInDir($filepathData . 'resource-templates') as $filepath) {
+            $this->checkResourceTemplate($filepath);
+        }
+
+        return true;
+    }
+
+    /**
+     * Install all resources that are in the path data/ of a module.
+     *
+     * @param string $module
+     */
+    public function createAllResources($module)
+    {
+        $filepathData = OMEKA_PATH . '/modules/' . $module . '/data/';
+
+        // Vocabularies.
+        foreach ($this->listFilesInDir($filepathData . 'vocabularies', ['json']) as $filepath) {
+            $data = file_get_contents($filepath);
+            $data = json_decode($data, true);
+            if ($data) {
+                if ($data['file'] && strpos($data['file'], 'https://') === false && strpos($data['file'], 'http://') === false) {
+                    $data['file'] = dirname($filepath) . '/' . $data['file'];
+                }
+                if (!$this->checkVocabulary($data)) {
+                    $this->createVocabulary($data);
+                }
+            }
+        }
+
+        // Custom vocabs.
+        foreach ($this->listFilesInDir($filepathData . 'custom-vocabs') as $filepath) {
+            if (!$this->checkCustomVocab($filepath)) {
+                $this->createOrUpdateCustomVocab($filepath);
+            }
+        }
+
+        // Resource templates.
+        foreach ($this->listFilesInDir($filepathData . 'resource-templates') as $filepath) {
+            if (!$this->checkResourceTemplate($filepath)) {
+                $this->createResourceTemplate($filepath);
+            }
+        }
     }
 
     /**
@@ -133,8 +207,6 @@ class InstallResources
                 $label
             )
         );
-
-        // return true;
     }
 
     /**
@@ -163,16 +235,6 @@ class InstallResources
             );
         }
 
-        if (implode("\n", $data['o:terms']) !== $customVocab->terms()) {
-            throw new ModuleCannotInstallException(
-                sprintf(
-                    'A custom vocab named "%s" exists and has not the needed terms: rename it or remove it before installing this module.', // @translate
-                    $label,
-                    $data['o:terms']
-                )
-            );
-        }
-
         if ($data['o:lang'] != $customVocab->lang()) {
             throw new ModuleCannotInstallException(
                 sprintf(
@@ -181,6 +243,15 @@ class InstallResources
                     $data['o:lang']
                 )
             );
+        }
+
+        $newTerms = $data['o:terms'];
+        $existingTerms = explode("\n", $customVocab->terms());
+        sort($newTerms);
+        sort($existingTerms);
+        if ($newTerms !== $existingTerms) {
+            // To be completed.
+            return false;
         }
 
         return true;
@@ -311,9 +382,37 @@ class InstallResources
         }
         unset($templateProperty);
 
+        // Check if there are title and description.
+        foreach (['o:title_property', 'o:description_property'] as $property) {
+            if (!empty($data[$property]['vocabulary_namespace_uri'])
+                && !empty($data[$property]['local_name'])
+            ) {
+                $prop = $api->searchOne('properties', $data[$property])->getContent();
+                if ($prop) {
+                    $data[$property]['o:id'] = $prop->id();
+                }
+            }
+        }
+
         // Process import.
+        /** \Omeka\Api\Representation\ResourceTemplateRepresentation $resourceTemplate */
         $resourceTemplate = $api->create('resource_templates', $data)->getContent();
+
         return $resourceTemplate;
+    }
+
+    /**
+     * Create or update a custom vocab.
+     *
+     * @param string $filepath
+     */
+    public function createOrUpdateCustomVocab($filepath)
+    {
+        try {
+            return $this->updateCustomVocab($filepath);
+        } catch (ModuleCannotInstallException $e) {
+            return $this->createCustomVocab($filepath);
+        }
     }
 
     /**
@@ -505,5 +604,32 @@ class InstallResources
     public function getServiceLocator()
     {
         return $this->services;
+    }
+
+    /**
+     * List filtered files in a directory, not recursively, and without subdirs.
+     *
+     * Unreadable and empty files are skipped.
+     *
+     * @param string $dirpath
+     * @param array $extensions
+     * @return array
+     */
+    protected function listFilesInDir($dirpath, array $extensions = [])
+    {
+        if (empty($dirpath) || !file_exists($dirpath) || !is_dir($dirpath) || !is_readable($dirpath)) {
+            return [];
+        }
+        $list = array_filter(array_map(function ($file) use ($dirpath) {
+            return $dirpath . DIRECTORY_SEPARATOR . $file;
+        }, scandir($dirpath)), function ($file) {
+            return is_file($file) && is_readable($file) && filesize($file);
+        });
+        if ($extensions) {
+            $list = array_filter($list, function ($file) use ($extensions) {
+                return in_array(pathinfo($file, PATHINFO_EXTENSION), $extensions);
+            });
+        }
+        return array_values($list);
     }
 }
