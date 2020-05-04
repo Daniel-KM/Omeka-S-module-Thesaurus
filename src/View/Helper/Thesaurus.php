@@ -34,8 +34,8 @@ class Thesaurus extends AbstractHelper
     public function __invoke(ItemRepresentation $item)
     {
         $this->item = $item;
-        $thesaurus = $this->thesaurus;
-        $thesaurus($item);
+        $thesaurusPlugin = $this->thesaurus;
+        $thesaurusPlugin($item);
         return $this;
     }
 
@@ -134,10 +134,10 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
-     * Get the root concept of this item.
+     * Get the root concept of this item, that may be itself.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::root()
-     * @return ItemRepresentation|null
+     * @return ItemRepresentation
      */
     public function root()
     {
@@ -255,10 +255,10 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
-     * Get the hierarchy of this item from the root (top concept).
+     * Get the hierarchy of this item from the root (top concepts).
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::tree()
-     * @return ItemRepresentation[]
+     * @return array
      */
     public function tree()
     {
@@ -268,8 +268,8 @@ class Thesaurus extends AbstractHelper
     /**
      * Get the hierarchy branch of this item, self included.
      *
-     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::tree()
-     * @return ItemRepresentation[]
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::branch()
+     * @return array
      */
     public function branch()
     {

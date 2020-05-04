@@ -11,6 +11,8 @@ use Zend\Mvc\Controller\Plugin\AbstractPlugin;
  */
 class Thesaurus extends AbstractPlugin
 {
+    protected $maxAncestors = 100;
+
     const ROOT_CLASS = 'skos:ConceptScheme';
     const ITEM_CLASS = 'skos:Concept';
     const PARENT_TERM = 'skos:broader';
@@ -239,7 +241,7 @@ class Thesaurus extends AbstractPlugin
      *
      * @todo Check performance to get the root concept.
      *
-     * @return ItemRepresentation|null
+     * @return ItemRepresentation
      */
     public function root()
     {
@@ -363,7 +365,7 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
-     * Get the list of ascendants of this item, from self first to top concept.
+     * Get the list of ascendants of this item, from self to top concept.
      *
      * @return ItemRepresentation[]
      */
@@ -395,9 +397,9 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
-     * Get the hierarchy of this item from the root (top concept).
+     * Get the hierarchy of this item from the root (top concepts).
      *
-     * @return ItemRepresentation[]
+     * @return array
      */
     public function tree()
     {
@@ -501,7 +503,7 @@ class Thesaurus extends AbstractPlugin
      * Get the narrower items of an item.
      *
      * @param ItemRepresentation $item
-     * @return ItemRepresentation|null
+     * @return ItemRepresentation[]
      */
     protected function children(ItemRepresentation $item)
     {
@@ -512,25 +514,39 @@ class Thesaurus extends AbstractPlugin
      * Recursive method to get the top concept of an item.
      *
      * @param ItemRepresentation $item
+     * @param int $level
      * @return ItemRepresentation
      */
-    protected function ancestor(ItemRepresentation $item)
+    protected function ancestor(ItemRepresentation $item, $level = 0)
     {
+        if ($level > $this->maxAncestors) {
+            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
+                'There cannot be more than %d ancestors.', // @translate
+                $this->maxAncestors
+            ));
+        }
         $parent = $this->parent($item);
         return $parent
-            ? $this->ancestor($parent)
+            ? $this->ancestor($parent, $level + 1)
             : $item;
     }
 
     /**
-     * Recursive method to get the ancestors of an item
+     * Recursive method to get the ancestors of an item.
      *
      * @param ItemRepresentation $item
      * @param array $list Internal param for recursive process.
+     * @param int $level
      * @return ItemRepresentation[]
      */
-    protected function ancestors(ItemRepresentation $item, array $list = [])
+    protected function ancestors(ItemRepresentation $item, array $list = [], $level = 0)
     {
+        if ($level > $this->maxAncestors) {
+            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
+                'There cannot be more than %d ancestors.', // @translate
+                $this->maxAncestors
+            ));
+        }
         $parent = $this->parent($item);
         if ($parent) {
             $list[$parent->id()] = $parent;
@@ -542,18 +558,25 @@ class Thesaurus extends AbstractPlugin
     /**
      * Recursive method to get the descendants of an item.
      *
-     * @param ItemRepresentation $item$list
+     * @param ItemRepresentation $item
      * @param array $list Internal param for recursive process.
+     * @param int $level
      * @return ItemRepresentation[]
      */
-    protected function listDescendants(ItemRepresentation $item, array $list = [])
+    protected function listDescendants(ItemRepresentation $item, array $list = [], $level = 0)
     {
+        if ($level > $this->maxAncestors) {
+            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
+                'There cannot be more than %d levels of descendants.', // @translate
+                $this->maxAncestors
+            ));
+        }
         $children = $this->children($item);
         foreach ($children as $child) {
             $id = $child->id();
             if (!isset($list[$id])) {
                 $list[$id] = $child;
-                $list += $this->listDescendants($child, $list);
+                $list += $this->listDescendants($child, $list, $level + 1);
             }
         }
         return $list;
@@ -564,17 +587,24 @@ class Thesaurus extends AbstractPlugin
      *
      * @param ItemRepresentation $item
      * @param array $branch Internal param for recursive process.
+     * @param int $level
      * @return array
      */
-    protected function recursiveBranch(ItemRepresentation $item, array $branch = [])
+    protected function recursiveBranch(ItemRepresentation $item, array $branch = [], $level = 0)
     {
+        if ($level > $this->maxAncestors) {
+            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
+                'There cannot be more than %d levels of descendants.', // @translate
+                $this->maxAncestors
+            ));
+        }
         $children = $this->children($item);
         foreach ($children as $child) {
             $id = $child->id();
             if (!isset($branch[$id])) {
                 $branch[$id] = [
                     'self' => $child,
-                    'children' => $this->recursiveBranch($child),
+                    'children' => $this->recursiveBranch($child, [], $level + 1),
                 ];
             }
         }
