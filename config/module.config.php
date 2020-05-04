@@ -11,6 +11,9 @@ return [
         ],
     ],
     'view_helpers' => [
+        'invokables' => [
+            'linkTerm' => View\Helper\LinkTerm::class,
+        ],
         'factories' => [
             'thesaurus' => Service\ViewHelper\ThesaurusFactory::class,
         ],
