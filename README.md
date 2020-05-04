@@ -90,16 +90,50 @@ properties to manage items as concepts.
 Then, in your theme, use the various methods of the view helper `$this->thesaurus($item)`
 in order to display full tree, ascendants, descendants, siblings, etc.
 
-### Page block
+### Page blocks
 
-A template is added for the simple block of module [Block Plus]. Just set `item = id`
-where id is the thesaurus you want to display.
+A site block "Thesaurus" is available to include the thesaurus on any page, or a
+part of it (branch, narrowers, ascendants, descendants, etc.).
+
+A template is added for the simple block of module [Block Plus] too. Just set
+`item = id` where id is the thesaurus you want to display.
+
+### Create a select with the tree, in particular for the module Collecting
+
+To add a select where the user will be able to choose terms, you need to use a
+[fork of the module Collecting], which commits will be integrated upstream soon.
+Then choose a property to fill, the input type "resource item", then the query:
+`resource_class_id[0]=xxx&property[0][joiner]=and&property[0][property]=skos:inScheme&property[0][type]=res&property[0][text]=yyy&sort_by=thesaurus&sort_thesaurus=yyy`
+or in php:
+```php
+    'resource_class_id' => [
+        xxx,
+    ],
+    'property' => [
+        [
+            'joiner' => 'and',
+            'property' => 'skos:inScheme',
+            'type' => 'res',
+            'text' => yyy,
+        ],
+    ],
+    'sort_by' => 'thesaurus',
+    'sort_thesaurus' => yyy,
+```
+Here, `xxx` is the resource class id of `skos:ConceptScheme` and `yyy` is the
+item id of the scheme.
 
 
 TODO
 ----
 
-* Optimize structure building via direct queries to the database. See module EAD.
+* Finalize optimization of the structure building via direct queries to the
+  database. See module EAD.
+* Manage terms as a full resources, separetly from items (like Annotation).
+* Manage representation when a term belongs to multiple thesaurus? Probably
+  useless with association.
+* Implement a tree iterator in representation, plugin and helper.
+* Uninstall vocabulary and resources templates in not used.
 
 
 Warning
@@ -156,6 +190,7 @@ for the [Institut national d’histoire de l’art] (INHA).
 [Custom Vocab]: https://github.com/omeka-s-modules/CustomVocab
 [Block Plus]: https://github.com/Daniel-KM/Omeka-S-module-BlockPlus
 [LibreOffice]: https://libreoffice.org
+[fork of the module Collecting]: https://github.com/Daniel-KM/Omeka-S-module-Collecting
 [module issues]: https://github.com/Daniel-KM/Omeka-S-module-Thesaurus/issues
 [CeCILL v2.1]: https://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html
 [GNU/GPL]: https://www.gnu.org/licenses/gpl-3.0.html
