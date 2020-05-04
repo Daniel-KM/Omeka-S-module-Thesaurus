@@ -359,10 +359,22 @@ class Thesaurus extends AbstractHelper
         $options += ['title' => '', 'hideIfEmpty' => false, 'class' => '', 'expanded' => 0];
 
         return $this->getView()->partial($partial, [
+            'site' => $this->currentSite(),
             'item' => $this->item,
             'type' => $type,
             'data' => $data,
             'options' => $options,
         ]);
+    }
+
+    /**
+     * @return \Omeka\Api\Representation\SiteRepresentation
+     */
+    protected function currentSite()
+    {
+        $view = $this->getView();
+        return isset($view->site)
+            ? $view->site
+            : $view->getHelperPluginManager()->get('Zend\View\Helper\ViewModel')->getRoot()->getVariable('site');
     }
 }
