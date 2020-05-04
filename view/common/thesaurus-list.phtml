@@ -32,6 +32,7 @@ else:
 endif;
 
 $itemId = $item ? $item->id() : null;
+$linkTerm = $this->linkTerm($options);
 ?>
 
 <div class="thesaurus thesaurus-list <?= $options['class'] ?>">
@@ -44,7 +45,7 @@ $itemId = $item ? $item->id() : null;
     <ul>
         <?php foreach ($data as $concept): ?>
         <?php $isItem = $concept->id() === $itemId; ?>
-        <li<?php if ($isItem) echo ' class="active"'; ?>><?= $concept->link($concept->displayTitle()) ?></li>
+        <li<?php if ($isItem) echo ' class="active"'; ?>><?= $linkTerm->render($concept) ?></li>
         <?php endforeach; ?>
     </ul>
     <?php endif; ?>

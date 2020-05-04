@@ -8,11 +8,12 @@
  * @var array $options
  */
 
-$translate = $this->plugin('translate');
-
 if (empty($data) && !empty($options['hideIfEmpty'])):
     return;
 endif;
+
+$plugins = $this->getHelperPluginManager();
+$translate = $plugins->get('translate');
 
 if (isset($options['title'])):
     $title = $options['title'];
@@ -24,6 +25,8 @@ else:
     ];
     $title = $title[$type];
 endif;
+
+$linkTerm = $this->linkTerm($options);
 ?>
 
 <div class="thesaurus thesaurus-single <?= $options['class'] ?>">
@@ -34,7 +37,7 @@ endif;
     </p>
     <?php else: ?>
     <p>
-        <?= $data->link($data->displayTitle()) ?>
+        <?= $linkTerm->render($data) ?>
     </p>
     <?php endif; ?>
 </div>

@@ -309,7 +309,7 @@ class Thesaurus extends AbstractHelper
      * "ascendants", or "descendants" (list), or "tree" or "branch" (tree), or
      * "flatTree" or "flatBranch" (flat tree).
      * @param array $options Options for the partial. Managed default are
-     * "title", "hideIfEmpty", "class", "expanded", "partial".
+     * "title", "link", "term", "hideIfEmpty", "class", "expanded", "partial".
      * @return string
      */
     public function display($typeOrData, array $options = [])
@@ -356,7 +356,14 @@ class Thesaurus extends AbstractHelper
             : $options['partial'];
         unset($options['partial']);
 
-        $options += ['title' => '', 'hideIfEmpty' => false, 'class' => '', 'expanded' => 0];
+        $options += [
+            'title' => '',
+            'link' => 'both',
+            'term' => 'dcterms:subject',
+            'hideIfEmpty' => false,
+            'class' => '',
+            'expanded' => 0,
+        ];
 
         return $this->getView()->partial($partial, [
             'site' => $this->currentSite(),

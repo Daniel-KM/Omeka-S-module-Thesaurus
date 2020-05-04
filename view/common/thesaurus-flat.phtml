@@ -28,6 +28,7 @@ else:
 endif;
 
 $itemId = $item ? $item->id() : null;
+$linkTerm = $this->linkTerm($options);
 ?>
 
 <div class="thesaurus thesaurus-flat <?= $options['class'] ?>">
@@ -43,7 +44,7 @@ $itemId = $item ? $item->id() : null;
         <?php $level = $conceptData['level']; ?>
         <?php $isItem = $concept->id() === $itemId; ?>
         <li<?php if ($isItem) echo ' class="active"'; ?>>
-            <span class="tree-level" data-level="<?= $level ?>"><?= str_repeat($repeat, $level) ?></span> <?= $concept->link($concept->displayTitle()) ?>
+            <span class="tree-level" data-level="<?= $level ?>"><?= str_repeat($repeat, $level) ?></span> <?= $linkTerm->render($concept) ?>
         </li>
         <?php endforeach; ?>
     </ul>

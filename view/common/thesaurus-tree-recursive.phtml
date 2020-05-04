@@ -3,13 +3,14 @@
  * @var \Zend\View\Renderer\PhpRenderer $this
  * @var array $data
  * @var array $options
+ * @var \Thesaurus\View\Helper\LinkTerm $linkTerm
  * @var int $level
  */
 
 ?>
 <ul>
     <?php foreach ($data as $current): ?>
-    <li><?= $current['self']->link($current['self']->displayTitle()) ?>
+    <li><?= $linkTerm->render($current['self']) ?>
         <?php if (!empty($current['children'])): ?>
         <?= $this->partial('common/thesaurus-tree-recursive', ['data' => $current['children'], 'options' => $options, 'level' => $level + 1]) ?>
         <?php endif; ?>
