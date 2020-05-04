@@ -5,6 +5,9 @@ use Omeka\Api\Representation\ItemRepresentation;
 use Thesaurus\Mvc\Controller\Plugin\Thesaurus as ThesaurusPlugin;
 use Zend\View\Helper\AbstractHelper;
 
+/**
+ * @todo Implement a tree iterator.
+ */
 class Thesaurus extends AbstractHelper
 {
     /**
@@ -277,11 +280,34 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
+     * Get the flat hierarchy of this item from the root (top concepts).
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::flatTree()
+     * @return array
+     */
+    public function flatTree()
+    {
+        return $this->thesaurus->flatTree();
+    }
+
+    /**
+     * Get the flat hierarchy branch of this item, self included.
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::flatBranch()
+     * @return array
+     */
+    public function flatBranch()
+    {
+        return $this->thesaurus->flatBranch();
+    }
+
+    /**
      * Display part of a thesaurus.
      *
      * @param string|array|ItemRepresentation $typeOrData Type may be "root" or
      * "broader" (single), "tops", "narrowers", "relateds", "siblings",
-     * "ascendants", or "descendants" (list), or "tree" or "branch" (tree).
+     * "ascendants", or "descendants" (list), or "tree" or "branch" (tree), or
+     * "flatTree" or "flatBranch" (flat tree).
      * @param array $options Options for the partial. Managed default are
      * "title", "hideIfEmpty", "class", "expanded", "partial".
      * @return string
@@ -302,6 +328,8 @@ class Thesaurus extends AbstractHelper
                 'descendants' => 'list',
                 'tree' => 'tree',
                 'branch' => 'tree',
+                'flatTree' => 'flat',
+                'flatBranch' => 'flat',
             ];
             if (isset($partialTypes[$type])) {
                 $data = $this->{$type}();
@@ -312,7 +340,12 @@ class Thesaurus extends AbstractHelper
         } else {
             $type = 'custom';
             if (is_array($data)) {
-                $partial = is_array(reset($data)) ? 'tree' : 'list';
+                if (is_array(reset($data))) {
+                    $first = reset($data);
+                    $partial = isset($first['level']) ? 'flat' : 'tree';
+                } else {
+                    $partial = 'list';
+                }
             } else {
                 $partial = 'single';
             }

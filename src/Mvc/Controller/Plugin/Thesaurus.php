@@ -7,6 +7,7 @@ use Omeka\Mvc\Controller\Plugin\Api;
 use Zend\Mvc\Controller\Plugin\AbstractPlugin;
 
 /**
+ * @todo Implement a tree iterator.
  * @todo Optimize structure building via direct queries to the database. See module Ead.
  */
 class Thesaurus extends AbstractPlugin
@@ -407,6 +408,7 @@ class Thesaurus extends AbstractPlugin
         foreach ($this->tops() as $item) {
             $result[$item->id()] = [
                 'self' => $item,
+                // TODO The other branch should check if the item is not set in another branch previously.
                 'children' => $this->recursiveBranch($item),
             ];
         }
@@ -426,6 +428,39 @@ class Thesaurus extends AbstractPlugin
             'children' => $this->recursiveBranch($this->item),
         ];
         return $result;
+    }
+
+    /**
+     * Get the flat hierarchy of this item from the root (top concept).
+     *
+     * @return array
+     */
+    public function flatTree()
+    {
+        $result = [];
+        foreach ($this->tops() as $item) {
+            $result[$item->id()] = [
+                'self' => $item,
+                'level' => 0,
+            ];
+            $result = $this->recursiveFlatBranch($item, $result, 1);
+        }
+        return $result;
+    }
+
+    /**
+     * Get the flat hierarchy branch of this item, self included.
+     *
+     * @return array
+     */
+    public function flatBranch()
+    {
+        $result = [];
+        $result[$this->item->id()] = [
+            'self' => $this->item,
+            'level' => 0,
+        ];
+        return $this->recursiveFlatBranch($this->item, $result, 1);
     }
 
     /**
@@ -606,6 +641,36 @@ class Thesaurus extends AbstractPlugin
                     'self' => $child,
                     'children' => $this->recursiveBranch($child, [], $level + 1),
                 ];
+            }
+        }
+        return $branch;
+    }
+
+    /**
+     * Recursive method to get the flat descendant tree of an item.
+     *
+     * @param ItemRepresentation $item
+     * @param array $branch Internal param for recursive process.
+     * @param int $level
+     * @return array
+     */
+    protected function recursiveFlatBranch(ItemRepresentation $item, array $branch = [], $level = 0)
+    {
+        if ($level > $this->maxAncestors) {
+            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
+                'There cannot be more than %d levels of descendants.', // @translate
+                $this->maxAncestors
+            ));
+        }
+        $children = $this->children($item);
+        foreach ($children as $child) {
+            $id = $child->id();
+            if (!isset($branch[$id])) {
+                $branch[$id] = [
+                    'self' => $child,
+                    'level' => $level,
+                ];
+                $branch = $this->recursiveFlatBranch($child, $branch, $level + 1);
             }
         }
         return $branch;

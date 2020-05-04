@@ -1,0 +1,50 @@
+<?php
+/**
+ * @var \Zend\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\ItemRepresentation $item
+ * @var \Omeka\Api\Representation\ItemRepresentation[] $data
+ * @var string $type
+ * @var array $options
+ */
+
+$translate = $this->plugin('translate');
+
+$repeat = '- ';
+
+if (empty($data) && !empty($options['hideIfEmpty'])):
+    return;
+endif;
+
+if (isset($options['title'])):
+    $title = $options['title'];
+else:
+    $title = [
+        'flatTree' => $translate('Tree of concepts'),
+        'flatBranch' => $translate('Branch of current concept'),
+        'custom' => $translate('Tree of concepts'),
+    ];
+    $title = $title[$type];
+endif;
+
+$itemId = $item ? $item->id() : null;
+?>
+
+<div class="thesaurus thesaurus-flat <?= $options['class'] ?>">
+    <h4><?= $title ?></h4>
+    <?php if (empty($data)): ?>
+    <p>
+        <?= $translate('No concept.') ?>
+    </p>
+    <?php else: ?>
+    <ul>
+        <?php foreach ($data as $conceptData): ?>
+        <?php $concept = $conceptData['self']; ?>
+        <?php $level = $conceptData['level']; ?>
+        <?php $isItem = $concept->id() === $itemId; ?>
+        <li<?php if ($isItem) echo ' class="active"'; ?>>
+            <span class="tree-level" data-level="<?= $level ?>"><?= str_repeat($repeat, $level) ?></span> <?= $concept->link($concept->displayTitle()) ?>
+        </li>
+        <?php endforeach; ?>
+    </ul>
+    <?php endif; ?>
+</div>
