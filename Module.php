@@ -59,7 +59,7 @@ class Module extends AbstractModule
         $sharedEventManager->attach(
             \Omeka\Api\Adapter\ItemAdapter::class,
             'api.search.query',
-            [$this, 'handleApiSearchQuery']
+            [$this, 'handleApiSearchQueryItem']
         );
         $sharedEventManager->attach(
             \Omeka\Api\Adapter\ItemSetAdapter::class,
@@ -153,6 +153,52 @@ class Module extends AbstractModule
         );
         $message->setEscapeHtml(false);
         $controller->messenger()->addSuccess($message);
+    }
+
+    /**
+     * Helper to filter search queries for items.
+     *
+     * @param Event $event
+     */
+    public function handleApiSearchQueryItem(Event $event)
+    {
+        $query = $event->getParam('request')->getContent();
+        if (!empty($query['sort_thesaurus'])
+            && is_numeric($query['sort_thesaurus'])
+            && (int) $query['sort_thesaurus']
+            && isset($query['sort_by']) && $query['sort_by'] === 'thesaurus'
+        ) {
+            /**
+             * @var \Omeka\Api\Adapter\ItemAdapter $adapter
+             * @var \Doctrine\ORM\QueryBuilder $qb
+             */
+            $adapter = $event->getTarget();
+            $qb = $event->getParam('queryBuilder');
+
+            $isOldOmeka = \Omeka\Module::VERSION < 2;
+            $alias = $isOldOmeka ? $adapter->getEntityClass() : 'omeka_root';
+            $expr = $qb->expr();
+
+            $termAlias = $adapter->createAlias();
+            $qb
+                ->addSelect($termAlias . '.position HIDDEN')
+                ->leftJoin(
+                    \Thesaurus\Entity\Term::class,
+                    $termAlias,
+                    \Doctrine\ORM\Query\Expr\Join::WITH,
+                    $expr->andX(
+                        $expr->eq($termAlias . '.item', $alias),
+                        $expr->eq($termAlias . '.scheme', (int) $query['sort_thesaurus'])
+                    )
+                )
+                ->addOrderBy(
+                    $termAlias . '.position',
+                    isset($query['sort_order']) && strtolower($query['sort_order'] === 'DESC') ? 'DESC' : 'ASC'
+                )
+            ;
+        }
+
+        return $this->handleApiSearchQuery($event);
     }
 
     /**
