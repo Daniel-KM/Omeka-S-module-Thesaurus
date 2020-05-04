@@ -4,6 +4,9 @@ namespace Thesaurus\Api\Representation;
 
 use Omeka\Api\Representation\AbstractEntityRepresentation;
 
+/**
+ * @todo Make TermRepresentation an AbstractResourceEntityRepresentation.
+ */
 class TermRepresentation extends AbstractEntityRepresentation
 {
     protected $maxAncestors = 100;
@@ -38,6 +41,8 @@ class TermRepresentation extends AbstractEntityRepresentation
     }
 
     /**
+     * Get the item associated to this term.
+     *
      * @return \Omeka\Api\Representation\ItemRepresentation
      */
     public function item()
@@ -47,6 +52,8 @@ class TermRepresentation extends AbstractEntityRepresentation
     }
 
     /**
+     * Get the item that is the scheme of this term.
+     *
      * @return \Omeka\Api\Representation\ItemRepresentation
      */
     public function scheme()
@@ -56,6 +63,8 @@ class TermRepresentation extends AbstractEntityRepresentation
     }
 
     /**
+     * Get the top terms of the scheme.
+     *
      * @return \Thesaurus\Api\Representation\TermRepresentation[]
      */
     public function tops()
@@ -74,7 +83,9 @@ class TermRepresentation extends AbstractEntityRepresentation
             ->from(\Thesaurus\Entity\Term::class, $alias)
             ->where($expr->eq('scheme', ':scheme'))
             ->setParameter('scheme', $this->resource->getScheme())
-            ->andWhere($expr->eq('id', 'root'))
+            ->andWhere($expr->isNull('broader'))
+            // Or:
+            // ->andWhere($expr->eq('id', 'root'))
             ->orderBy('position')
         ;
         $result = $connection->executeQuery($qb, $qb->getParameters())->fetchAll();
@@ -87,6 +98,8 @@ class TermRepresentation extends AbstractEntityRepresentation
     }
 
     /**
+     * Get the root term of this term.
+     *
      * @return \Thesaurus\Api\Representation\TermRepresentation
      */
     public function root()
@@ -97,6 +110,8 @@ class TermRepresentation extends AbstractEntityRepresentation
     }
 
     /**
+     * Check if this term is a root (top concept) in the scheme.
+     *
      * @return bool
      */
     public function isRoot()
@@ -105,6 +120,8 @@ class TermRepresentation extends AbstractEntityRepresentation
     }
 
     /**
+     * Get the broader term of this term.
+     *
      * @return \Thesaurus\Api\Representation\TermRepresentation|null
      */
     public function broader()
@@ -118,6 +135,8 @@ class TermRepresentation extends AbstractEntityRepresentation
     }
 
     /**
+     * Get the narrower terms of this term.
+     *
      * @return \Thesaurus\Api\Representation\TermRepresentation[]
      */
     public function narrowers()
@@ -131,6 +150,8 @@ class TermRepresentation extends AbstractEntityRepresentation
     }
 
     /**
+     * Get the sibling terms of this term (self not included).
+     *
      * @return \Thesaurus\Api\Representation\TermRepresentation[]
      */
     public function siblings()
@@ -141,6 +162,8 @@ class TermRepresentation extends AbstractEntityRepresentation
     }
 
     /**
+     * Get the sibling terms of this item (self included).
+     *
      * @return \Thesaurus\Api\Representation\TermRepresentation[]
      */
     public function siblingsOrSelf()
@@ -239,6 +262,56 @@ class TermRepresentation extends AbstractEntityRepresentation
     public function position()
     {
         return $this->resource->getPosition();
+    }
+
+    public function thumbnail()
+    {
+        return $this->item()->thumbnail();
+    }
+
+    public function title()
+    {
+        return $this->item()->getTitle();
+    }
+
+    public function values()
+    {
+        return $this->item()->values();
+    }
+
+    public function value($term, array $options = [])
+    {
+        return $this->item()->value($term, $options);
+    }
+
+    public function displayTitle($default = null)
+    {
+        return $this->item()->displayTitle($default);
+    }
+
+    public function displayDescription($default = null)
+    {
+        return $this->item()->displayDescription($default);
+    }
+
+    /**
+     * Currently, the term is manageable only as item.
+     *
+     * {@inheritDoc}
+     * @see \Omeka\Api\Representation\AbstractResourceRepresentation::adminUrl()
+     */
+    public function adminUrl($action = null, $canonical = false)
+    {
+        $url = $this->getViewHelper('Url');
+        return $url(
+            'admin/id',
+            [
+                'controller' => 'items',
+                'action' => $action,
+                'id' => $this->id(),
+            ],
+            ['force_canonical' => $canonical]
+        );
     }
 
     /**
