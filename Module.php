@@ -38,6 +38,8 @@ use Doctrine\ORM\Query\Expr\Join;
 use Generic\AbstractModule;
 use Zend\EventManager\Event;
 use Zend\EventManager\SharedEventManagerInterface;
+use Zend\Mvc\Controller\AbstractController;
+use Zend\View\Renderer\PhpRenderer;
 
 /**
  * Thesaurus
@@ -95,6 +97,62 @@ class Module extends AbstractModule
         //         [$this, 'filterSearchFilters']
         //     );
         // }
+    }
+
+    public function getConfigForm(PhpRenderer $renderer)
+    {
+        $message = new \Omeka\Stdlib\Message(
+            'The indexing must be run each time the structure of the thesaurus is updated.' // @translate
+        );
+        $messenger = new \Omeka\Mvc\Controller\Plugin\Messenger;
+        $messenger->addNotice($message);
+        return parent::getConfigForm($renderer);
+    }
+
+    public function handleConfigForm(AbstractController $controller)
+    {
+        $services = $this->getServiceLocator();
+        $form = $services->get('FormElementManager')->get(\Thesaurus\Form\ConfigForm::class);
+
+        $params = $controller->getRequest()->getPost();
+
+        $form->init();
+        $form->setData($params);
+        if (!$form->isValid()) {
+            $controller->messenger()->addErrors($form->getMessages());
+            return false;
+        }
+
+        $params = $form->getData();
+
+        $message = new \Omeka\Stdlib\Message(
+            'This indexing job is available via module %1$sBulk Check%2$s too.', // @translate
+            '<a href="https://github.com/Daniel-KM/Omeka-S-module-BulkCheck">',
+            '</a>'
+        );
+        $message->setEscapeHtml(false);
+        $controller->messenger()->addNotice($message);
+
+        if (empty($params['process']) || $params['process'] !== $controller->translate('Process')) {
+            return;
+        }
+
+        unset($params['csrf']);
+        unset($params['process']);
+
+        $dispatcher = $services->get(\Omeka\Job\Dispatcher::class);
+        $job = $dispatcher->dispatch(\Thesaurus\Job\Indexing::class, $params);
+        $message = new \Omeka\Stdlib\Message(
+            'Indexing terms in background (%1$sjob #%2$d%3$s)', // @translate
+            sprintf(
+                '<a href="%s">',
+                htmlspecialchars($controller->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))
+            ),
+            $job->getId(),
+            '</a>'
+        );
+        $message->setEscapeHtml(false);
+        $controller->messenger()->addSuccess($message);
     }
 
     /**

@@ -38,6 +38,7 @@ return [
     ],
     'form_elements' => [
         'invokables' => [
+            Form\ConfigForm::class => Form\ConfigForm::class,
             Form\ConvertForm::class => Form\ConvertForm::class,
             Form\ThesaurusFieldset::class => Form\ThesaurusFieldset::class,
         ],
@@ -93,6 +94,9 @@ return [
         ],
     ],
     'thesaurus' => [
+        // Keep empty config for automatic management.
+        'config' => [
+        ],
         'block_settings' => [
             'thesaurus' => [
                 'heading' => '',
