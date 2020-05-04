@@ -26,6 +26,14 @@ class TermRepresentation extends AbstractEntityRepresentation
         } else {
             $json['skos:topConceptOf'] = $scheme;
         }
+        $narrowers = $this->resource->getNarrowers();
+        if (count($narrowers)) {
+            $json['skos:narrowers'] = [];
+            $adapter = $this->getAdapter();
+            foreach ($narrowers as $entity) {
+                $json['skos:narrowers'][] = $adapter->getReference($entity);
+            }
+        }
         return $json;
     }
 
@@ -48,6 +56,37 @@ class TermRepresentation extends AbstractEntityRepresentation
     }
 
     /**
+     * @return \Thesaurus\Api\Representation\TermRepresentation[]
+     */
+    public function tops()
+    {
+        $adapter = $this->getAdapter();
+        $entityManager = $adapter->getEntityManager();
+        $connection = $entityManager->getConnection();
+        $qb = $entityManager->createQueryBuilder();
+
+        $isOldOmeka = \Omeka\Module::VERSION < 2;
+        $alias = $isOldOmeka ? $adapter->getEntityClass() : 'omeka_root';
+        $expr = $qb->expr();
+
+        $qb
+            ->select($alias)
+            ->from(\Thesaurus\Entity\Term::class, $alias)
+            ->where($expr->eq('scheme', ':scheme'))
+            ->setParameter('scheme', $this->resource->getScheme())
+            ->andWhere($expr->eq('id', 'root'))
+            ->orderBy('position')
+        ;
+        $result = $connection->executeQuery($qb, $qb->getParameters())->fetchAll();
+
+        $tops = [];
+        foreach ($result as $entity) {
+            $tops[$entity->getId()] = $adapter->getRepresentation($entity);
+        }
+        return $tops;
+    }
+
+    /**
      * @return \Thesaurus\Api\Representation\TermRepresentation
      */
     public function root()
@@ -55,6 +94,14 @@ class TermRepresentation extends AbstractEntityRepresentation
         $root = $this->resource->getRoot();
         return $this->getAdapter()
             ->getRepresentation($root);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRoot()
+    {
+        return $this->resource->getRoot()->getId() === $this->id();
     }
 
     /**
@@ -84,10 +131,193 @@ class TermRepresentation extends AbstractEntityRepresentation
     }
 
     /**
+     * @return \Thesaurus\Api\Representation\TermRepresentation[]
+     */
+    public function siblings()
+    {
+        $siblingsOrSelf = $this->siblingsOrSelf();
+        unset($siblingsOrSelf[$this->resource->getId()]);
+        return $siblingsOrSelf;
+    }
+
+    /**
+     * @return \Thesaurus\Api\Representation\TermRepresentation[]
+     */
+    public function siblingsOrSelf()
+    {
+        $result = [];
+        $adapter = $this->getAdapter();
+        $broader = $this->resource->getBroader();
+        if ($broader) {
+            $siblingsOrSelf = $broader->getNarrowers();
+            foreach ($siblingsOrSelf as $entity) {
+                $result[$entity->getId()] = $adapter->getRepresentation($entity);
+            }
+            return $result;
+        } else {
+            return $this->tops() ;
+        }
+    }
+
+    /**
+     * Get the list of ascendants of this term, from closest to top term.
+     *
+     * @return TermRepresentation[]
+     */
+    public function ascendants()
+    {
+        return $this->ancestors($this);
+    }
+
+    /**
+     * Get the list of ascendants of this term, from self to top term.
+     *
+     * @return TermRepresentation[]
+     */
+    public function ascendantsOrSelf()
+    {
+        return [$this->id() => $this] + $this->ascendants();
+    }
+
+    /**
+     * Get the list of descendants of this term.
+     *
+     * @return TermRepresentation[]
+     */
+    public function descendants()
+    {
+        return $this->listDescendants($this);
+    }
+
+    /**
+     * Get the list of descendants of this term, with self last.
+     *
+     * @return TermRepresentation[]
+     */
+    public function descendantsOrSelf()
+    {
+        $list = $this->listDescendants($this);
+        $list[$this->id()] = $this;
+        return $list;
+    }
+
+    /**
+     * Get the hierarchy of this term from the root (top term).
+     *
+     * @return array
+     */
+    public function tree()
+    {
+        $result = [];
+        foreach ($this->tops() as $term) {
+            $result[$term->id()] = [
+                'self' => $term,
+                'children' => $this->recursiveBranch($term),
+            ];
+        }
+        return $result;
+    }
+
+    /**
+     * Get the hierarchy branch of this term, self included.
+     *
+     * @return array
+     */
+    public function branch()
+    {
+        $result = [];
+        $result[$this->id()] = [
+            'self' => $this,
+            'children' => $this->recursiveBranch($this),
+        ];
+        return $result;
+    }
+
+    /**
      * @return int
      */
     public function position()
     {
         return $this->resource->getPosition();
+    }
+
+    /**
+     * Recursive method to get the ancestors of a term.
+     *
+     * @param TermRepresentation $term
+     * @param array $list Internal param for recursive process.
+     * @param int $level
+     * @return TermRepresentation[]
+     */
+    protected function ancestors(TermRepresentation $term, array $list = [], $level = 0)
+    {
+        if ($level > $this->maxAncestors) {
+            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
+                'There cannot be more than %d ancestors.', // @translate
+                $this->maxAncestors
+            ));
+        }
+        $parent = $term->broader();
+        if ($parent) {
+            $list[$parent->id()] = $parent;
+            return $this->ancestors($parent, $list);
+        }
+        return $list;
+    }
+
+    /**
+     * Recursive method to get the descendants of a term.
+     *
+     * @param TermRepresentation $item
+     * @param array $list Internal param for recursive process.
+     * @param int $level
+     * @return TermRepresentation[]
+     */
+    protected function listDescendants(TermRepresentation $term, array $list = [], $level = 0)
+    {
+        if ($level > $this->maxAncestors) {
+            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
+                'There cannot be more than %d levels of descendants.', // @translate
+                $this->maxAncestors
+            ));
+        }
+        $children = $term->narrowers();
+        foreach ($children as $child) {
+            $id = $child->id();
+            if (!isset($list[$id])) {
+                $list[$id] = $child;
+                $list += $this->listDescendants($child, $list, $level + 1);
+            }
+        }
+        return $list;
+    }
+
+    /**
+     * Recursive method to get the descendant tree of a term.
+     *
+     * @param TermRepresentation $term
+     * @param array $branch Internal param for recursive process.
+     * @param int $level
+     * @return array
+     */
+    protected function recursiveBranch(TermRepresentation $term, array $branch = [], $level = 0)
+    {
+        if ($level > $this->maxAncestors) {
+            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
+                'There cannot be more than %d levels of descendants.', // @translate
+                $this->maxAncestors
+            ));
+        }
+        $children = $term->narrowers();
+        foreach ($children as $child) {
+            $id = $child->id();
+            if (!isset($branch[$id])) {
+                $branch[$id] = [
+                    'self' => $child,
+                    'children' => $this->recursiveBranch($child, [], $level + 1),
+                ];
+            }
+        }
+        return $branch;
     }
 }
