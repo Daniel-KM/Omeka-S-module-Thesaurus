@@ -17,6 +17,13 @@ class Indexing extends AbstractJob
     const BATCH_SIZE = 100;
 
     /**
+     * Maximum ancestor to avoid infinite loops.
+     *
+     * @var int
+     */
+    protected $maxAncestors = 100;
+
+    /**
      * @var \Zend\Log\Logger
      */
     protected $logger;
@@ -60,7 +67,6 @@ class Indexing extends AbstractJob
         $this->termRepository = $this->entityManager->getRepository(\Thesaurus\Entity\Term::class);
 
         $this->api = $services->get('Omeka\ApiManager');
-        $this->thesaurus = $services->get('ControllerPluginManager')->get('thesaurus');
 
         $conceptSchemeId = $this->api->search('resource_classes', ['term' => 'skos:ConceptScheme'])->getContent()[0]->id();
         $response = $this->api->search('items', ['resource_class_id' => $conceptSchemeId]);
@@ -124,15 +130,8 @@ class Indexing extends AbstractJob
         $this->resetThesaurus($scheme);
 
         // Get the tree from the values.
-        $thesaurus = $this->thesaurus;
-        $thesaurus($scheme);
-        $flatTree = $thesaurus->flatTree();
+        $flatTree = $this->flatTree($scheme);
         if (empty($flatTree)) {
-            $message = new Message(
-                'Thesaurus #%d has no terms.', // @translate
-                $scheme->id()
-            );
-            $this->logger->err($message);
             return false;
         }
 
@@ -216,5 +215,94 @@ class Indexing extends AbstractJob
             'DELETE FROM Thesaurus\Entity\Term term WHERE term.scheme = ' . $scheme->id()
        );
         $dql->execute();
+    }
+
+    /**
+     * Get all linked resources of this item for a term.
+     *
+     * @param ItemRepresentation $item
+     * @param string $term
+     * @return ItemRepresentation[]
+     */
+    protected function resourcesFromValue(ItemRepresentation $item, $term)
+    {
+        $result = [];
+        $values = $item->values();
+        if (isset($values[$term])) {
+            /** @var \Omeka\Api\Representation\ValueRepresentation $value */
+            foreach ($values[$term]['values'] as $value) {
+                if (in_array($value->type(), ['resource', 'resource:item'])) {
+                    // Manage private resources.
+                    if ($resource = $value->valueResource()) {
+                        // Manage duplicates.
+                        $result[$resource->id()] = $resource;
+                    }
+                }
+            }
+        }
+        return array_values($result);
+    }
+
+    /**
+     * Create an ordered flat thesaurus for a scheme.
+     *
+     * @param ItemRepresentation $scheme
+     * @return array
+     */
+    protected function flatTree(ItemRepresentation $scheme)
+    {
+        $tops = $this->resourcesFromValue($scheme, 'skos:hasTopConcept');
+        if (empty($tops)) {
+            $message = new Message(
+                'Thesaurus #%d has no top concepts.', // @translate
+                $scheme->id()
+            );
+            $this->logger->err($message);
+            return [];
+        }
+
+        $result = [];
+        foreach ($tops as $item) {
+            $result[$item->id()] = [
+                'self' => $item,
+                'level' => 0,
+            ];
+            $result = $this->recursiveFlatBranch($item, $result, 1);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Recursive method to get the flat descendant tree of an item.
+     *
+     * @param ItemRepresentation $item
+     * @param array $branch Internal param for recursive process.
+     * @param int $level
+     * @return array|false
+     */
+    protected function recursiveFlatBranch(ItemRepresentation $item, array $branch = [], $level = 0)
+    {
+        if ($level > $this->maxAncestors) {
+            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
+                'The term #%1$d has more than %2$d levels.', // @translate
+                $item->id(),
+                $this->maxAncestors
+            ));
+        }
+
+        $children = $this->resourcesFromValue($item, 'skos:narrower');
+        foreach ($children as $child) {
+            $id = $child->id();
+            if (!isset($branch[$id])) {
+                $branch[$id] = [
+                    'self' => $child,
+                    'level' => $level,
+                ];
+                $branch = $this->recursiveFlatBranch($child, $branch, $level + 1);
+            }
+        }
+
+        return $branch;
     }
 }
