@@ -11,12 +11,16 @@ $escape = $this->plugin('escapeHtml');
 $params = parse_ini_string($params);
 $item = empty($params['item'])
     ? null
-    : $this->api()->read('items', ['id' => $params['item']])->getContent();
+    : $this->api()->searchOne('items', ['id' => $params['item']])->getContent();
+$type = empty($params['type']) ? 'tree' : $params['type'];
+
 ?>
 
 <div class="block-simple">
     <?php if ($heading): ?>
     <h2><?= $escape($heading) ?></h2>
     <?php endif; ?>
-    <?= $this->thesaurus($item)->display('tree', ['title' => '']) ?>
+    <?php if ($item): ?>
+    <?= $this->thesaurus($item)->display($type, ['title' => '']) ?>
+    <?php endif; ?>
 </div>

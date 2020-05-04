@@ -1,0 +1,18 @@
+<?php
+/**
+ * @var \Zend\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\SitePageBlockRepresentation $block
+ * @var string $heading
+ * @var \Omeka\Api\Representation\ItemRepresentation $item
+ * @var string $type
+ * @var array $options
+ */
+
+?>
+
+<div class="block-thesaurus">
+    <?php if ($heading): ?>
+    <h2><?= $this->escapeHtml($heading) ?></h2>
+    <?php endif; ?>
+    <?= $this->thesaurus($item)->display($type, $options) ?>
+</div>

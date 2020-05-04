@@ -18,9 +18,15 @@ return [
             'thesaurus' => Service\ViewHelper\ThesaurusFactory::class,
         ],
     ],
+    'block_layouts' => [
+        'invokables' => [
+            'thesaurus' => Site\BlockLayout\Thesaurus::class,
+        ],
+    ],
     'form_elements' => [
         'invokables' => [
             Form\ConvertForm::class => Form\ConvertForm::class,
+            Form\ThesaurusFieldset::class => Form\ThesaurusFieldset::class,
         ],
     ],
     'controllers' => [
@@ -70,6 +76,20 @@ return [
                 'base_dir' => dirname(__DIR__) . '/language',
                 'pattern' => '%s.mo',
                 'text_domain' => null,
+            ],
+        ],
+    ],
+    'thesaurus' => [
+        'block_settings' => [
+            'thesaurus' => [
+                'heading' => '',
+                'item' => '',
+                'type' => 'tree',
+                'link' => 'both',
+                'term' => 'dcterms:subject',
+                'hideIfEmpty' => false,
+                'expanded' => 0,
+                'template' => '',
             ],
         ],
     ],
