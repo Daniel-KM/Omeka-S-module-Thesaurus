@@ -405,7 +405,7 @@ class Thesaurus extends AbstractPlugin
     {
         $result = [];
         foreach ($this->tops() as $item) {
-            $result[] = [
+            $result[$item->id()] = [
                 'self' => $item,
                 'children' => $this->recursiveBranch($item),
             ];
@@ -421,7 +421,7 @@ class Thesaurus extends AbstractPlugin
     public function branch()
     {
         $result = [];
-        $result[] = [
+        $result[$this->item->id()] = [
             'self' => $this->item,
             'children' => $this->recursiveBranch($this->item),
         ];
@@ -485,7 +485,7 @@ class Thesaurus extends AbstractPlugin
                 }
             }
         }
-        return array_values($result);
+        return $result;
     }
 
     /**
