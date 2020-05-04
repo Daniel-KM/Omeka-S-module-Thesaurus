@@ -257,6 +257,41 @@ class TermRepresentation extends AbstractEntityRepresentation
     }
 
     /**
+     * Get the flat hierarchy of this term from the root (top term).
+     *
+     * @return array
+     */
+    public function flatTree()
+    {
+        $result = [];
+        foreach ($this->tops() as $term) {
+            $result[$term->id()] = [
+                'self' => $term,
+                'level' => 0,
+            ];
+            $result = $this->recursiveFlatBranch($term, $result, 1);
+        }
+        return $result;
+    }
+
+    /**
+     * Get the flat hierarchy branch of this term, self included.
+     *
+     * @return array
+     */
+    public function flatBranch()
+    {
+        $result = [];
+        $result[$this->id()] = [
+            'self' => $this,
+            'level' => 0,
+        ];
+        return $this->recursiveFlatBranch($this, $result, 1);
+    }
+
+    /**
+     * @todo Remove term position?
+     *
      * @return int
      */
     public function position()
@@ -389,6 +424,36 @@ class TermRepresentation extends AbstractEntityRepresentation
                     'self' => $child,
                     'children' => $this->recursiveBranch($child, [], $level + 1),
                 ];
+            }
+        }
+        return $branch;
+    }
+
+    /**
+     * Recursive method to get the flat descendant tree of an term.
+     *
+     * @param TermRepresentation $term
+     * @param array $branch Internal param for recursive process.
+     * @param int $level
+     * @return array
+     */
+    protected function recursiveFlatBranch(TermRepresentation $term, array $branch = [], $level = 0)
+    {
+        if ($level > $this->maxAncestors) {
+            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
+                'There cannot be more than %d levels of descendants.', // @translate
+                $this->maxAncestors
+            ));
+        }
+        $children = $term->narrowers();
+        foreach ($children as $child) {
+            $id = $child->id();
+            if (!isset($branch[$id])) {
+                $branch[$id] = [
+                    'self' => $child,
+                    'level' => $level,
+                ];
+                $branch = $this->recursiveFlatBranch($child, $branch, $level + 1);
             }
         }
         return $branch;
