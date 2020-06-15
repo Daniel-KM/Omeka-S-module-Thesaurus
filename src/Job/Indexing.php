@@ -165,7 +165,7 @@ class Indexing extends AbstractJob
                         $scheme->id(),
                         $concept['self']->id()
                     );
-                    $this->logger->error($message);
+                    $this->logger->err($message);
                     $this->resetThesaurus($scheme);
                     return;
                 } else {
