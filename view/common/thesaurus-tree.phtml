@@ -30,7 +30,7 @@ $linkTerm = $this->linkTerm($options);
 
 <div class="thesaurus thesaurus-tree <?= $options['class'] ?>">
     <h4><?= $title ?></h4>
-    <?php if (empty($data)): ?>
+    <?php if (!count($data)): ?>
     <p>
         <?= $translate('No concept.') ?>
     </p>

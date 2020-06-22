@@ -11,6 +11,7 @@ class ThesaurusFactory implements FactoryInterface
     {
         return new Thesaurus(
             $services->get('Omeka\EntityManager'),
+            $services->get('Omeka\ApiAdapterManager')->get('items'),
             $services->get('ControllerPluginManager')->get('api')
         );
     }

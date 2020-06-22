@@ -17,9 +17,24 @@ class LinkTerm extends AbstractHelper
     protected $templateUrl;
 
     /**
+     * @var string
+     */
+    protected $templateResourceUrl;
+
+    /**
      * @var \Omeka\View\Helper\Hyperlink
      */
     protected $hyperlink;
+
+    /**
+     * @var \Zend\View\Helper\Url
+     */
+    protected $url;
+
+    /**
+     * @var \Omeka\View\Helper\Api
+     */
+    protected $api;
 
     /**
      * Display a link to a term via a prepared query for performance.
@@ -32,11 +47,18 @@ class LinkTerm extends AbstractHelper
     public function __invoke(array $options = [])
     {
         $view = $this->getView();
+        $plugins = $view->getHelperPluginManager();
+        $this->hyperlink = $plugins->get('hyperlink');
+        $this->url = $plugins->get('url');
+        $this->api = $plugins->get('api');
+        $translate = $plugins->get('translate');
+        $urlHelper = $this->url;
+        $currentSiteSlug = $this->currentSite()->slug();
 
         $this->options = $options + [
             'link' => 'both',
             'term' => 'dcterms:subject',
-            'browseString' => $view->translate('browse'), // @translate
+            'browseString' => $translate('browse'), // @translate
         ];
 
         $query = [
@@ -48,9 +70,10 @@ class LinkTerm extends AbstractHelper
                 ],
             ],
         ];
-        $this->templateUrl = $view->url('site/resource', ['site-slug' => $this->currentSite()->slug(), 'controller' => 'item'], ['query' => $query], false);
+        $this->templateUrl = $urlHelper('site/resource', ['site-slug' => $currentSiteSlug, 'controller' => 'item'], ['query' => $query], false);
 
-        $this->hyperlink = $view->plugin('hyperlink');
+        $this->templateResourceUrl = $urlHelper('site/resource-id', ['site-slug' => $currentSiteSlug, 'controller' => 'item', 'id' => 0]);
+        $this->templateResourceUrl = mb_substr($this->templateResourceUrl, 0, mb_strlen($this->templateResourceUrl) - 1);
 
         return $this;
     }
@@ -58,23 +81,80 @@ class LinkTerm extends AbstractHelper
     /**
      * Display data according to options.
      *
-     * @param ItemRepresentation $data
+     * @param ItemRepresentation|array $data
      * @return string
      */
-    public function render(ItemRepresentation $data)
+    public function render($data)
     {
+        return is_object($data)
+            ? $this->renderItem($data)
+            : $this->renderData($data);
+    }
+
+    /**
+     * Helper to get the item representation from item data.
+     *
+     * It may be used to translate a term, waiting for a full implementation of
+     * the internationalisation of  the title.
+     *
+     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::itemFromData()
+     * @param array $itemData
+     * @return ItemRepresentation|null
+     */
+    public function itemFromData(array $itemData = null)
+    {
+        return $itemData
+            ? $this->api->searchOne('items', ['id' => $itemData['id']], ['initialize' => false, 'finalize' => false])->getContent()
+            : null;
+    }
+
+    /**
+     * Display term data according to options.
+     *
+     * @param array $termData
+     * @return string
+     */
+    protected function renderData(array $termData)
+    {
+        /** @var \Omeka\Api\Representation\ItemRepresentation $item */
         switch ($this->options['link']) {
             case 'term':
-                return $data->link($data->displayTitle());
+                return $this->hyperlink->raw($termData['title'], $this->templateResourceUrl . $termData['id']);
             case 'resource':
-                return $this->hyperlink->raw($data->displayTitle(), str_replace('__link_term_id__', $data->id(), $this->templateUrl));
+                return $this->hyperlink->raw($termData['title'], str_replace('__link_term_id__', $termData['id'], $this->templateUrl));
             case 'none':
-                return $data->displayTitle();
+                return $termData['title'];
             case 'both':
             default:
-                return $data->link($data->displayTitle())
+                return $this->hyperlink->raw($termData['title'], $this->templateResourceUrl . $termData['id'])
                     . ' ('
-                    . $this->hyperlink->raw($this->options['browseString'], str_replace('__link_term_id__', $data->id(), $this->templateUrl))
+                    . $this->hyperlink->raw($this->options['browseString'], str_replace('__link_term_id__', $termData['id'], $this->templateUrl))
+                    . ')';
+        }
+    }
+
+    /**
+     * Display term item according to options.
+     *
+     * @deprecated
+     * @param ItemRepresentation $item
+     * @return string
+     */
+    protected function renderItem(ItemRepresentation $item)
+    {
+        /** @var \Omeka\Api\Representation\ItemRepresentation $item */
+        switch ($this->options['link']) {
+            case 'term':
+                return $item->link($item->displayTitle());
+            case 'resource':
+                return $this->hyperlink->raw($item->displayTitle(), str_replace('__link_term_id__', $item->id(), $this->templateUrl));
+            case 'none':
+                return $item->displayTitle();
+            case 'both':
+            default:
+                return $item->link($item->displayTitle())
+                    . ' ('
+                    . $this->hyperlink->raw($this->options['browseString'], str_replace('__link_term_id__', $item->id(), $this->templateUrl))
                     . ')';
         }
     }

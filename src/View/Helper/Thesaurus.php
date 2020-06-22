@@ -43,6 +43,35 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
+     * If true, return item representations, else  a small array of term data.
+     *
+     * The method scheme() always returns an item.
+     * It is not recommended to return items with big thesaurus.
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::setReturnItem()
+     * @deprecated Use itemFromData() instead, in particular for big thesaurus.
+     * @param boolean $returnItem
+     * @return \Thesaurus\Mvc\Controller\Plugin\Thesaurus
+     */
+    public function setReturnItem($returnItem = false)
+    {
+        $this->thesaurus->setReturnItem();
+        return $this;
+    }
+
+    /**
+     * Helper to get the item representation from item data.
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::itemFromData()
+     * @param array $itemData
+     * @return ItemRepresentation|null
+     */
+    public function itemFromData(array $itemData = null)
+    {
+        return $this->thesaurus->itemFromData($itemData);
+    }
+
+    /**
      * This item is a skos item if it has at a skos class or a skos property.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isSkos()
@@ -309,11 +338,14 @@ class Thesaurus extends AbstractHelper
      * "ascendants", or "descendants" (list), or "tree" or "branch" (tree), or
      * "flatTree" or "flatBranch" (flat tree).
      * @param array $options Options for the partial. Managed default are
-     * "title", "link", "term", "hideIfEmpty", "class", "expanded", "partial".
+     * "title", "link", "term", "hideIfEmpty", "class", "expanded", "partial",
+     * "returnItem".
      * @return string
      */
     public function display($typeOrData, array $options = [])
     {
+        $this->thesaurus->setReturnItem(!empty($options['returnItem']));
+
         $type = $data = $typeOrData;
         if (is_string($typeOrData)) {
             $partialTypes = [
@@ -363,6 +395,7 @@ class Thesaurus extends AbstractHelper
             'hideIfEmpty' => false,
             'class' => '',
             'expanded' => 0,
+            'returnItem' => false,
         ];
 
         return $this->getView()->partial($partial, [

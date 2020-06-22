@@ -44,7 +44,7 @@ $linkTerm = $this->linkTerm($options);
     <?php else: ?>
     <ul>
         <?php foreach ($data as $concept): ?>
-        <?php $isItem = $concept->id() === $itemId; ?>
+        <?php $isItem = (is_object($concept) ? $concept->id() : $concept['id']) === $itemId; ?>
         <li<?php if ($isItem) echo ' class="active"'; ?>><?= $linkTerm->render($concept) ?></li>
         <?php endforeach; ?>
     </ul>
