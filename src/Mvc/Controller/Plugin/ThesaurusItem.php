@@ -8,31 +8,17 @@ use Zend\Mvc\Controller\Plugin\AbstractPlugin;
 
 /**
  * @todo Implement a tree iterator.
+ * Methods that may return many items may get an out of memory error in case of
+ * a big thesaurus (more than 1000 terms). Use Thesaurus instead.
  */
-class Thesaurus extends AbstractPlugin
+class ThesaurusItem extends AbstractPlugin
 {
     protected $maxAncestors = 100;
 
-    const VOCABULARY_NAMESPACE = 'http://www.w3.org/2004/02/skos/core#';
-    const VOCABULARY_PREFIX = 'skos';
     const ROOT_CLASS = 'skos:ConceptScheme';
     const ITEM_CLASS = 'skos:Concept';
     const PARENT_TERM = 'skos:broader';
     const CHILD_TERM = 'skos:narrower';
-
-    /**
-     * @var array
-     */
-    protected $terms = [];
-
-    /**
-     * Cache all parents, children and titles of all terms, by id.
-     *
-     * @todo Check internationalized title.
-     *
-     * @var array
-     */
-    protected $structure = [];
 
     /**
      * @var ItemRepresentation
@@ -92,21 +78,15 @@ class Thesaurus extends AbstractPlugin
     /**
      * Manage a thesaurus.
      *
+     * @todo Build the lists and the tree without loading items.
+     *
      * @param ItemRepresentation $item
      * @return self
      */
     public function __invoke(ItemRepresentation $item)
     {
         $this->item = $item;
-        $this->scheme = null;
-        $this->isSkos = null;
-        $this->isScheme = null;
-        $this->isConcept = null;
-        $this->isCollection = null;
-        $this->isOrderedCollection = null;
-        return $this
-            ->cacheTerms()
-            ->cacheStructure();
+        return $this;
     }
 
     /**
@@ -695,175 +675,5 @@ class Thesaurus extends AbstractPlugin
             }
         }
         return $branch;
-    }
-
-    /**
-     * @return self
-     */
-    protected function cacheTerms()
-    {
-        if (count($this->terms)) {
-            return $this;
-        }
-
-        $this->terms = [
-            'class' => [],
-            'property' => [],
-        ];
-        $values = $this->api
-            ->search('resource_classes', ['vocabulary_prefix' => self::VOCABULARY_PREFIX])
-            ->getContent();
-        foreach ($values as $value) {
-            $this->terms['class'][$value->term()] = $value->id();
-        }
-
-        $values = $this->api
-            ->search('properties', ['vocabulary_prefix' => self::VOCABULARY_PREFIX])
-            ->getContent();
-        foreach ($values as $value) {
-            $this->terms['property'][$value->term()] = $value->id();
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return self
-     */
-    protected function cacheStructure()
-    {
-        $this->structure = [];
-
-        // Get thesaurus.
-        if (!$this->scheme()) {
-            $this->isSkos = false;
-            $this->isScheme = false;
-            $this->isConcept = false;
-            $this->isCollection = false;
-            $this->isOrderedCollection = false;
-            return $this;
-        }
-
-        // Get all ids via api.
-        // This allows to check visibility and to get the full list of concepts.
-        // The validity of top concepts is not checked.
-        // TODO Check if it is useful to check visibility here.
-        $concepts = $this->api
-            ->search('items',
-                [
-                    'resource_class_id' => [
-                        $this->terms['class']['skos:Concept'],
-                    ],
-                    'property' => [
-                        [
-                            'joiner' => 'and',
-                            'property' => $this->terms['property']['skos:inScheme'],
-                            'type' => 'res',
-                            'text' => $this->scheme->id(),
-                        ],
-                    ],
-                ],
-                [
-                    'initialize' => false,
-                    'returnScalar' => 'id',
-                ]
-            )
-            ->getContent();
-        // TODO This check is useless: there is at least the item, else there is an issue (item is not visible?).
-        if (!count($concepts)) {
-            return $this;
-        }
-
-        // TODO Add the root and siblings.
-        $this->structure = array_fill_keys($concepts, ['id' => null, 'title' => null, 'top' => false, 'parent' => null, 'children' => []]);
-
-        $qb = $this->entityManager->createQueryBuilder();
-        $expr = $qb->expr();
-
-        // Get all titles.
-        $qb
-            ->select([
-                'item.id',
-                // Title is a resource key that is automatically managed by doctrine.
-                'item.title',
-            ])
-            ->from(\Omeka\Entity\Item::class, 'item')
-            ->leftJoin(\Omeka\Entity\Value::class, 'value', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('value.property', ':propertyInScheme'))
-            ->andWhere($expr->eq('item.resourceClass', ':concept'))
-            // Do not put in left join.
-            ->andWhere($expr->eq('value.valueResource', ':scheme'))
-            ->groupBy('item.id')
-            ->addOrderBy('item.id', 'ASC')
-            ->setParameters([
-                'propertyInScheme' => $this->terms['property']['skos:inScheme'],
-                'scheme' => $this->scheme->id(),
-                'concept' => $this->terms['class']['skos:Concept'],
-            ])
-        ;
-        $titles = array_column($qb->getQuery()->getScalarResult(), 'title', 'id');
-
-        // Get all parents.
-        $qb = $this->entityManager->createQueryBuilder()
-            ->select([
-                'item.id',
-                // There is only zero or one parent, but this is a grouped query.
-                'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource)) AS ids',
-            ])
-            ->from(\Omeka\Entity\Item::class, 'item')
-            ->leftJoin(\Omeka\Entity\Value::class, 'value', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('value.property', ':propertyInScheme'))
-            ->andWhere($expr->eq('item.resourceClass', ':concept'))
-            ->andWhere($expr->eq('value.valueResource', ':scheme'))
-            ->leftJoin(\Omeka\Entity\Value::class, 'value_list', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('value_list.property', ':propertyBroader'))
-            ->andWhere($expr->eq('value_list.resource', 'item.id'))
-            ->groupBy('item.id')
-            ->addOrderBy('item.id', 'ASC')
-            ->setParameters([
-                'propertyInScheme' => $this->terms['property']['skos:inScheme'],
-                'propertyBroader' => $this->terms['property']['skos:broader'],
-                'concept' => $this->terms['class']['skos:Concept'],
-                'scheme' => $this->scheme->id(),
-            ])
-        ;
-        $parents = array_column($qb->getQuery()->getScalarResult(), 'ids', 'id');
-
-        // Get all children.
-        $qb = $this->entityManager->createQueryBuilder()
-            ->select([
-                'item.id',
-                'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource)) AS ids',
-            ])
-            ->from(\Omeka\Entity\Item::class, 'item')
-            ->leftJoin(\Omeka\Entity\Value::class, 'value', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('value.property', ':propertyInScheme'))
-            ->andWhere($expr->eq('item.resourceClass', ':concept'))
-            ->andWhere($expr->eq('value.valueResource', ':inScheme'))
-            ->leftJoin(\Omeka\Entity\Value::class, 'value_list', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('value_list.property', ':propertyNarrower'))
-            ->andWhere($expr->eq('value_list.resource', 'item.id'))
-            ->groupBy('item.id')
-            ->addOrderBy('item.id', 'ASC')
-            ->setParameters([
-                'propertyInScheme' => $this->terms['property']['skos:inScheme'],
-                'propertyNarrower' => $this->terms['property']['skos:narrower'],
-                'concept' => $this->terms['class']['skos:Concept'],
-                'inScheme' => $this->scheme->id(),
-            ])
-        ;
-        $children = array_column($qb->getQuery()->getScalarResult(), 'ids', 'id');
-
-        foreach ($this->structure as $id => &$value) {
-            $value['id'] = $id;
-            if (array_key_exists($id, $titles)) {
-                $value['title'] = $titles[$id];
-            }
-            if (array_key_exists($id, $parents)) {
-                $value['parent'] = (int) strtok($parents[$id], ',');
-            } else {
-                $value['top'] = true;
-            }
-            if (array_key_exists($id, $children)) {
-                $value['children'] = array_map('intval', explode(',', $children[$id]));
-            }
-        }
-
-        return $this;
     }
 }

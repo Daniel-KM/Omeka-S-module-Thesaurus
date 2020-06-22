@@ -29,6 +29,7 @@ return [
         ],
         'factories' => [
             'thesaurus' => Service\ViewHelper\ThesaurusFactory::class,
+            'thesaurusItem' => Service\ViewHelper\ThesaurusItemFactory::class,
         ],
     ],
     'block_layouts' => [
