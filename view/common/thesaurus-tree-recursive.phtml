@@ -12,7 +12,7 @@
     <?php foreach ($data as $current): ?>
     <li><?= $linkTerm->render($current['self']) ?>
         <?php if (!empty($current['children'])): ?>
-        <?= $this->partial('common/thesaurus-tree-recursive', ['data' => $current['children'], 'options' => $options, 'level' => $level + 1]) ?>
+        <?= $this->partial('common/thesaurus-tree-recursive', ['data' => $current['children'], 'options' => $options, 'linkTerm' => $linkTerm, 'level' => $level + 1]) ?>
         <?php endif; ?>
    </li>
    <?php endforeach; ?>
