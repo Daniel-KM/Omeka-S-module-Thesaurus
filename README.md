@@ -127,8 +127,6 @@ item id of the scheme.
 TODO
 ----
 
-* Finalize optimization of the structure building via direct queries to the
-  database. See module EAD.
 * Manage terms as a full resources, separetly from items (like Annotation).
 * Manage representation when a term belongs to multiple thesaurus? Probably
   useless with association.
