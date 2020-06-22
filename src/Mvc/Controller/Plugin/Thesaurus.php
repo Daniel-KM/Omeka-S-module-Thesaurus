@@ -221,7 +221,7 @@ class Thesaurus extends AbstractPlugin
         if ($this->isSkos()) {
             $scheme = $this->scheme();
             if ($scheme) {
-                return $this->resourcesFromValue($this->item, 'skos:hasTopConcept');
+                return $this->resourcesFromValue($this->scheme, 'skos:hasTopConcept');
             }
         }
         return [];
@@ -303,7 +303,7 @@ class Thesaurus extends AbstractPlugin
         if ($this->isRoot()) {
             $scheme = $this->scheme();
             if ($scheme) {
-                $result = $scheme->tops();
+                $result = $this->tops();
             } else {
                 return $result;
             }
@@ -339,7 +339,7 @@ class Thesaurus extends AbstractPlugin
         if ($this->isRoot()) {
             $scheme = $this->scheme();
             if ($scheme) {
-                $result = $scheme->tops();
+                $result = $this->tops();
             } else {
                 return $result;
             }
