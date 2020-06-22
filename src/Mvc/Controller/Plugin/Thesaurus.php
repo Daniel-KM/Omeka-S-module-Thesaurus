@@ -957,7 +957,7 @@ class Thesaurus extends AbstractPlugin
         $qb = $this->entityManager->createQueryBuilder()
             ->select([
                 'item.id',
-                'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource)) AS ids',
+                'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource) ORDER BY value_list.id) AS ids',
             ])
             ->from(\Omeka\Entity\Item::class, 'item')
             ->leftJoin(\Omeka\Entity\Value::class, 'value', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('value.property', ':propertyInScheme'))
