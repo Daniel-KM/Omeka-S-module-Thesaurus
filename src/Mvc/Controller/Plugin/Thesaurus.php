@@ -567,6 +567,61 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
+     * Get the list of terms or items by id from the root (top concept).
+     *
+     * This output is recommended for a select element form (terms).
+     *
+     * @param string $indent String like "- " to prepend to terms to show level.
+     * @return array
+     */
+    public function listTree($indent = '')
+    {
+        $result = $this->flatTree();
+        return $this->list($result, $indent);
+    }
+
+    /**
+     * Get the list of terms or items by id from this item.
+     *
+     * This output is recommended for a select element form (terms).
+     *
+     * @param string $indent String like "- " to prepend to terms to show level.
+     * @return array
+     */
+    public function listBranch($indent = '')
+    {
+        $result = $this->flatBranch();
+        return $this->list($result, $indent);
+    }
+
+    /**
+     * Get the list of terms or items by id from item data.
+     *
+     * This output is recommended for a select element form (terms).
+     *
+     * @todo Add option group: Get tops terms as group for a grouped select.
+     *
+     * @param string $indent String like "- " to prepend to terms to show level.
+     * @return array
+     */
+    protected function list(array $list, $indent)
+    {
+        if ($this->returnItem) {
+            return array_combine(array_keys($list), array_column($list, 'self'));
+        }
+        if (mb_strlen($indent)) {
+            return array_map(function ($term) use ($indent) {
+                return $term['level']
+                    ? str_repeat($indent, $term['level']) . ' ' . $term['self']['title']
+                    : $term['self']['title'];
+            }, $list);
+        }
+        return array_map(function ($v) {
+            return $v['self']['title'];
+        }, $list);
+    }
+
+    /**
      * Get the name of the current resource class.
      *
      * @param ItemRepresentation $item
