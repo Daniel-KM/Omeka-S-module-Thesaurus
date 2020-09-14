@@ -14,6 +14,21 @@ class ThesaurusSelect extends Select
      */
     protected $api;
 
+    /**
+     * Make the select optional when it is not required.
+     *
+     * @link https://github.com/zendframework/zendframework/issues/2761#issuecomment-14488216
+     *
+     * {@inheritDoc}
+     * @see \Zend\Form\Element\Select::getInputSpecification()
+     */
+    public function getInputSpecification()
+    {
+        $inputSpecification = parent::getInputSpecification();
+        $inputSpecification['required'] = !empty($this->attributes['required']);
+        return $inputSpecification;
+    }
+
     public function setOptions($options)
     {
         parent::setOptions($options);
