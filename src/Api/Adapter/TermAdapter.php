@@ -124,7 +124,9 @@ class TermAdapter extends AbstractEntityAdapter
         }
     }
 
-    public function hydrate(Request $request, EntityInterface $entity,
+    public function hydrate(
+        Request $request,
+        EntityInterface $entity,
         ErrorStore $errorStore
     ) {
         /** @var \Thesaurus\Entity\Term $entity */

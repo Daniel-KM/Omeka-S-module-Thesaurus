@@ -141,8 +141,8 @@ class Thesaurus extends AbstractPlugin
      * The method scheme() always returns an item.
      * It is not recommended to return items with big thesaurus.
      *
-     * @deprecated Use itemFromData() instead, in particular for big thesaurus.
-     * @param boolean $returnItem
+     * @deprecated Use self::itemFromData() instead, in particular for big thesaurus.
+     * @param bool $returnItem
      * @return \Thesaurus\Mvc\Controller\Plugin\Thesaurus
      */
     public function setReturnItem($returnItem = false)
@@ -751,7 +751,7 @@ class Thesaurus extends AbstractPlugin
             throw new \Omeka\Api\Exception\BadResponseException(sprintf(
                 'There cannot be more than %d levels of descendants.', // @translate
                 $this->maxAncestors
-                ));
+            ));
         }
         $children = $this->children($itemData);
         foreach ($children as $child) {
@@ -876,7 +876,8 @@ class Thesaurus extends AbstractPlugin
         // The validity of top concepts is not checked.
         // TODO Check if it is useful to check visibility here.
         $concepts = $this->api
-            ->search('items',
+            ->search(
+                'items',
                 [
                     'resource_class_id' => [
                         $this->terms['class']['skos:Concept'],

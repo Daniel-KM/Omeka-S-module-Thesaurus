@@ -50,7 +50,7 @@ class Thesaurus extends AbstractHelper
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::setReturnItem()
      * @deprecated Use itemFromData() instead, in particular for big thesaurus.
-     * @param boolean $returnItem
+     * @param bool $returnItem
      * @return \Thesaurus\Mvc\Controller\Plugin\Thesaurus
      */
     public function setReturnItem($returnItem = false)

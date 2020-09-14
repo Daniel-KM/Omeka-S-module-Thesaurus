@@ -213,7 +213,7 @@ class Indexing extends AbstractJob
         // @see \Omeka\Job\BatchDelete
         $dql = $this->entityManager->createQuery(
             'DELETE FROM Thesaurus\Entity\Term term WHERE term.scheme = ' . $scheme->id()
-       );
+        );
         $dql->execute();
     }
 
