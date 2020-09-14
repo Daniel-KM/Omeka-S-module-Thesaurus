@@ -331,6 +331,34 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
+     * Get the list of terms or items by id from the root (top concept).
+     *
+     * This output is recommended for a select element form (terms).
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::listTree()
+     * @param array $options May be: Indent, prepend_id.
+     * @return array
+     */
+    public function listTree(array $options = null)
+    {
+        return $this->thesaurus->listTree($options);
+    }
+
+    /**
+     * Get the list of terms or items by id from this item.
+     *
+     * This output is recommended for a select element form (terms).
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::listBranch()
+     * @param array $options May be: Indent, prepend_id.
+     * @return array
+     */
+    public function listBranch(array $options = null)
+    {
+        return $this->thesaurus->listBranch($options);
+    }
+
+    /**
      * Display part of a thesaurus.
      *
      * @param string|array|ItemRepresentation $typeOrData Type may be "root" or

@@ -571,13 +571,13 @@ class Thesaurus extends AbstractPlugin
      *
      * This output is recommended for a select element form (terms).
      *
-     * @param string $indent String like "- " to prepend to terms to show level.
+     * @param array $options May be: Indent, prepend_id.
      * @return array
      */
-    public function listTree($indent = '')
+    public function listTree(array $options = null)
     {
         $result = $this->flatTree();
-        return $this->list($result, $indent);
+        return $this->list($result, is_null($options) ? [] : $options);
     }
 
     /**
@@ -585,13 +585,13 @@ class Thesaurus extends AbstractPlugin
      *
      * This output is recommended for a select element form (terms).
      *
-     * @param string $indent String like "- " to prepend to terms to show level.
+     * @param array $options May be: Indent, prepend_id.
      * @return array
      */
-    public function listBranch($indent = '')
+    public function listBranch(array $options = null)
     {
         $result = $this->flatBranch();
-        return $this->list($result, $indent);
+        return $this->list($result, is_null($options) ? [] : $options);
     }
 
     /**
@@ -601,24 +601,48 @@ class Thesaurus extends AbstractPlugin
      *
      * @todo Add option group: Get tops terms as group for a grouped select.
      *
-     * @param string $indent String like "- " to prepend to terms to show level.
+     * @param array $options Only valable for term output.
+     * - indent (string): String like "- " to prepend to terms to show level.
+     * - prepend_id (bool): Prepend the id of the terms.
+     * - max_length (int): Max size of the terms.
      * @return array
      */
-    protected function list(array $list, $indent)
+    protected function list(array $list, array $options)
     {
         if ($this->returnItem) {
             return array_combine(array_keys($list), array_column($list, 'self'));
         }
-        if (mb_strlen($indent)) {
-            return array_map(function ($term) use ($indent) {
-                return $term['level']
-                    ? str_repeat($indent, $term['level']) . ' ' . $term['self']['title']
-                    : $term['self']['title'];
+        $options += [
+            'indent' => '',
+            'prepend_id' => false,
+            'max_length' => 0,
+        ];
+        if (mb_strlen($options['indent'])) {
+            $indent = $options['indent'];
+            $list = array_map(function ($term) use ($indent) {
+                if ($term['level']) {
+                    $term['self']['title'] = str_repeat($indent, $term['level']) . ' ' . $term['self']['title'];
+                }
+                return $term;
             }, $list);
         }
-        return array_map(function ($v) {
-            return $v['self']['title'];
-        }, $list);
+        if ($options['prepend_id']) {
+            $list = array_map(function ($term) {
+                $term['self']['title'] = $term['self']['id'] . ': ' . $term['self']['title'];
+                return $term;
+            }, $list);
+        }
+        if ($options['max_length']) {
+            $maxLength = $options['max_length'];
+            $list = array_map(function ($term) use ($maxLength) {
+                return mb_substr($term['self']['title'], 0, $maxLength);
+            }, $list);
+        } else {
+            $list = array_map(function ($term) {
+                return $term['self']['title'];
+            }, $list);
+        }
+        return $list;
     }
 
     /**
