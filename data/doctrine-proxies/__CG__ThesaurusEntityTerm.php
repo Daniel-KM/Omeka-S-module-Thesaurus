@@ -191,12 +191,12 @@ class Term extends \Thesaurus\Entity\Term implements \Doctrine\ORM\Proxy\Proxy
     /**
      * {@inheritDoc}
      */
-    public function setitem(\Omeka\Entity\Item $item)
+    public function setItem(\Omeka\Entity\Item $item)
     {
 
-        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setitem', [$item]);
+        $this->__initializer__ && $this->__initializer__->__invoke($this, 'setItem', [$item]);
 
-        return parent::setitem($item);
+        return parent::setItem($item);
     }
 
     /**

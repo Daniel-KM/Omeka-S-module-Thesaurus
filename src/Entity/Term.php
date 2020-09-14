@@ -138,7 +138,7 @@ class Term extends AbstractEntity
      * @param Item $item
      * @return self
      */
-    public function setitem(Item $item)
+    public function setItem(Item $item)
     {
         $this->item = $item;
         return $this;
