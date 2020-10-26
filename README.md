@@ -9,8 +9,6 @@ thesaurus (ontology [skos]) to describe documents.
 
 The helpers are:
 - the skos ontology is included;
-- convert tool from a hierarchical list of descriptors to a flat list for [Custom vocab]
-  (deprecated);
 - a resource template to build the thesaurus as a list of items (recommended);
 - a view helper to display the tree of concepts in the theme, or part of it.
 - a block template to display the thesaurus as a tree (via module [Block Plus]).
@@ -36,53 +34,8 @@ See general end user documentation for [Installing a module].
 Usage
 -----
 
-This module can be used in two ways: the thesaurus can be a custom vocab or a
-list of items with ontology [skos].
-
-### Convert a thesaurus into a flat list
-
-**Warning**: This part of the module will be moved into another module in next
-version.
-
-The use of a thesaurus as a custom vocab allows to set it as subject in the
-resource template, so it helps to normalize the subjects.
-
-To convert a flat list into a flat thesaurus, just got to /admin/thesaurus/convert.
-
-The input file should be a hierarchical text, with tabulation that indicate the
-hierarchy:
-
-```
-Europe
-	France
-		Paris
-	United Kingdom
-		England
-			London
-Asia
-	Japan
-		Tokyo
-```
-
-Such a table can be created easily with a text editor or [LibreOffice] Calc
-(export as csv with tabulation as delimiter).
-
-The output will be a flat thesaurus:
-
-```
-Europe
-Europe :: France
-Europe :: France :: Paris
-Europe :: United Kingdom
-Europe :: United Kingdom :: England
-Europe :: United Kingdom :: England :: London
-Asia
-Asia :: Japan
-Asia :: Japan :: Tokyo
-```
-
-Then, you can add it as a custom vocab. In the theme, use the module [Metadata Browse]
-to create links automatically for the subjects.
+This module allows to manage concept as any other items and to use and to manage
+directly the terms of the ontology [skos].
 
 ### Use of concepts as related items
 
@@ -130,11 +83,11 @@ item id of the scheme.
 TODO
 ----
 
-* Manage terms as a full resources, separetly from items (like Annotation).
-* Manage representation when a term belongs to multiple thesaurus? Probably
+* [ ] Manage terms as a full resources, separetly from items (like Annotation)?
+* [ ] Manage representation when a term belongs to multiple thesaurus? Probably
   useless with association.
-* Implement a tree iterator in representation, plugin and helper.
-* Uninstall vocabulary and resources templates in not used.
+* [ ] Implement a tree iterator in representation, plugin and helper.
+* [ ] Uninstall vocabulary and resources templates if not used.
 
 
 Warning
