@@ -1,6 +1,9 @@
 Thesaurus (module for Omeka S)
 ==============================
 
+> __New versions of this module and support for Omeka S version 3.0 and above
+> are available on [GitLab], which seems to respect users and privacy better.__
+
 [Thesaurus] is a module for [Omeka S] that contains helpers to manage a standard
 thesaurus (ontology [skos]) to describe documents.
 
@@ -152,7 +155,7 @@ See online issues on the [module issues] page on GitHub.
 License
 -------
 
-This module is published under the [CeCILL v2.1] licence, compatible with
+This module is published under the [CeCILL v2.1] license, compatible with
 [GNU/GPL] and approved by [FSF] and [OSI].
 
 In consideration of access to the source code and the rights to copy, modify and
@@ -196,4 +199,5 @@ for the [Institut national d’histoire de l’art] (INHA).
 [OSI]: http://opensource.org
 [Ontologie du christianisme médiéval en images]: https://omci.inha.fr
 [Institut national d’histoire de l’art]: https://www.inha.fr
+[GitLab]: https://gitlab.com/Daniel-KM
 [Daniel-KM]: https://github.com/Daniel-KM "Daniel Berthereau"
