@@ -3,7 +3,7 @@ namespace Thesaurus\Service\ControllerPlugin;
 
 use Interop\Container\ContainerInterface;
 use Thesaurus\Mvc\Controller\Plugin\ThesaurusItem;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Laminas\ServiceManager\Factory\FactoryInterface;
 
 class ThesaurusItemFactory implements FactoryInterface
 {

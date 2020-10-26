@@ -3,7 +3,7 @@ namespace Thesaurus\View\Helper;
 
 use Omeka\Api\Representation\ItemRepresentation;
 use Thesaurus\Mvc\Controller\Plugin\Thesaurus as ThesaurusPlugin;
-use Zend\View\Helper\AbstractHelper;
+use Laminas\View\Helper\AbstractHelper;
 
 /**
  * @todo Implement a tree iterator.
@@ -443,6 +443,6 @@ class Thesaurus extends AbstractHelper
         $view = $this->getView();
         return isset($view->site)
             ? $view->site
-            : $view->getHelperPluginManager()->get('Zend\View\Helper\ViewModel')->getRoot()->getVariable('site');
+            : $view->getHelperPluginManager()->get('Laminas\View\Helper\ViewModel')->getRoot()->getVariable('site');
     }
 }

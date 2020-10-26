@@ -3,7 +3,7 @@ namespace Thesaurus\Service\ViewHelper;
 
 use Interop\Container\ContainerInterface;
 use Thesaurus\View\Helper\Thesaurus;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Laminas\ServiceManager\Factory\FactoryInterface;
 
 /**
  * Service factory for the Thesaurus view helper.

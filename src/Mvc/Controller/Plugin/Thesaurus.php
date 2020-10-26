@@ -5,7 +5,7 @@ use Doctrine\ORM\EntityManager;
 use Omeka\Api\Adapter\ItemAdapter;
 use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Mvc\Controller\Plugin\Api;
-use Zend\Mvc\Controller\Plugin\AbstractPlugin;
+use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
 
 /**
  * @todo Implement a tree iterator.

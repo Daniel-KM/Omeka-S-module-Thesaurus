@@ -59,7 +59,7 @@ return [
             'admin' => [
                 'child_routes' => [
                     'thesaurus' => [
-                        'type' => \Zend\Router\Http\Segment::class,
+                        'type' => \Laminas\Router\Http\Segment::class,
                         'options' => [
                             'route' => '/thesaurus[/:action]',
                             'constraints' => [

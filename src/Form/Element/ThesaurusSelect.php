@@ -5,7 +5,7 @@ namespace Thesaurus\Form\Element;
 use Omeka\Api\Exception\NotFoundException;
 use Omeka\Api\Manager as ApiManager;
 use Thesaurus\Mvc\Controller\Plugin\Thesaurus;
-use Zend\Form\Element\Select;
+use Laminas\Form\Element\Select;
 
 class ThesaurusSelect extends Select
 {
@@ -20,7 +20,7 @@ class ThesaurusSelect extends Select
      * @link https://github.com/zendframework/zendframework/issues/2761#issuecomment-14488216
      *
      * {@inheritDoc}
-     * @see \Zend\Form\Element\Select::getInputSpecification()
+     * @see \Laminas\Form\Element\Select::getInputSpecification()
      */
     public function getInputSpecification()
     {

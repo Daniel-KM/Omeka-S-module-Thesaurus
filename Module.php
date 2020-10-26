@@ -36,10 +36,10 @@ if (!class_exists(\Generic\AbstractModule::class)) {
 
 use Doctrine\ORM\Query\Expr\Join;
 use Generic\AbstractModule;
-use Zend\EventManager\Event;
-use Zend\EventManager\SharedEventManagerInterface;
-use Zend\Mvc\Controller\AbstractController;
-use Zend\View\Renderer\PhpRenderer;
+use Laminas\EventManager\Event;
+use Laminas\EventManager\SharedEventManagerInterface;
+use Laminas\Mvc\Controller\AbstractController;
+use Laminas\View\Renderer\PhpRenderer;
 
 /**
  * Thesaurus

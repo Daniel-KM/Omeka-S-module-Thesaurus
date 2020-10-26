@@ -2,8 +2,8 @@
 namespace Thesaurus\Form;
 
 use Omeka\Form\Element\PropertySelect;
-use Zend\Form\Element;
-use Zend\Form\Fieldset;
+use Laminas\Form\Element;
+use Laminas\Form\Fieldset;
 
 class ThesaurusFieldset extends Fieldset
 {

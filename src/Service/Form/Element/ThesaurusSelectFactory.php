@@ -4,7 +4,7 @@ namespace Thesaurus\Service\Form\Element;
 
 use Interop\Container\ContainerInterface;
 use Thesaurus\Form\Element\ThesaurusSelect;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Laminas\ServiceManager\Factory\FactoryInterface;
 
 class ThesaurusSelectFactory implements FactoryInterface
 {

@@ -2,7 +2,7 @@
 namespace Thesaurus\View\Helper;
 
 use Omeka\Api\Representation\ItemRepresentation;
-use Zend\View\Helper\AbstractHelper;
+use Laminas\View\Helper\AbstractHelper;
 
 class LinkTerm extends AbstractHelper
 {
@@ -27,7 +27,7 @@ class LinkTerm extends AbstractHelper
     protected $hyperlink;
 
     /**
-     * @var \Zend\View\Helper\Url
+     * @var \Laminas\View\Helper\Url
      */
     protected $url;
 
@@ -167,6 +167,6 @@ class LinkTerm extends AbstractHelper
         $view = $this->getView();
         return isset($view->site)
             ? $view->site
-            : $view->getHelperPluginManager()->get('Zend\View\Helper\ViewModel')->getRoot()->getVariable('site');
+            : $view->getHelperPluginManager()->get('Laminas\View\Helper\ViewModel')->getRoot()->getVariable('site');
     }
 }

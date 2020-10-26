@@ -24,7 +24,7 @@ class Indexing extends AbstractJob
     protected $maxAncestors = 100;
 
     /**
-     * @var \Zend\Log\Logger
+     * @var \Laminas\Log\Logger
      */
     protected $logger;
 
@@ -56,7 +56,7 @@ class Indexing extends AbstractJob
         $services = $this->getServiceLocator();
 
         // The reference id is the job id for now.
-        $referenceIdProcessor = new \Zend\Log\Processor\ReferenceId();
+        $referenceIdProcessor = new \Laminas\Log\Processor\ReferenceId();
         $referenceIdProcessor->setReferenceId('thesaurus/indexing/job_' . $this->job->getId());
 
         $this->logger = $services->get('Omeka\Logger');

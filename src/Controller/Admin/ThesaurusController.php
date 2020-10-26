@@ -3,8 +3,8 @@ namespace Thesaurus\Controller\Admin;
 
 use finfo;
 use Thesaurus\Form\ConvertForm;
-use Zend\Mvc\Controller\AbstractActionController;
-use Zend\View\Model\ViewModel;
+use Laminas\Mvc\Controller\AbstractActionController;
+use Laminas\View\Model\ViewModel;
 
 class ThesaurusController extends AbstractActionController
 {
@@ -178,14 +178,14 @@ class ThesaurusController extends AbstractActionController
      * @param string $filename
      * @param string $mediaType
      * @param string $mode "inline" or "attachment" (default).
-     * @return \Zend\Stdlib\ResponseInterface
+     * @return \Laminas\Stdlib\ResponseInterface
      */
     protected function outputStringAsFile($text, $filename = 'output.txt', $mediaType = 'text/plain', $mode = 'attachment')
     {
         $fileSize = strlen($text);
 
         // Write HTTP headers
-        /** @var \Zend\Stdlib\ResponseInterface $response */
+        /** @var \Laminas\Stdlib\ResponseInterface $response */
         $response = $this->getResponse();
         $headers = $response->getHeaders();
         $headers
