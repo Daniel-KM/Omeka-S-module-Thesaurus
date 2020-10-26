@@ -1,9 +1,11 @@
 <?php declare(strict_types=1);
+
 namespace Thesaurus\Controller\Admin;
 
 use finfo;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
+use Omeka\Stdlib\Message;
 use Thesaurus\Form\ConvertForm;
 
 class ThesaurusController extends AbstractActionController
@@ -64,10 +66,10 @@ class ThesaurusController extends AbstractActionController
                 sprintf('An error occurred when uploading the file.') // @translate
             );
         } elseif ($fileCheck === false) {
-            $this->messenger()->addError(
-                sprintf('Wrong media type ("%s") for file.', // @translate
-                    $file['type'])
-            );
+            $this->messenger()->addError(new Message(
+                'Wrong media type ("%s") for file.', // @translate
+                $file['type']
+            ));
         } elseif (empty($file['size'])) {
             $this->messenger()->addError(
                 sprintf('The file is empty.') // @translate
@@ -81,7 +83,7 @@ class ThesaurusController extends AbstractActionController
                 );
             } else {
                 $this->messenger()->addSuccess(
-                    'The file is successfully converted.'
+                    'The file is successfully converted.' // @translate
                 );
                 $filename = pathinfo($file['name'], PATHINFO_FILENAME)
                     . '.output'

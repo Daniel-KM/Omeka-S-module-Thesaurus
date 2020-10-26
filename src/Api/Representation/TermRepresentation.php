@@ -74,13 +74,11 @@ class TermRepresentation extends AbstractEntityRepresentation
         $connection = $entityManager->getConnection();
         $qb = $entityManager->createQueryBuilder();
 
-        $isOldOmeka = \Omeka\Module::VERSION < 2;
-        $alias = $isOldOmeka ? $adapter->getEntityClass() : 'omeka_root';
         $expr = $qb->expr();
 
         $qb
-            ->select($alias)
-            ->from(\Thesaurus\Entity\Term::class, $alias)
+            ->select('omeka_root')
+            ->from(\Thesaurus\Entity\Term::class, 'omeka_root')
             ->where($expr->eq('scheme', ':scheme'))
             ->setParameter('scheme', $this->resource->getScheme())
             ->andWhere($expr->isNull('broader'))

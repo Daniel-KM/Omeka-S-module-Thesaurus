@@ -39,22 +39,12 @@ class TermAdapter extends AbstractEntityAdapter
 
     public function buildQuery(QueryBuilder $qb, array $query): void
     {
-        $isOldOmeka = \Omeka\Module::VERSION < 2;
-        $alias = $isOldOmeka ? $this->getEntityClass() : 'omeka_root';
         $expr = $qb->expr();
 
-        if (isset($query['id'])) {
-            $qb->andWhere(
-                $expr->eq(
-                    $alias . '.id',
-                    $this->createNamedParameter($qb, $query['id'])
-                )
-            );
-        }
         if (isset($query['item'])) {
             $qb->andWhere(
                 $expr->eq(
-                    $alias . '.item',
+                    'omeka_root.item',
                     $this->createNamedParameter($qb, $query['item'])
                 )
             );
@@ -62,7 +52,7 @@ class TermAdapter extends AbstractEntityAdapter
         if (isset($query['scheme'])) {
             $qb->andWhere(
                 $expr->eq(
-                    $alias . '.scheme',
+                    'omeka_root.scheme',
                     $this->createNamedParameter($qb, $query['scheme'])
                 )
             );
@@ -70,7 +60,7 @@ class TermAdapter extends AbstractEntityAdapter
         if (isset($query['root'])) {
             $qb->andWhere(
                 $expr->eq(
-                    $alias . '.root',
+                    'omeka_root.root',
                     $this->createNamedParameter($qb, $query['root'])
                 )
             );
@@ -78,7 +68,7 @@ class TermAdapter extends AbstractEntityAdapter
         if (isset($query['broader'])) {
             $qb->andWhere(
                 $expr->eq(
-                    $alias . '.broader',
+                    'omeka_root.broader',
                     $this->createNamedParameter($qb, $query['broader'])
                 )
             );

@@ -175,8 +175,6 @@ class Module extends AbstractModule
             $adapter = $event->getTarget();
             $qb = $event->getParam('queryBuilder');
 
-            $isOldOmeka = \Omeka\Module::VERSION < 2;
-            $alias = $isOldOmeka ? $adapter->getEntityClass() : 'omeka_root';
             $expr = $qb->expr();
 
             $termAlias = $adapter->createAlias();
@@ -187,7 +185,7 @@ class Module extends AbstractModule
                     $termAlias,
                     \Doctrine\ORM\Query\Expr\Join::WITH,
                     $expr->andX(
-                        $expr->eq($termAlias . '.item', $alias),
+                        $expr->eq($termAlias . '.item', 'omeka_root'),
                         $expr->eq($termAlias . '.scheme', (int) $query['sort_thesaurus'])
                     )
                 )
@@ -228,11 +226,9 @@ class Module extends AbstractModule
         $qb = $event->getParam('queryBuilder');
         $adapter = $event->getTarget();
 
-        $isOldOmeka = \Omeka\Module::VERSION < 2;
-        $alias = $isOldOmeka ? $adapter->getEntityClass() : 'omeka_root';
         $expr = $qb->expr();
 
-        $valuesJoin = $alias . '.values';
+        $valuesJoin = 'omeka_root.values';
         $where = '';
 
         foreach ($query['property'] as $queryProperty) {
