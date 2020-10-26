@@ -127,7 +127,7 @@ class Module extends AbstractModule
 
         $message = new \Omeka\Stdlib\Message(
             'This indexing job is available via module %1$sBulk Check%2$s too.', // @translate
-            '<a href="https://github.com/Daniel-KM/Omeka-S-module-BulkCheck">',
+            '<a href="https://gitlab.com/Daniel-KM/Omeka-S-module-BulkCheck">',
             '</a>'
         );
         $message->setEscapeHtml(false);

@@ -9,9 +9,9 @@
             "email": "Daniel.packagist@Berthereau.net"
         }
     ],
-    "homepage": "https://github.com/Daniel-KM/Omeka-S-module-Thesaurus",
+    "homepage": "https://gitlab.com/Daniel-KM/Omeka-S-module-Thesaurus",
     "support": {
-        "issues": "https://github.com/Daniel-KM/Omeka-S-module-Thesaurus/issues",
+        "issues": "https://gitlab.com/Daniel-KM/Omeka-S-module-Thesaurus/-/issues",
         "forum": "https://forum.omeka.org/"
     },
     "keywords": [
