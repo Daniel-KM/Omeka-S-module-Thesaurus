@@ -76,6 +76,7 @@ return [
             ],
         ],
     ],
+    /* // TODO Clariflying place of the old tool to build a static flat thesaurus.
     'navigation' => [
         'AdminModule' => [
             [
@@ -84,6 +85,7 @@ return [
             ],
         ],
     ],
+    */
     'translator' => [
         'translation_file_patterns' => [
             [
