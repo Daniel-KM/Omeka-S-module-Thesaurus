@@ -1,9 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 namespace Thesaurus\Service\ControllerPlugin;
 
 use Interop\Container\ContainerInterface;
-use Thesaurus\Mvc\Controller\Plugin\Thesaurus;
 use Laminas\ServiceManager\Factory\FactoryInterface;
+use Thesaurus\Mvc\Controller\Plugin\Thesaurus;
 
 class ThesaurusFactory implements FactoryInterface
 {

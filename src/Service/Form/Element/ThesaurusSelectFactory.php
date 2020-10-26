@@ -1,10 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Thesaurus\Service\Form\Element;
 
 use Interop\Container\ContainerInterface;
-use Thesaurus\Form\Element\ThesaurusSelect;
 use Laminas\ServiceManager\Factory\FactoryInterface;
+use Thesaurus\Form\Element\ThesaurusSelect;
 
 class ThesaurusSelectFactory implements FactoryInterface
 {

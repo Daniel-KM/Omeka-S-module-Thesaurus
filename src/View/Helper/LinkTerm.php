@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 namespace Thesaurus\View\Helper;
 
-use Omeka\Api\Representation\ItemRepresentation;
 use Laminas\View\Helper\AbstractHelper;
+use Omeka\Api\Representation\ItemRepresentation;
 
 class LinkTerm extends AbstractHelper
 {
@@ -116,7 +116,7 @@ class LinkTerm extends AbstractHelper
      */
     protected function renderData(array $termData)
     {
-        /** @var \Omeka\Api\Representation\ItemRepresentation $item */
+        /* @var \Omeka\Api\Representation\ItemRepresentation $item */
         switch ($this->options['link']) {
             case 'term':
                 return $this->hyperlink->raw($termData['title'], $this->templateResourceUrl . $termData['id']);
@@ -142,7 +142,7 @@ class LinkTerm extends AbstractHelper
      */
     protected function renderItem(ItemRepresentation $item)
     {
-        /** @var \Omeka\Api\Representation\ItemRepresentation $item */
+        /* @var \Omeka\Api\Representation\ItemRepresentation $item */
         switch ($this->options['link']) {
             case 'term':
                 return $item->link($item->displayTitle());

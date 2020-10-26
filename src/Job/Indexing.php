@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Thesaurus\Job;
 
@@ -48,7 +48,7 @@ class Indexing extends AbstractJob
      */
     protected $termRepository;
 
-    public function perform()
+    public function perform(): void
     {
         /**
          * @var \Doctrine\ORM\EntityManager $em
@@ -208,7 +208,7 @@ class Indexing extends AbstractJob
      *
      * @param ItemRepresentation $scheme
      */
-    protected function resetThesaurus(ItemRepresentation $scheme)
+    protected function resetThesaurus(ItemRepresentation $scheme): void
     {
         // @see \Omeka\Job\BatchDelete
         $dql = $this->entityManager->createQuery(

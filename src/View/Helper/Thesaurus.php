@@ -1,9 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 namespace Thesaurus\View\Helper;
 
+use Laminas\View\Helper\AbstractHelper;
 use Omeka\Api\Representation\ItemRepresentation;
 use Thesaurus\Mvc\Controller\Plugin\Thesaurus as ThesaurusPlugin;
-use Laminas\View\Helper\AbstractHelper;
 
 /**
  * @todo Implement a tree iterator.

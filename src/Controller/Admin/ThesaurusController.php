@@ -1,10 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 namespace Thesaurus\Controller\Admin;
 
 use finfo;
-use Thesaurus\Form\ConvertForm;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
+use Thesaurus\Form\ConvertForm;
 
 class ThesaurusController extends AbstractActionController
 {
@@ -116,7 +116,7 @@ class ThesaurusController extends AbstractActionController
             $levels[$level] = $term;
             $row = '';
             for ($i = 0; $i < $level; ++$i) {
-                $row .= isset($levels[$i]) ? $levels[$i] : '';
+                $row .= $levels[$i] ?? '';
                 $row .= $separator;
             }
             $row .= $term;

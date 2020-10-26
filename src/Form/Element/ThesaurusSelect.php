@@ -1,11 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Thesaurus\Form\Element;
 
+use Laminas\Form\Element\Select;
 use Omeka\Api\Exception\NotFoundException;
 use Omeka\Api\Manager as ApiManager;
 use Thesaurus\Mvc\Controller\Plugin\Thesaurus;
-use Laminas\Form\Element\Select;
 
 class ThesaurusSelect extends Select
 {

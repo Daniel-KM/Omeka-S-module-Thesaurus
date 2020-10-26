@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Thesaurus;
 
 /*
@@ -53,7 +53,7 @@ class Module extends AbstractModule
 {
     const NAMESPACE = __NAMESPACE__;
 
-    public function attachListeners(SharedEventManagerInterface $sharedEventManager)
+    public function attachListeners(SharedEventManagerInterface $sharedEventManager): void
     {
         // Add the search query filters for resources.
         $sharedEventManager->attach(
@@ -206,7 +206,7 @@ class Module extends AbstractModule
      *
      * @param Event $event
      */
-    public function handleApiSearchQuery(Event $event)
+    public function handleApiSearchQuery(Event $event): void
     {
         $query = $event->getParam('request')->getContent();
         if (!isset($query['property']) || !is_array($query['property'])) {

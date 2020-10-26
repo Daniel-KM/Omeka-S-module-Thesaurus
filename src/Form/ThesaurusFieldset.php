@@ -1,13 +1,13 @@
-<?php
+<?php declare(strict_types=1);
 namespace Thesaurus\Form;
 
-use Omeka\Form\Element\PropertySelect;
 use Laminas\Form\Element;
 use Laminas\Form\Fieldset;
+use Omeka\Form\Element\PropertySelect;
 
 class ThesaurusFieldset extends Fieldset
 {
-    public function init()
+    public function init(): void
     {
         $this
             ->add([

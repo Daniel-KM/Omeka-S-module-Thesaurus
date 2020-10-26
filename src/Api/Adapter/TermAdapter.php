@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Thesaurus\Api\Adapter;
 
@@ -37,7 +37,7 @@ class TermAdapter extends AbstractEntityAdapter
         return \Thesaurus\Entity\Term::class;
     }
 
-    public function buildQuery(QueryBuilder $qb, array $query)
+    public function buildQuery(QueryBuilder $qb, array $query): void
     {
         $isOldOmeka = \Omeka\Module::VERSION < 2;
         $alias = $isOldOmeka ? $this->getEntityClass() : 'omeka_root';
@@ -85,7 +85,7 @@ class TermAdapter extends AbstractEntityAdapter
         }
     }
 
-    public function validateEntity(EntityInterface $entity, ErrorStore $errorStore)
+    public function validateEntity(EntityInterface $entity, ErrorStore $errorStore): void
     {
         $item = $entity->getItem();
         if (!$item) {
@@ -128,8 +128,8 @@ class TermAdapter extends AbstractEntityAdapter
         Request $request,
         EntityInterface $entity,
         ErrorStore $errorStore
-    ) {
-        /** @var \Thesaurus\Entity\Term $entity */
+    ): void {
+        /* @var \Thesaurus\Entity\Term $entity */
         if ($this->shouldHydrate($request, 'o:item')) {
             $entity->setItem($request->getValue('o:item'));
         }

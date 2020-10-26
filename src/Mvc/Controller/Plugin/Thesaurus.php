@@ -1,11 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 namespace Thesaurus\Mvc\Controller\Plugin;
 
 use Doctrine\ORM\EntityManager;
+use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
 use Omeka\Api\Adapter\ItemAdapter;
 use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Mvc\Controller\Plugin\Api;
-use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
 
 /**
  * @todo Implement a tree iterator.

@@ -1,9 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 namespace Thesaurus\Service\ViewHelper;
 
 use Interop\Container\ContainerInterface;
-use Thesaurus\View\Helper\Thesaurus;
 use Laminas\ServiceManager\Factory\FactoryInterface;
+use Thesaurus\View\Helper\Thesaurus;
 
 /**
  * Service factory for the Thesaurus view helper.
