@@ -191,7 +191,7 @@ class Module extends AbstractModule
                 )
                 ->addOrderBy(
                     $termAlias . '.position',
-                    isset($query['sort_order']) && strtolower($query['sort_order'] === 'DESC') ? 'DESC' : 'ASC'
+                    isset($query['sort_order']) && strtolower((string) $query['sort_order'] === 'DESC') ? 'DESC' : 'ASC'
                 )
             ;
         }
