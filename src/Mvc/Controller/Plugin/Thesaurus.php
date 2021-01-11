@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Thesaurus\Mvc\Controller\Plugin;
 
 use Doctrine\ORM\EntityManager;
@@ -911,26 +912,80 @@ class Thesaurus extends AbstractPlugin
         if (count($this->terms)) {
             return $this;
         }
-
-        $this->terms = [
-            'class' => [],
-            'property' => [],
-        ];
-        $values = $this->api
-            ->search('resource_classes', ['vocabulary_prefix' => self::VOCABULARY_PREFIX])
-            ->getContent();
-        foreach ($values as $value) {
-            $this->terms['class'][$value->term()] = $value->id();
-        }
-
-        $values = $this->api
-            ->search('properties', ['vocabulary_prefix' => self::VOCABULARY_PREFIX])
-            ->getContent();
-        foreach ($values as $value) {
-            $this->terms['property'][$value->term()] = $value->id();
-        }
-
+        // Only skos is useful for now, but speed is same with all terms.
+        $this->getResourceClassIds();
+        $this->getPropertyIds();
         return $this;
+    }
+
+    /**
+     * Get all property ids by term.
+     *
+     * @return array Associative array of ids by term.
+     */
+    protected function getPropertyIds()
+    {
+        if (isset($this->terms['property'])) {
+            return $this->terms['property'];
+        }
+
+        $connection = $this->entityManager->getConnection();
+        $qb = $connection->createQueryBuilder();
+        $qb
+            ->select([
+                'DISTINCT property.id AS id',
+                'CONCAT(vocabulary.prefix, ":", property.local_name) AS term',
+                // Only the two first selects are needed, but some databases
+                // require "order by" or "group by" value to be in the select.
+                'vocabulary.id',
+                'property.id',
+            ])
+            ->from('property', 'property')
+            ->innerJoin('property', 'vocabulary', 'vocabulary', 'property.vocabulary_id = vocabulary.id')
+            ->orderBy('vocabulary.id', 'asc')
+            ->addOrderBy('property.id', 'asc')
+            ->addGroupBy('property.id')
+        ;
+        $stmt = $connection->executeQuery($qb);
+        // Fetch by key pair is not supported by doctrine 2.0.
+        $this->terms['property'] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $this->terms['property'] = array_column($this->terms['property'], 'id', 'term');
+        return $this->terms['property'];
+    }
+
+    /**
+     * Get all class ids by term.
+     *
+     * @return array Associative array of ids by term.
+     */
+    protected function getResourceClassIds()
+    {
+        if (isset($this->terms['class'])) {
+            return $this->terms['class'];
+        }
+
+        $connection = $this->entityManager->getConnection();
+        $qb = $connection->createQueryBuilder();
+        $qb
+            ->select([
+                'DISTINCT resource_class.id AS id',
+                'CONCAT(vocabulary.prefix, ":", resource_class.local_name) AS term',
+                // Only the two first selects are needed, but some databases
+                // require "order by" or "group by" value to be in the select.
+                'vocabulary.id',
+                'resource_class.id',
+            ])
+            ->from('resource_class', 'resource_class')
+            ->innerJoin('resource_class', 'vocabulary', 'vocabulary', 'resource_class.vocabulary_id = vocabulary.id')
+            ->orderBy('vocabulary.id', 'asc')
+            ->addOrderBy('resource_class.id', 'asc')
+            ->addGroupBy('resource_class.id')
+        ;
+        $stmt = $connection->executeQuery($qb);
+        // Fetch by key pair is not supported by doctrine 2.0.
+        $this->terms['class'] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $this->terms['class'] = array_column($this->terms['class'], 'id', 'term');
+        return $this->terms['class'];
     }
 
     /**
