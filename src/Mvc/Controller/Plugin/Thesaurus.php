@@ -89,6 +89,11 @@ class Thesaurus extends AbstractPlugin
     protected $isOrderedCollection;
 
     /**
+     * @var bool
+     */
+    protected $isPublic;
+
+    /**
      * @param EntityManager
      */
     protected $entityManager;
@@ -825,7 +830,7 @@ class Thesaurus extends AbstractPlugin
      * @param int $level
      * @return array
      */
-    protected function recursiveBranch($itemData, array $branch = [], $level = 0)
+    protected function recursiveBranch(array $itemData, array $branch = [], $level = 0)
     {
         if ($level > $this->maxAncestors) {
             throw new \Omeka\Api\Exception\BadResponseException(sprintf(
@@ -1005,6 +1010,9 @@ class Thesaurus extends AbstractPlugin
             return $this;
         }
 
+        $user = $this->getController()->identity();
+        $this->isPublic = empty($user);
+
         // Get all ids via api.
         // This allows to check visibility and to get the full list of concepts.
         // The validity of top concepts is not checked.
@@ -1024,6 +1032,7 @@ class Thesaurus extends AbstractPlugin
                             'text' => $this->scheme->id(),
                         ],
                     ],
+                    // Is public is automatically managed via the api.
                 ],
                 [
                     'initialize' => false,
@@ -1064,9 +1073,16 @@ class Thesaurus extends AbstractPlugin
                 'propertyBroader' => $this->terms['property']['skos:broader'],
                 'concept' => $this->terms['class']['skos:Concept'],
                 'scheme' => $this->scheme->id(),
-            ])
-        ;
+            ]);
+        if ($this->isPublic) {
+            $qb
+                ->innerJoin(\Omeka\Entity\Resource::class, 'resource', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('resource.id', 'item.id'))
+                ->andWhere('resource.isPublic = 1');
+        }
         $parents = array_column($qb->getQuery()->getScalarResult(), 'ids', 'id');
+        $parents = array_map(function ($v) {
+            return (int) strtok($v, ',');
+        }, $parents);
 
         // Get all children.
         $qb = $this->entityManager->createQueryBuilder()
@@ -1087,20 +1103,35 @@ class Thesaurus extends AbstractPlugin
                 'propertyNarrower' => $this->terms['property']['skos:narrower'],
                 'concept' => $this->terms['class']['skos:Concept'],
                 'inScheme' => $this->scheme->id(),
-            ])
-        ;
+            ]);
+        if ($this->isPublic) {
+            $qb
+                ->innerJoin(\Omeka\Entity\Resource::class, 'resource', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('resource.id', 'item.id'))
+                ->andWhere('resource.isPublic = 1');
+        }
         $children = array_column($qb->getQuery()->getScalarResult(), 'ids', 'id');
+        $children = array_map(function ($v) {
+            return array_values(array_intersect(
+                array_map('intval', explode(',', $v)),
+                array_keys($this->structure)
+            ));
+        }, $children);
 
+        // Fill the full structure, checking for public parent/children too.
         foreach ($this->structure as $id => &$value) {
             $value['id'] = $id;
             $value['title'] = $titles[$id];
             if (array_key_exists($id, $parents)) {
-                $value['parent'] = (int) strtok($parents[$id], ',');
+                if (isset($this->structure[$parents[$id]])) {
+                    $value['parent'] = $parents[$id];
+                }
+                // Else the parent is private.
+                // Don't set it as top to keep structure.
             } else {
                 $value['top'] = true;
             }
             if (array_key_exists($id, $children)) {
-                $value['children'] = array_map('intval', explode(',', $children[$id]));
+                $value['children'] = $children[$id];
             }
             if ($value['top']) {
                 $this->tops[$id] = $value;
