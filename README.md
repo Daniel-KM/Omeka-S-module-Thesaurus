@@ -17,6 +17,8 @@ The helpers are:
 The view helper can be used for any purpose, for example to build a hierarchical
 list of item sets.
 
+The thesaurus is available as a endpoint for [Value Suggest], through module [Value Suggest: Any].
+
 A future version may rely on ISO 25964 (Thesauri and interoperability with
 other vocabularies).
 
@@ -24,7 +26,7 @@ other vocabularies).
 Installation
 ------------
 
-Optional modules are [Generic] and [Block Plus].
+Optional modules are [Generic], [Block Plus], and [Value Suggest: Any].
 
 Uncompress files and rename module folder `Thesaurus`. Then install it like any
 other Omeka module and follow the config instructions.
@@ -132,7 +134,7 @@ altered, and that no provisions are either added or removed herefrom.
 Copyright
 ---------
 
-* Copyright Daniel Berthereau, 2018-2020 (see [Daniel-KM] on GitLab)
+* Copyright Daniel Berthereau, 2018-2021 (see [Daniel-KM] on GitLab)
 
 First version of this module was developed for the project [Ontologie du christianisme médiéval en images]
 for the [Institut national d’histoire de l’art] (INHA).
@@ -144,6 +146,8 @@ for the [Institut national d’histoire de l’art] (INHA).
 [Installing a module]: https://omeka.org/s/docs/user-manual/modules/#installing-modules
 [Custom Vocab]: https://github.com/omeka-s-modules/CustomVocab
 [Block Plus]: https://gitlab.com/Daniel-KM/Omeka-S-module-BlockPlus
+[Value Suggest]: https://github.com/omeka-s-modules/ValueSuggest
+[Value Suggest: Any]: https://gitlab.com/Daniel-KM/Omeka-S-module-ValueSuggestAny
 [LibreOffice]: https://libreoffice.org
 [fork of the module Collecting]: https://gitlab.com/Daniel-KM/Omeka-S-module-Collecting
 [module issues]: https://gitlab.com/Daniel-KM/Omeka-S-module-Thesaurus/-/issues
