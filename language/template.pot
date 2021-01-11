@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-26 00:00+0000\n"
+"POT-Creation-Date: 2021-01-04 00:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -35,7 +35,7 @@ msgstr ""
 msgid "This module has resources that connot be installed."
 msgstr ""
 
-#: src/Generic/AbstractModule.php:709
+#: src/Generic/AbstractModule.php:707
 #, php-format
 msgid ""
 "The module \"%s\" was automatically deactivated because the dependencies are "
@@ -279,8 +279,8 @@ msgstr ""
 #: src/Api/Representation/TermRepresentation.php:362
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:560
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:582
-#: src/Mvc/Controller/Plugin/Thesaurus.php:759
-#: src/Mvc/Controller/Plugin/Thesaurus.php:781
+#: src/Mvc/Controller/Plugin/Thesaurus.php:773
+#: src/Mvc/Controller/Plugin/Thesaurus.php:795
 #, php-format
 msgid "There cannot be more than %d ancestors."
 msgstr ""
@@ -291,10 +291,10 @@ msgstr ""
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:606
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:633
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:662
-#: src/Mvc/Controller/Plugin/Thesaurus.php:805
-#: src/Mvc/Controller/Plugin/Thesaurus.php:831
-#: src/Mvc/Controller/Plugin/Thesaurus.php:859
-#: src/Mvc/Controller/Plugin/Thesaurus.php:889
+#: src/Mvc/Controller/Plugin/Thesaurus.php:819
+#: src/Mvc/Controller/Plugin/Thesaurus.php:845
+#: src/Mvc/Controller/Plugin/Thesaurus.php:873
+#: src/Mvc/Controller/Plugin/Thesaurus.php:903
 #, php-format
 msgid "There cannot be more than %d levels of descendants."
 msgstr ""
@@ -367,61 +367,61 @@ msgstr ""
 msgid "Thesaurus"
 msgstr ""
 
-#: src/Generic/InstallResources.php:109
+#: src/Generic/InstallResources.php:108
 #, php-format
 msgid ""
 "A resource template named exists for %s: rename it or remove it before "
 "installing this module."
 msgstr ""
 
-#: src/Generic/InstallResources.php:176
+#: src/Generic/InstallResources.php:173
 #, php-format
 msgid "The file \"%s\" cannot be read. Check your file system or the url."
 msgstr ""
 
-#: src/Generic/InstallResources.php:201
+#: src/Generic/InstallResources.php:198
 #, php-format
 msgid ""
 "An error occured when adding the prefix \"%s\": another vocabulary exists. "
 "Resolve the conflict before installing this module."
 msgstr ""
 
-#: src/Generic/InstallResources.php:252
+#: src/Generic/InstallResources.php:280
 msgid "The current version of this module requires the module Custom Vocab."
 msgstr ""
 
-#: src/Generic/InstallResources.php:259
+#: src/Generic/InstallResources.php:287
 #, php-format
 msgid ""
 "A custom vocab named \"%s\" exists and has not the needed language (\"%s\"): "
 "check it or remove it before installing this module."
 msgstr ""
 
-#: src/Generic/InstallResources.php:304
+#: src/Generic/InstallResources.php:332
 #, php-format
 msgid "The vocabulary \"%s\" was already installed and was kept."
 msgstr ""
 
-#: src/Generic/InstallResources.php:314
+#: src/Generic/InstallResources.php:342
 #, php-format
 msgid ""
 "An error occured when adding the prefix \"%s\": another vocabulary exists "
 "with the same prefix. Resolve the conflict before installing this module."
 msgstr ""
 
-#: src/Generic/InstallResources.php:334
+#: src/Generic/InstallResources.php:362
 #, php-format
 msgid ""
 "An error occured when adding the prefix \"%s\" and the associated "
 "properties: %s"
 msgstr ""
 
-#: src/Generic/InstallResources.php:362
+#: src/Generic/InstallResources.php:390
 #, php-format
 msgid "The resource template named \"%s\" is already available and is skipped."
 msgstr ""
 
-#: src/Generic/InstallResources.php:386 src/Generic/InstallResources.php:544
+#: src/Generic/InstallResources.php:652
 #, php-format
 msgid "The custom vocab named \"%s\" is not available."
 msgstr ""
