@@ -1009,7 +1009,7 @@ class Thesaurus extends AbstractPlugin
         // This allows to check visibility and to get the full list of concepts.
         // The validity of top concepts is not checked.
         // TODO Check if it is useful to check visibility here.
-        $concepts = $this->api
+        $titles = $this->api
             ->search(
                 'items',
                 [
@@ -1027,42 +1027,22 @@ class Thesaurus extends AbstractPlugin
                 ],
                 [
                     'initialize' => false,
-                    'returnScalar' => 'id',
+                    'returnScalar' => 'title',
                 ]
             )
             ->getContent();
         // TODO This check is useless: there is at least the item, else there is an issue (item is not visible?).
-        if (!count($concepts)) {
+        if (!count($titles)) {
             return $this;
         }
+
+        $concepts = array_keys($titles);
 
         // TODO Add the root and siblings.
         $this->structure = array_fill_keys($concepts, ['id' => null, 'title' => null, 'top' => false, 'parent' => null, 'children' => []]);
 
         $qb = $this->entityManager->createQueryBuilder();
         $expr = $qb->expr();
-
-        // Get all titles.
-        $qb
-            ->select([
-                'item.id',
-                // Title is a resource key that is automatically managed by doctrine.
-                'item.title',
-            ])
-            ->from(\Omeka\Entity\Item::class, 'item')
-            ->leftJoin(\Omeka\Entity\Value::class, 'value', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('value.property', ':propertyInScheme'))
-            ->andWhere($expr->eq('item.resourceClass', ':concept'))
-            // Do not put in left join.
-            ->andWhere($expr->eq('value.valueResource', ':scheme'))
-            ->groupBy('item.id')
-            ->addOrderBy('item.id', 'ASC')
-            ->setParameters([
-                'propertyInScheme' => $this->terms['property']['skos:inScheme'],
-                'scheme' => $this->scheme->id(),
-                'concept' => $this->terms['class']['skos:Concept'],
-            ])
-        ;
-        $titles = array_column($qb->getQuery()->getScalarResult(), 'title', 'id');
 
         // Get all parents.
         $qb = $this->entityManager->createQueryBuilder()
@@ -1113,9 +1093,7 @@ class Thesaurus extends AbstractPlugin
 
         foreach ($this->structure as $id => &$value) {
             $value['id'] = $id;
-            if (array_key_exists($id, $titles)) {
-                $value['title'] = $titles[$id];
-            }
+            $value['title'] = $titles[$id];
             if (array_key_exists($id, $parents)) {
                 $value['parent'] = (int) strtok($parents[$id], ',');
             } else {
