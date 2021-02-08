@@ -2,6 +2,7 @@
 
 namespace Thesaurus\Job;
 
+use Doctrine\ORM\EntityManager;
 use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Job\AbstractJob;
 use Omeka\Stdlib\Message;
@@ -62,7 +63,13 @@ class Indexing extends AbstractJob
         $this->logger = $services->get('Omeka\Logger');
         $this->logger->addProcessor($referenceIdProcessor);
 
-        $this->entityManager = $services->get('Omeka\EntityManager');
+        // Because this is an indexer that is used in background, another entity
+        // manager is used to avoid conflicts with the main entity manager, for
+        // example when the job is run in foreground or multiple resources are
+        // imported in bulk, so a flush() or a clear() will not be applied on
+        // the imported resources but only on the indexed resources.
+        $this->entityManager = $this->getNewEntityManager($services->get('Omeka\EntityManager'));
+
         $this->itemRepository = $this->entityManager->getRepository(\Omeka\Entity\Item::class);
         $this->termRepository = $this->entityManager->getRepository(\Thesaurus\Entity\Term::class);
 
@@ -304,5 +311,17 @@ class Indexing extends AbstractJob
         }
 
         return $branch;
+    }
+
+    /**
+     * Create a new EntityManager with the same config.
+     */
+    private function getNewEntityManager(EntityManager $entityManager): EntityManager
+    {
+        return EntityManager::create(
+            $entityManager->getConnection(),
+            $entityManager->getConfiguration(),
+            $entityManager->getEventManager()
+        );
     }
 }
