@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-26 00:00+0000\n"
-"PO-Revision-Date: 2020-10-26 00:00+0000\n"
+"POT-Creation-Date: 2021-02-01 00:00+0000\n"
+"PO-Revision-Date: 2021-02-01 00:00+0000\n"
+"Last-Translator: Daniel Berthereau <Daniel.fr@Berthereau.net>\n"
+"Language-Team: \n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Last-Translator: Daniel Berthereau <Daniel.fr@Berthereau.net>\n"
-"Language-Team: \n"
-"X-Generator: Poedit 2.4.1\n"
+"X-Generator: Poedit 2.4.2\n"
 
 #: Module.php:136
 msgid "Process"
@@ -35,13 +35,13 @@ msgstr "Ce module requiert les modules \"%s\"."
 msgid "This module has resources that connot be installed."
 msgstr "Ce module a des ressources qui ne peuvent pas être installées."
 
-#: src/Generic/AbstractModule.php:709
+#: src/Generic/AbstractModule.php:707
 #, php-format
 msgid ""
 "The module \"%s\" was automatically deactivated because the dependencies are "
 "unavailable."
 msgstr ""
-"Le module %s\" a été automatiquement désactivé car ses dépendances ne sont "
+"Le module \"%s\" a été automatiquement désactivé car ses dépendances ne sont "
 "plus disponibles."
 
 #: src/View/Helper/LinkTerm.php:61
@@ -291,8 +291,8 @@ msgstr "Le fichier a été converti avec succès."
 #: src/Api/Representation/TermRepresentation.php:362
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:560
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:582
-#: src/Mvc/Controller/Plugin/Thesaurus.php:759
-#: src/Mvc/Controller/Plugin/Thesaurus.php:781
+#: src/Mvc/Controller/Plugin/Thesaurus.php:765
+#: src/Mvc/Controller/Plugin/Thesaurus.php:787
 #, php-format
 msgid "There cannot be more than %d ancestors."
 msgstr "Il ne peut pas y avoir plus de %d ancêtres."
@@ -303,10 +303,10 @@ msgstr "Il ne peut pas y avoir plus de %d ancêtres."
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:606
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:633
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:662
-#: src/Mvc/Controller/Plugin/Thesaurus.php:805
-#: src/Mvc/Controller/Plugin/Thesaurus.php:831
-#: src/Mvc/Controller/Plugin/Thesaurus.php:859
-#: src/Mvc/Controller/Plugin/Thesaurus.php:889
+#: src/Mvc/Controller/Plugin/Thesaurus.php:811
+#: src/Mvc/Controller/Plugin/Thesaurus.php:837
+#: src/Mvc/Controller/Plugin/Thesaurus.php:865
+#: src/Mvc/Controller/Plugin/Thesaurus.php:895
 #, php-format
 msgid "There cannot be more than %d levels of descendants."
 msgstr "Il ne peut pas y avoir plus de %d niveaux de descendants."
@@ -331,46 +331,46 @@ msgstr "Le schéma du terme générique doit être le même que le terme."
 msgid "A term must not be a ancestor of itself."
 msgstr "Un terme ne peut pas être un ancêtre de lui-même."
 
-#: src/Job/Indexing.php:76
+#: src/Job/Indexing.php:83
 msgid "No thesaurus to index."
 msgstr "Pas de thésaurus à indexer."
 
-#: src/Job/Indexing.php:82
+#: src/Job/Indexing.php:89
 #, php-format
 msgid "Starting indexing of %d thesaurus."
 msgstr "Lancement de l’indexation de %d thésaurus."
 
-#: src/Job/Indexing.php:90
+#: src/Job/Indexing.php:97
 #, php-format
 msgid "Indexation was stopped. %d/%d thesaurus processed."
 msgstr "L’indexation a été stoppée. %d/%d thésaurus traités.."
 
-#: src/Job/Indexing.php:100
+#: src/Job/Indexing.php:107
 #, php-format
 msgid "Thesaurus #%d indexed."
 msgstr "Le rhésaurus #%d a été indexé."
 
-#: src/Job/Indexing.php:106
+#: src/Job/Indexing.php:113
 #, php-format
 msgid "Thesaurus #%d not indexed."
 msgstr "Le thésaurus #%d n’ a pas été indexé."
 
-#: src/Job/Indexing.php:114
+#: src/Job/Indexing.php:121
 #, php-format
 msgid "Ended indexing of %d thesaurus."
 msgstr "Fin de l’indexation de %d thésaurus."
 
-#: src/Job/Indexing.php:164
+#: src/Job/Indexing.php:171
 #, php-format
 msgid "Thesaurus #%1$d has a missing root for item #%2$d."
 msgstr "Le thésaurus #%1$d a une racine manquante pour le contenu #%2$d."
 
-#: src/Job/Indexing.php:257
+#: src/Job/Indexing.php:264
 #, php-format
 msgid "Thesaurus #%d has no top concepts."
 msgstr "Le thésaurus #%d n’a pas de concepts racine."
 
-#: src/Job/Indexing.php:288
+#: src/Job/Indexing.php:295
 #, php-format
 msgid "The term #%1$d has more than %2$d levels."
 msgstr "Le terme #%1$d a plus de %2$d niveaux."
@@ -379,7 +379,7 @@ msgstr "Le terme #%1$d a plus de %2$d niveaux."
 msgid "Thesaurus"
 msgstr "Thésaurus"
 
-#: src/Generic/InstallResources.php:109
+#: src/Generic/InstallResources.php:108
 #, php-format
 msgid ""
 "A resource template named exists for %s: rename it or remove it before "
@@ -388,14 +388,14 @@ msgstr ""
 "Un modèle de ressource existe pour %s : renommez-le ou supprimez-le avant "
 "d’installer ce module."
 
-#: src/Generic/InstallResources.php:176
+#: src/Generic/InstallResources.php:173
 #, php-format
 msgid "The file \"%s\" cannot be read. Check your file system or the url."
 msgstr ""
 "Le fichier \"%s\" ne peut pas être lu. Merci de vérifier le système de "
 "fichiers ou l’url."
 
-#: src/Generic/InstallResources.php:201
+#: src/Generic/InstallResources.php:198
 #, php-format
 msgid ""
 "An error occured when adding the prefix \"%s\": another vocabulary exists. "
@@ -404,11 +404,11 @@ msgstr ""
 "Une erreur est survenue en ajoutant le préfixe \"%s\" : un autre vocabulaire "
 "existe. Merci de résoudre le conflit avant d'installer ce module."
 
-#: src/Generic/InstallResources.php:252
+#: src/Generic/InstallResources.php:280
 msgid "The current version of this module requires the module Custom Vocab."
 msgstr "Cette version du module requiert le module Custom Vocab."
 
-#: src/Generic/InstallResources.php:259
+#: src/Generic/InstallResources.php:287
 #, php-format
 msgid ""
 "A custom vocab named \"%s\" exists and has not the needed language (\"%s\"): "
@@ -417,12 +417,12 @@ msgstr ""
 "A custom vocab named \"%s\" exists and has not the needed language (\"%s\"): "
 "check it or remove it before installing this module."
 
-#: src/Generic/InstallResources.php:304
+#: src/Generic/InstallResources.php:332
 #, php-format
 msgid "The vocabulary \"%s\" was already installed and was kept."
 msgstr "Le vocabulaire \"%s\" a déjà été installé et a été conservé."
 
-#: src/Generic/InstallResources.php:314
+#: src/Generic/InstallResources.php:342
 #, php-format
 msgid ""
 "An error occured when adding the prefix \"%s\": another vocabulary exists "
@@ -432,7 +432,7 @@ msgstr ""
 "vocabulaire existe avec le même préfixe. Merci de résoudre le conflit avant "
 "d'installer ce module."
 
-#: src/Generic/InstallResources.php:334
+#: src/Generic/InstallResources.php:362
 #, php-format
 msgid ""
 "An error occured when adding the prefix \"%s\" and the associated "
@@ -441,13 +441,13 @@ msgstr ""
 "Une erreur est survenue en ajoutant le préfixe \"%s\" et les propriétés "
 "associées : %s"
 
-#: src/Generic/InstallResources.php:362
+#: src/Generic/InstallResources.php:390
 #, php-format
 msgid "The resource template named \"%s\" is already available and is skipped."
 msgstr ""
 "Le modèle de ressource nommé \"%s\" est déjà disponible et a été conservé."
 
-#: src/Generic/InstallResources.php:386 src/Generic/InstallResources.php:544
+#: src/Generic/InstallResources.php:652
 #, php-format
 msgid "The custom vocab named \"%s\" is not available."
 msgstr "Le vocabulaire personnalisé nommé \"%s\" n'est pas disponible."
