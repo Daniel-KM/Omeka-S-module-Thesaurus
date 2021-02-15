@@ -954,7 +954,7 @@ class Thesaurus extends AbstractPlugin
         $stmt = $connection->executeQuery($qb);
         // Fetch by key pair is not supported by doctrine 2.0.
         $this->terms['property'] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        $this->terms['property'] = array_column($this->terms['property'], 'id', 'term');
+        $this->terms['property'] = array_map('intval', array_column($this->terms['property'], 'id', 'term'));
         return $this->terms['property'];
     }
 
@@ -989,7 +989,7 @@ class Thesaurus extends AbstractPlugin
         $stmt = $connection->executeQuery($qb);
         // Fetch by key pair is not supported by doctrine 2.0.
         $this->terms['class'] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        $this->terms['class'] = array_column($this->terms['class'], 'id', 'term');
+        $this->terms['class'] = array_map('intval', array_column($this->terms['class'], 'id', 'term'));
         return $this->terms['class'];
     }
 
