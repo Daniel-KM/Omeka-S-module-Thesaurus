@@ -14,5 +14,7 @@
     <?php if ($heading): ?>
     <h2><?= $this->escapeHtml($heading) ?></h2>
     <?php endif; ?>
+    <?php if ($item): ?>
     <?= $this->thesaurus($item)->display($type, $options) ?>
+    <?php endif; ?>
 </div>
