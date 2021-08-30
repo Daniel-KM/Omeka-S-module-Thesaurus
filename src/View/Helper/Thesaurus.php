@@ -436,13 +436,14 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
-     * @return \Omeka\Api\Representation\SiteRepresentation
+     * Get the current site from the view.
      */
-    protected function currentSite()
+    protected function currentSite(): ?\Omeka\Api\Representation\SiteRepresentation
     {
-        $view = $this->getView();
-        return isset($view->site)
-            ? $view->site
-            : $view->getHelperPluginManager()->get('Laminas\View\Helper\ViewModel')->getRoot()->getVariable('site');
+        return $this->view->site ?? $this->view
+            ->getHelperPluginManager()
+            ->get('Laminas\View\Helper\ViewModel')
+            ->getRoot()
+            ->getVariable('site');
     }
 }
