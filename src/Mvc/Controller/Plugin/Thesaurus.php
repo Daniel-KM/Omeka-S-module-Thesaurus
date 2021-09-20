@@ -162,6 +162,14 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
+     * Return the item used to build the thesaurus.
+     */
+    public function getItem(): ItemRepresentation
+    {
+        return $this->item;
+    }
+
+    /**
      * Helper to get the item representation from item data.
      */
     public function itemFromData(array $itemData = null): ?ItemRepresentation
@@ -519,12 +527,50 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
-     * Get the hierarchy branch of this item, self included.
+     * Get the hierarchy branch of this item from top concept, self included.
      */
     public function branch(): array
     {
         if (!$this->isSkos || $this->isScheme()) {
             return [];
+        }
+        $result = [];
+        $top = $this->top();
+        if ($this->returnItem) {
+            $result[$top->id()] = [
+                'self' => $top,
+                'children' => $this->recursiveBranchItems($top),
+            ];
+            return $result;
+        }
+        $result[$top['id']] = [
+            'self' => $this->structure[$top['id']],
+            'children' => $this->recursiveBranch($this->structure[$top['id']]),
+        ];
+        return $result;
+    }
+
+    /**
+     * Get the hierarchy branch of this item without top concept, self included,
+     * except if it is the top.
+     */
+    public function branchNoTop(): array
+    {
+        $branch = $this->branch();
+        $branch = reset($branch);
+        return $branch ? $branch['children'] : [];
+    }
+
+    /**
+     * Get the hierarchy branch from this item, so self and descendants as tree.
+     */
+    public function branchFromItem(): array
+    {
+        if (!$this->isSkos || $this->isScheme()) {
+            return [];
+        }
+        if ($this->isTop()) {
+            return $this->branch();
         }
         $result = [];
         if ($this->returnItem) {
@@ -539,6 +585,19 @@ class Thesaurus extends AbstractPlugin
             'children' => $this->recursiveBranch($this->structure[$this->itemId]),
         ];
         return $result;
+    }
+
+    /**
+     * Get the hierarchy branch below this item, so descendants as a tree.
+     */
+    public function branchBelowItem(): array
+    {
+        $branch = $this->branchFromItem();
+        if (empty($branch)) {
+            return [];
+        }
+        $branch = reset($branch);
+        return $branch['children'] ?? [];
     }
 
     /**

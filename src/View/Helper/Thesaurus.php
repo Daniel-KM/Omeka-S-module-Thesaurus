@@ -22,6 +22,8 @@ class Thesaurus extends AbstractHelper
     protected $item;
 
     /**
+     * @fixme The same thesaurus is shared between all helpers.
+     *
      * @param ThesaurusPlugin $thesaurus
      */
     public function __construct(ThesaurusPlugin $thesaurus)
@@ -54,6 +56,16 @@ class Thesaurus extends AbstractHelper
     {
         $this->thesaurus->setReturnItem();
         return $this;
+    }
+
+    /**
+     * Return the item used to build the thesaurus.
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::getItem()
+     */
+    public function getItem(): ItemRepresentation
+    {
+        return $this->thesaurus->getItem();
     }
 
     /**
@@ -319,13 +331,44 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
-     * Get the hierarchy branch of this item, self included.
+     * Get the hierarchy branch of this item from top, self included.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::branch()
      */
     public function branch(): array
     {
         return $this->thesaurus->branch();
+    }
+
+    /**
+     * Get the hierarchy branch of this item without top concept, self included,
+     * except if it is the top.
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::branchNoTop()
+     */
+    public function branchNoTop(): array
+    {
+        return $this->thesaurus->branchNoTop();
+    }
+
+    /**
+     * Get the hierarchy branch from this item, so self and descendants as tree.
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::branchFromItem()
+     */
+    public function branchFromItem(): array
+    {
+        return $this->thesaurus->branchFromItem();
+    }
+
+    /**
+     * Get the hierarchy branch below this item, so descendants as a tree.
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::branchFromItem()
+     */
+    public function branchBelowItem(): array
+    {
+        return $this->thesaurus->branchBelowItem();
     }
 
     /**
@@ -379,8 +422,9 @@ class Thesaurus extends AbstractHelper
      *
      * @param string|array|ItemRepresentation $typeOrData Type may be "root" or
      * "broader" (single), "tops", "narrowers", "relateds", "siblings",
-     * "ascendants", or "descendants" (list), or "tree" or "branch" (tree), or
-     * "flatTree" or "flatBranch" (flat tree).
+     * "ascendants", or "descendants" (list), or "tree", "branch", "branchNoTop",
+     * "branchFromItem", or "branchBelowItem" (tree), or "flatTree" or "flatBranch"
+     * (flat tree).
      * @param array $options Options for the partial. Managed default are
      * "title", "link", "link_append_concept", "term", "hideIfEmpty", "class",
      * "expanded", "template", "returnItem". Deprecated option : "partial"
@@ -409,6 +453,9 @@ class Thesaurus extends AbstractHelper
                 'descendantsOrSelf' => 'list',
                 'tree' => 'tree',
                 'branch' => 'tree',
+                'branchNoTop' => 'tree',
+                'branchFromItem' => 'tree',
+                'branchBelowItem' => 'tree',
                 'flatTree' => 'flat',
                 'flatBranch' => 'flat',
             ];

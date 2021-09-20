@@ -55,6 +55,9 @@ class ThesaurusFieldset extends Fieldset
                         'descendantsOrSelf' => 'Descendants or self as list', // @translate
                         'tree' => 'Tree structure', // @translate
                         'branch' => 'Branch', // @translate
+                        'branchNoTop' => 'Branch without top', // @translate
+                        'branchFromItem' => 'Branch from item', // @translate
+                        'branchBelowItem' => 'Branch below item', // @translate
                         'flatTree' => 'Flat tree', // @translate
                         'flatBranch' => 'Flat branch', // @translate
                     ],
