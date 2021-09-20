@@ -57,6 +57,7 @@ class LinkTerm extends AbstractHelper
 
         $defaultOptions = [
             'link' => 'both',
+            'link_append_concept' => false,
             'term' => 'dcterms:subject',
             'browseString' => $translate('browse'), // @translate
         ];
@@ -73,6 +74,9 @@ class LinkTerm extends AbstractHelper
                 ],
             ],
         ];
+        if ($this->options['link_append_concept']) {
+            $query['concept'] = '__link_term_id__';
+        }
         $this->templateUrl = $urlHelper('site/resource', ['site-slug' => $currentSiteSlug, 'controller' => 'item'], ['query' => $query], false);
 
         $this->templateResourceUrl = $urlHelper('site/resource-id', ['site-slug' => $currentSiteSlug, 'controller' => 'item', 'id' => 0]);
