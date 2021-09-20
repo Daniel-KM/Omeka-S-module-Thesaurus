@@ -99,6 +99,16 @@ class ThesaurusController extends ItemController
                     $form->setData($formData);
                     if ($form->isValid() && is_array($jstree)) {
                         $this->updateThesaurusStructure($item, $jstree);
+                        $message = 'You may need to reload %1$sthis page%2$s a second time to clean indexation of top concepts.'; // @translate
+                        $message = new Message(
+                            $message,
+                            sprintf('<a href="%s">',
+                                htmlspecialchars($this->url()->fromRoute('admin/thesaurus/id', [], true))
+                            ),
+                            '</a>'
+                        );
+                        $message->setEscapeHtml(false);
+                        $this->messenger()->addWarning($message);
                     } else {
                         $this->messenger()->addFormErrors($form);
                     }
@@ -215,8 +225,12 @@ class ThesaurusController extends ItemController
             'scheme' => $item->id(),
             'structure' => $tree,
         ];
-        $job = $dispatcher->dispatch(\Thesaurus\Job\UpdateStructure::class, $args);
-        $message = 'Saving structure in background (%1$sjob #%2$d%3$s, %4$slogs%3$s). It can take a while.'; // @translate
+        // Use a foreground job: it's only some seconds.
+        // TODO If background job, check if the thesaurus is not restructurating or indexing before to display its structure, else errors may occur.
+        // $job = $dispatcher->dispatch(\Thesaurus\Job\UpdateStructure::class, $args);
+        // $message = 'Saving structure in background (%1$sjob #%2$d%3$s, %4$slogs%3$s). It can take a while.'; // @translate
+        $job = $dispatcher->dispatch(\Thesaurus\Job\UpdateStructure::class, $args, $item->getServiceLocator()->get('Omeka\Job\DispatchStrategy\Synchronous'));
+        $message = 'Structure saved and reindexed (%1$sjob #%2$d%3$s, %4$slogs%3$s).'; // @translate
         $message = new Message(
             $message,
             sprintf('<a href="%s">',

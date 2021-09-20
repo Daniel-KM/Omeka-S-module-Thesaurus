@@ -77,18 +77,18 @@ class UpdateStructure extends AbstractJob
 
         $schemeId = (int) $this->getArg('scheme');
         if (!$schemeId) {
-            $this->logger->err(
+            $this->logger->err(new Message(
                 'No thesaurus specified.' // @translate
-            );
+            ));
             return;
         }
 
         $scheme = $this->api->search('items', ['id' => $schemeId])->getContent();
         if (!$scheme) {
-            $this->logger->err(
+            $this->logger->err(new Message(
                 'Thesaurus #%d not found.', // @translate
                 $schemeId
-            );
+            ));
             return;
         }
         $scheme = reset($scheme);
@@ -97,10 +97,10 @@ class UpdateStructure extends AbstractJob
         $thesaurusHelper = $services->get('ControllerPluginManager')->get('thesaurus');
         $thesaurus = $thesaurusHelper($scheme);
         if (!$thesaurus->isSkos()) {
-            $this->logger->err(
+            $this->logger->err(new Message(
                 'Item #%d is not a thesaurus.', // @translate
                 $schemeId
-            );
+            ));
             return;
         }
 
@@ -110,10 +110,10 @@ class UpdateStructure extends AbstractJob
         // This is a flat tree.
         $structure = $this->getArg('structure') ?: [];
         if (empty($structure)) {
-            $this->logger->warn(
+            $this->logger->warn(new Message(
                 'The thesaurus "%1$s" (#%1$d) is empty. No process can be done for now. Include concepts in thesaurus first.', // @translate
                 $schemeId
-            );
+            ));
             return;
         }
 
@@ -197,24 +197,6 @@ class UpdateStructure extends AbstractJob
         }
         unset($data);
 
-        /* // Useless because the structure is ordered.
-        // TODO Keep for check?
-        // Complete the removed concepts with a recursive function.
-        $remove = function (array &$tree, int $level = 0) use ($removed, &$remove): void {
-            $hasRemoved = false;
-            foreach ($tree as $id => $data) {
-                if ($data['parent'] && isset($removed[$data['parent']])) {
-                    $hasRemoved = true;
-                    $removed[$id] = true;
-                }
-            }
-            if ($hasRemoved && $level < 100) {
-                $remove($tree, $level + 1);
-            }
-        };
-        $remove($tree);
-        */
-
         // Store the current flat tree for comparaison.
         $this->flatTree = $thesaurus->flatTree();
 
@@ -281,9 +263,12 @@ DQL;
 
     protected function updateTopConceptsForThesaurus(Thesaurus $thesaurus, array $topConcepts): bool
     {
+        // Don't use $thesaurus->tops(), it's not up to date.
         $existings = [];
-        foreach ($thesaurus->tops() as $top) {
-            $existings[$top['id']] = $top['id'];
+        foreach ($this->flatTree as $id => $element) {
+            if (empty($element['self']['parent'])) {
+                $existings[$id] = $id;
+            }
         }
 
         if ($existings === $topConcepts) {

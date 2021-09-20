@@ -842,9 +842,10 @@ class Thesaurus extends AbstractPlugin
      */
     protected function children(array $itemData): array
     {
+        $children = $this->structure[$itemData['id']]['children'] ?? [];
         return array_map(function ($v) {
             return $this->structure[$v];
-        }, $this->structure[$itemData['id']]['children']);
+        }, $children);
     }
 
     /**

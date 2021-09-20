@@ -82,10 +82,10 @@ class Indexing extends AbstractJob
 
         $scheme = $this->api->search('items', ['id' => $schemeId])->getContent();
         if (!$scheme) {
-            $this->logger->err(
+            $this->logger->err(new Message(
                 'Thesaurus #%d not found.', // @translate
                 $schemeId
-            );
+            ));
             return;
         }
         $scheme = reset($scheme);
