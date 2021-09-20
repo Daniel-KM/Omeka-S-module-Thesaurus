@@ -51,9 +51,6 @@ class Indexing extends AbstractJob
 
     public function perform(): void
     {
-        /**
-         * @var \Doctrine\ORM\EntityManager $em
-         */
         $services = $this->getServiceLocator();
 
         // The reference id is the job id for now.

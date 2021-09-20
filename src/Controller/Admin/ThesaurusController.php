@@ -4,6 +4,7 @@ namespace Thesaurus\Controller\Admin;
 
 use finfo;
 use Laminas\View\Model\ViewModel;
+use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Controller\Admin\ItemController;
 use Omeka\Stdlib\Message;
 use Thesaurus\Form\ConvertForm;
@@ -47,13 +48,32 @@ class ThesaurusController extends ItemController
             : $result;
     }
 
-    public function treeAction()
+    public function structureAction()
     {
         /** @var \Omeka\Api\Representation\ItemRepresentation $item */
         $item = $this->api()->read('items', $this->params('id'))->getContent();
+        if ($item->userIsAllowed('batch-edit')) {
+            $form = $this->getForm(\Laminas\Form\Form::class)
+                ->setAttribute('id', 'thesaurus-tree-form');
+            if ($this->getRequest()->isPost()) {
+                $formData = $this->params()->fromPost();
+                if (!empty($formData['jstree'])) {
+                    $jstree = json_decode($formData['jstree'], true);
+                    $form->setData($formData);
+                    if ($form->isValid() && is_array($jstree)) {
+                        $this->updateThesaurusStructure($item, $jstree);
+                    } else {
+                        $this->messenger()->addFormErrors($form);
+                    }
+                }
+            }
+        } else {
+            $form = null;
+        }
         return new ViewModel([
             'item' => $item,
             'resource' => $item,
+            'form' => $form,
         ]);
     }
 
@@ -135,6 +155,43 @@ class ThesaurusController extends ItemController
         }
 
         return $this->redirect()->toRoute('admin/thesaurus', ['action' => 'convert']);
+    }
+
+    /**
+     * A job is required to avoid a partially updated tree.
+     */
+    protected function updateThesaurusStructure(ItemRepresentation $item, array $structure): self
+    {
+        // Only id and parent are useful, but remove is important too.
+        $tree = [];
+        foreach ($structure as $element) {
+            if (!empty($element['id']) && (int) $element['id']) {
+                $tree[(int) $element['id']] = [
+                    'parent' => empty($element['parent']) || $element['parent'] === '#' ? null : (int) $element['parent'],
+                    'remove' => !empty($element['data']['remove']),
+                ];
+            }
+        }
+
+        $dispatcher = $this->jobDispatcher();
+        $args = [
+            'scheme' => $item->id(),
+            'structure' => $tree,
+        ];
+        $job = $dispatcher->dispatch(\Thesaurus\Job\UpdateStructure::class, $args);
+        $message = 'Saving structure in background (%1$sjob #%2$d%3$s, %4$slogs%3$s). It can take a while.'; // @translate
+        $message = new Message(
+            $message,
+            sprintf('<a href="%s">',
+                htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))
+            ),
+            $job->getId(),
+            '</a>',
+            sprintf('<a href="%1$s">', class_exists('Log\Entity\Log') ? $this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]) :  $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()]))
+        );
+        $message->setEscapeHtml(false);
+        $this->messenger()->addSuccess($message);
+        return $this;
     }
 
     /**

@@ -95,10 +95,10 @@ $sortHeadings = [
                         'class' => 'o-icon-edit',
                         'title' => $translate('Edit'),
                     ]) ?></li>
-                    <li><?= $hyperlink('', $url('admin/thesaurus/id', ['action' => 'tree', 'id' => $item->id()], true), [
+                    <li><?= $hyperlink('', $url('admin/thesaurus/id', ['action' => 'structure', 'id' => $item->id()], true), [
                         // Or fa-project-diagram or fa-folder-tree when available.
                         'class' => 'thesaurus fas fa-sitemap o-icon-',
-                        'title' => $translate('Tree'),
+                        'title' => $translate('Edit structure'),
                     ]) ?></li>
                     <?php endif; ?>
                     <?php if ($item->userIsAllowed('delete')): ?>

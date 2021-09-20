@@ -90,7 +90,7 @@ class Module extends AbstractModule
                 [Controller\Admin\ThesaurusController::class],
                 [
                     'index', 'browse', 'show', 'show-details', 'sidebar-select', 'search',
-                    'tree',
+                    'structure',
                 ]
             )
             ->allow(
@@ -98,7 +98,7 @@ class Module extends AbstractModule
                 [Controller\Admin\ThesaurusController::class],
                 [
                     'index', 'browse', 'show', 'show-details', 'sidebar-select', 'search', 'add', 'edit', 'delete', 'delete-confirm',
-                    'tree',
+                    'structure',
                 ]
             )
             ->allow(
@@ -106,7 +106,7 @@ class Module extends AbstractModule
                 [Controller\Admin\ThesaurusController::class],
                 [
                     'index', 'browse', 'show', 'show-details', 'sidebar-select', 'search', 'add', 'edit', 'delete', 'delete-confirm', 'batch-edit', 'batch-delete',
-                    'tree',
+                    'structure',
                 ]
             );
     }

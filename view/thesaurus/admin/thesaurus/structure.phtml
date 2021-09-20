@@ -3,6 +3,7 @@
  * @var \Laminas\View\Renderer\PhpRenderer $this
  * @var \Omeka\Api\Representation\ItemRepresentation $item
  * @var \Omeka\Api\Representation\ItemRepresentation $resource
+ * @var \Laminas\Form\Form $form
  */
 
 $plugins = $this->getHelperPluginManager();
@@ -15,6 +16,9 @@ $thesaurus = $plugins->get('thesaurus');
 /** @var \Thesaurus\View\Helper\Thesaurus $thesaurus */
 $thesaurus = $thesaurus($item);
 
+$isAllowed = $item->userIsAllowed('batch-edit');
+if ($isAllowed && $form): $form->prepare(); else: $form = null; endif;
+
 $this->headLink()
     ->prependStylesheet($assetUrl('css/advanced-search.css', 'Omeka'))
     ->appendStylesheet($assetUrl('css/jstree.css', 'Omeka'))
@@ -22,6 +26,7 @@ $this->headLink()
 $this->headScript()
     ->appendFile($assetUrl('vendor/jstree/jstree.min.js', 'Omeka'))
     ->appendFile($assetUrl('js/thesaurus-admin.js', 'Thesaurus'))
+    ->appendFile($assetUrl('js/jstree-plugins.js', 'Omeka'))
     ->appendFile($assetUrl('js/advanced-search.js', 'Omeka'))
     ->appendFile($assetUrl('js/query-form.js', 'Omeka'));
 
@@ -30,7 +35,21 @@ $this->htmlElement('body')->appendAttribute('class', 'thesaurus tree');
 
 <?= $this->pageTitle($item->displayTitle(), 1, $translate('Thesaurus')) ?>
 
-<div id="thesaurus-tree"
+<?php if ($form): ?>
+<?= $this->form()->openTag($form) ?>
+<?= $this->formRow($form->get('form_csrf')) ?>
+
+<div id="page-actions">
+    <?= $this->cancelButton() ?>
+    <button><?= $translate('Save') ?></button>
+</div>
+<?php endif; ?>
+
+<div id="jstree"
     data-link-form-url="<?= $form ? $escapeAttr($url('admin/thesaurus/id', ['action' => 'tree'], true)) : '' ?>"
     data-jstree-data="<?= $escapeAttr(json_encode($thesaurus->jsFlatTree(), 320)) ?>">
 </div>
+
+<?php if ($form): ?>
+<?= $this->form()->closeTag() ?>
+<?php endif; ?>
