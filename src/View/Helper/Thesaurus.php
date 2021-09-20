@@ -359,7 +359,8 @@ class Thesaurus extends AbstractHelper
      * "flatTree" or "flatBranch" (flat tree).
      * @param array $options Options for the partial. Managed default are
      * "title", "link", "link_append_concept", "term", "hideIfEmpty", "class",
-     * "expanded", "partial", "returnItem".
+     * "expanded", "template", "returnItem". Deprecated option : "partial"
+     * (renamed "template").
      * @return string
      */
     public function display($typeOrData, array $options = [])
@@ -407,10 +408,12 @@ class Thesaurus extends AbstractHelper
             }
         }
 
-        $partial = empty($options['partial'])
-            ? 'common/thesaurus-' . $partial
-            : $options['partial'];
-        unset($options['partial']);
+        $view = $this->getView();
+        $template = $options['template'] ?? $options['partial'] ?? null;
+        if (!$template || !$view->resolver($template)) {
+            $template = 'common/thesaurus-' . $partial;
+        }
+        unset($options['template'], $options['partial']);
 
         $options += [
             'title' => '',
@@ -423,7 +426,7 @@ class Thesaurus extends AbstractHelper
             'returnItem' => false,
         ];
 
-        return $this->getView()->partial($partial, [
+        return $view->partial($template, [
             'site' => $this->currentSite(),
             'item' => $this->item,
             'type' => $type,
