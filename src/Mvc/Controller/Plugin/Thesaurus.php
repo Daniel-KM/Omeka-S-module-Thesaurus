@@ -336,6 +336,20 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
+     * Get the list of narrower concepts of this item, with self first.
+     *
+     * @return ItemRepresentation[]|array
+     */
+    public function narrowersOrSelf(): array
+    {
+        if (!$this->isSkos || $this->isScheme()) {
+            return [];
+        }
+        return [$this->itemId => $this->returnItem ? $this->item : $this->structure[$this->itemId]]
+            + $this->narrowers();
+    }
+
+    /**
      * Get the related concepts of this item.
      *
      * @return ItemRepresentation[]|array

@@ -44,6 +44,7 @@ class ThesaurusFieldset extends Fieldset
                         'broader' => 'Broader', // @translate
                         'tops' => 'Top concepts', // @translate
                         'narrowers' => 'Narrower concepts', // @translate
+                        'narrowersOrSelf' => 'Narrower concepts or self', // @translate
                         'relateds' => 'Related concepts', // @translate
                         'relatedsOfSelf' => 'Related concepts or self', // @translate
                         'siblings' => 'Sibling concepts', // @translate

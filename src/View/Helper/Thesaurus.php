@@ -186,6 +186,17 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
+     * Get the list of narrower concepts of this item, with self first.
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::descendantsOrSelf()
+     * @return ItemRepresentation[]|array
+     */
+    public function narrowersOrSelf(): array
+    {
+        return $this->thesaurus->narrowersOrSelf();
+    }
+
+    /**
      * Get the related concepts of this item.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::relateds()
@@ -362,6 +373,7 @@ class Thesaurus extends AbstractHelper
                 'broader' => 'single',
                 'tops' => 'list',
                 'narrowers' => 'list',
+                'narrowersOrSelf' => 'list',
                 'relateds' => 'list',
                 'relatedsOrSelf' => 'list',
                 'siblings' => 'list',
