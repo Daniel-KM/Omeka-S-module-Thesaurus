@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-01 00:00+0000\n"
+"POT-Creation-Date: 2021-09-20 00:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,10 +16,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-#: Module.php:136
-msgid "Process"
-msgstr ""
 
 #: src/Generic/AbstractModule.php:66
 #, php-format
@@ -32,72 +28,42 @@ msgid "This module requires modules \"%s\"."
 msgstr ""
 
 #: src/Generic/AbstractModule.php:80
-msgid "This module has resources that connot be installed."
+msgid "This module has resources that cannot be installed."
 msgstr ""
 
-#: src/Generic/AbstractModule.php:707
+#: src/Generic/AbstractModule.php:725
 #, php-format
 msgid ""
 "The module \"%s\" was automatically deactivated because the dependencies are "
 "unavailable."
 msgstr ""
 
-#: src/View/Helper/LinkTerm.php:61
+#: src/View/Helper/LinkTerm.php:68
 msgid "browse"
 msgstr ""
 
-#: view/common/thesaurus-flat.phtml:23 view/common/thesaurus-flat.phtml:25
-#: view/common/thesaurus-tree.phtml:21 view/common/thesaurus-tree.phtml:23
-msgid "Tree of concepts"
-msgstr ""
-
-#: view/common/thesaurus-flat.phtml:24 view/common/thesaurus-tree.phtml:22
-msgid "Branch of current concept"
-msgstr ""
-
-#: view/common/thesaurus-flat.phtml:38 view/common/thesaurus-list.phtml:42
-#: view/common/thesaurus-single.phtml:36 view/common/thesaurus-tree.phtml:35
+#: view/common/thesaurus-flat.phtml:40 view/common/thesaurus-list.phtml:47
+#: view/common/thesaurus-single.phtml:36 view/common/thesaurus-tree.phtml:41
 msgid "No concept."
 msgstr ""
 
-#: view/common/thesaurus-list.phtml:21
-msgid "Top concepts"
+#: view/thesaurus/admin/thesaurus/add.phtml:14
+msgid "New thesaurus"
 msgstr ""
 
-#: view/common/thesaurus-list.phtml:22
-msgid "Narrower concepts"
+#: view/thesaurus/admin/thesaurus/add.phtml:14
+#: view/thesaurus/admin/thesaurus/browse.phtml:41
+#: view/thesaurus/admin/thesaurus/edit.phtml:23
+#: view/thesaurus/admin/thesaurus/structure.phtml:36
+msgid "Thesaurus"
 msgstr ""
 
-#: view/common/thesaurus-list.phtml:23
-msgid "Related concepts"
+#: view/thesaurus/admin/thesaurus/browse.phtml:103
+msgid "Edit structure"
 msgstr ""
 
-#: view/common/thesaurus-list.phtml:24 view/common/thesaurus-list.phtml:26
-msgid "Sibling concepts"
-msgstr ""
-
-#: view/common/thesaurus-list.phtml:27
-msgid "Ascendant concepts"
-msgstr ""
-
-#: view/common/thesaurus-list.phtml:28
-msgid "Descendant concepts"
-msgstr ""
-
-#: view/common/thesaurus-list.phtml:29
-msgid "Linked concepts"
-msgstr ""
-
-#: view/common/thesaurus-single.phtml:22
-msgid "Root concept"
-msgstr ""
-
-#: view/common/thesaurus-single.phtml:23
-msgid "Broader concept"
-msgstr ""
-
-#: view/common/thesaurus-single.phtml:24
-msgid "Specific concept"
+#: view/thesaurus/admin/thesaurus/browse.phtml:107
+msgid "Reindex"
 msgstr ""
 
 #: view/thesaurus/admin/thesaurus/convert.phtml:11
@@ -112,23 +78,69 @@ msgstr ""
 msgid "Convert a flat list into a flat thesaurus."
 msgstr ""
 
-#: Module.php:105
-msgid ""
-"The indexing must be run each time the structure of the thesaurus is updated."
+#: view/thesaurus/admin/thesaurus/form.phtml:31
+msgid "Concept scheme"
 msgstr ""
 
-#: Module.php:129
-#, php-format
-msgid "This indexing job is available via module %1$sBulk Check%2$s too."
+#: view/common/thesaurus-flat.phtml:25 view/common/thesaurus-flat.phtml:27
+#: view/common/thesaurus-tree.phtml:24 view/common/thesaurus-tree.phtml:29
+msgid "Tree of concepts"
 msgstr ""
 
-#: Module.php:146
-#, php-format
-msgid "Indexing terms in background (%1$sjob #%2$d%3$s)"
+#: view/common/thesaurus-flat.phtml:26 view/common/thesaurus-tree.phtml:25
+#: view/common/thesaurus-tree.phtml:26
+msgid "Branch of current concept"
 msgstr ""
 
-#: src/Form/ConfigForm.php:16
-msgid "Index all thesausus in background"
+#: view/common/thesaurus-single.phtml:22
+msgid "Root concept"
+msgstr ""
+
+#: view/common/thesaurus-single.phtml:23
+msgid "Broader concept"
+msgstr ""
+
+#: view/common/thesaurus-single.phtml:24
+msgid "Specific concept"
+msgstr ""
+
+#: view/common/thesaurus-tree.phtml:27
+msgid "Tree of current concept"
+msgstr ""
+
+#: view/common/thesaurus-tree.phtml:28
+msgid "Descendants of current concept"
+msgstr ""
+
+#: view/common/thesaurus-list.phtml:23 src/Form/ThesaurusFieldset.php:45
+msgid "Top concepts"
+msgstr ""
+
+#: view/common/thesaurus-list.phtml:24 view/common/thesaurus-list.phtml:25
+#: src/Form/ThesaurusFieldset.php:46
+msgid "Narrower concepts"
+msgstr ""
+
+#: view/common/thesaurus-list.phtml:26 view/common/thesaurus-list.phtml:27
+#: src/Form/ThesaurusFieldset.php:48
+msgid "Related concepts"
+msgstr ""
+
+#: view/common/thesaurus-list.phtml:28 view/common/thesaurus-list.phtml:29
+#: src/Form/ThesaurusFieldset.php:50
+msgid "Sibling concepts"
+msgstr ""
+
+#: view/common/thesaurus-list.phtml:30 view/common/thesaurus-list.phtml:31
+msgid "Ascendant concepts"
+msgstr ""
+
+#: view/common/thesaurus-list.phtml:32 view/common/thesaurus-list.phtml:33
+msgid "Descendant concepts"
+msgstr ""
+
+#: view/common/thesaurus-list.phtml:34
+msgid "Linked concepts"
 msgstr ""
 
 #: src/Form/ThesaurusFieldset.php:17
@@ -155,75 +167,103 @@ msgstr ""
 msgid "Broader"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:49
-msgid "Sibling concepts or self"
+#: src/Form/ThesaurusFieldset.php:47
+msgid "Narrower concepts or self"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:50
-msgid "Ascendants as list"
+#: src/Form/ThesaurusFieldset.php:49
+msgid "Related concepts or self"
 msgstr ""
 
 #: src/Form/ThesaurusFieldset.php:51
-msgid "Descendant as list"
+msgid "Sibling concepts or self"
 msgstr ""
 
 #: src/Form/ThesaurusFieldset.php:52
-msgid "Tree structure"
+msgid "Ascendants as list"
 msgstr ""
 
 #: src/Form/ThesaurusFieldset.php:53
-msgid "Branch"
+msgid "Ascendants or self as list"
 msgstr ""
 
 #: src/Form/ThesaurusFieldset.php:54
-msgid "Flat tree"
+msgid "Descendants as list"
 msgstr ""
 
 #: src/Form/ThesaurusFieldset.php:55
+msgid "Descendants or self as list"
+msgstr ""
+
+#: src/Form/ThesaurusFieldset.php:56
+msgid "Tree structure"
+msgstr ""
+
+#: src/Form/ThesaurusFieldset.php:57
+msgid "Branch"
+msgstr ""
+
+#: src/Form/ThesaurusFieldset.php:58
+msgid "Branch without top"
+msgstr ""
+
+#: src/Form/ThesaurusFieldset.php:59
+msgid "Branch from item"
+msgstr ""
+
+#: src/Form/ThesaurusFieldset.php:60
+msgid "Branch below item"
+msgstr ""
+
+#: src/Form/ThesaurusFieldset.php:61
+msgid "Flat tree"
+msgstr ""
+
+#: src/Form/ThesaurusFieldset.php:62
 msgid "Flat branch"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:63
+#: src/Form/ThesaurusFieldset.php:70
 msgid "Select type…"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:70
+#: src/Form/ThesaurusFieldset.php:77
 msgid "Type of link"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:73
-msgid "Terms"
+#: src/Form/ThesaurusFieldset.php:80
+msgid "Concepts"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:75
+#: src/Form/ThesaurusFieldset.php:82
 msgid "Both"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:88
+#: src/Form/ThesaurusFieldset.php:95
 msgid "Property for links"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:89
+#: src/Form/ThesaurusFieldset.php:96
 msgid "Generally, it is \"dcterms:subject\"."
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:105
+#: src/Form/ThesaurusFieldset.php:112
 msgid "Hide if empty"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:115
+#: src/Form/ThesaurusFieldset.php:122
 msgid "Level expanded"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:116
+#: src/Form/ThesaurusFieldset.php:123
 msgid "Set 0 to start closed, a big number to display all levels."
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:129
+#: src/Form/ThesaurusFieldset.php:136
 msgid "Template to display"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:130
+#: src/Form/ThesaurusFieldset.php:137
 msgid ""
 "Templates are in folder \"common/block-layout\" of the theme and should "
 "start with \"thesaurus\"."
@@ -235,52 +275,78 @@ msgstr ""
 
 #: src/Form/ConvertForm.php:18
 msgid ""
-"The thesaurus is a simple txt file, with one term by line, and tabulations "
-"to indicate the hierarchic level."
+"The thesaurus is a simple txt file, with one concept by line, and "
+"tabulations to indicate the hierarchic level."
 msgstr ""
 
 #: src/Form/ConvertForm.php:30
 msgid "Upload thesaurus"
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:36
+#: src/Controller/Admin/ThesaurusController.php:59
+#, php-format
+msgid "The item #%d does not belong to a thesaurus."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:74
+#, php-format
+msgid "Indexing concepts in background (%1$sjob #%2$d%3$s, %4$slogs%3$s)."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:102
+#, php-format
+msgid ""
+"You may need to reload %1$sthis page%2$s a second time to clean indexation "
+"of top concepts."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:145
 msgid "Unallowed request."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:44
+#: src/Controller/Admin/ThesaurusController.php:153
 msgid "Missing file."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:46
+#: src/Controller/Admin/ThesaurusController.php:155
 msgid "convert"
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:66
+#: src/Controller/Admin/ThesaurusController.php:175
 msgid "An error occurred when uploading the file."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:70
+#: src/Controller/Admin/ThesaurusController.php:179
 #, php-format
 msgid "Wrong media type (\"%s\") for file."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:75
+#: src/Controller/Admin/ThesaurusController.php:184
 msgid "The file is empty."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:82
+#: src/Controller/Admin/ThesaurusController.php:191
 msgid "Unable to convert the file."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:86
+#: src/Controller/Admin/ThesaurusController.php:195
 msgid "The file is successfully converted."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:226
+msgid "structure"
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:233
+#, php-format
+msgid "Structure saved and reindexed (%1$sjob #%2$d%3$s, %4$slogs%3$s)."
 msgstr ""
 
 #: src/Api/Representation/TermRepresentation.php:362
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:560
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:582
-#: src/Mvc/Controller/Plugin/Thesaurus.php:765
-#: src/Mvc/Controller/Plugin/Thesaurus.php:787
+#: src/Mvc/Controller/Plugin/Thesaurus.php:861
+#: src/Mvc/Controller/Plugin/Thesaurus.php:882
 #, php-format
 msgid "There cannot be more than %d ancestors."
 msgstr ""
@@ -291,10 +357,10 @@ msgstr ""
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:606
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:633
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:662
-#: src/Mvc/Controller/Plugin/Thesaurus.php:811
-#: src/Mvc/Controller/Plugin/Thesaurus.php:837
-#: src/Mvc/Controller/Plugin/Thesaurus.php:865
-#: src/Mvc/Controller/Plugin/Thesaurus.php:895
+#: src/Mvc/Controller/Plugin/Thesaurus.php:906
+#: src/Mvc/Controller/Plugin/Thesaurus.php:931
+#: src/Mvc/Controller/Plugin/Thesaurus.php:958
+#: src/Mvc/Controller/Plugin/Thesaurus.php:987
 #, php-format
 msgid "There cannot be more than %d levels of descendants."
 msgstr ""
@@ -319,113 +385,170 @@ msgstr ""
 msgid "A term must not be a ancestor of itself."
 msgstr ""
 
-#: src/Job/Indexing.php:83
-msgid "No thesaurus to index."
+#: src/Job/UpdateStructure.php:84 src/Job/Indexing.php:81
+msgid "No thesaurus specified."
 msgstr ""
 
-#: src/Job/Indexing.php:89
+#: src/Job/UpdateStructure.php:92 src/Job/Indexing.php:89
 #, php-format
-msgid "Starting indexing of %d thesaurus."
+msgid "Thesaurus #%d not found."
+msgstr ""
+
+#: src/Job/UpdateStructure.php:104
+#, php-format
+msgid "Item #%d is not a thesaurus."
+msgstr ""
+
+#: src/Job/UpdateStructure.php:117
+#, php-format
+msgid ""
+"The thesaurus \"%1$s\" (#%1$d) is empty. No process can be done for now. "
+"Include concepts in thesaurus first."
+msgstr ""
+
+#: src/Job/UpdateStructure.php:124
+#, php-format
+msgid "Starting restructuration of thesaurus \"%1$s\" (#%2$d)."
+msgstr ""
+
+#: src/Job/UpdateStructure.php:139
+#, php-format
+msgid ""
+"Concepts were restructured and reindexed for thesaurus \"%1$s\" (#%2$d)."
+msgstr ""
+
+#: src/Job/UpdateStructure.php:145
+#, php-format
+msgid "An error occurred. Ended restructuration of thesaurus \"%1$s\" (#%2$d)."
+msgstr ""
+
+#: src/Job/UpdateStructure.php:176
+#, php-format
+msgid "Missing id or parent key for id #%d."
+msgstr ""
+
+#: src/Job/UpdateStructure.php:222
+msgid "The thesaurus is now empty."
 msgstr ""
 
 #: src/Job/Indexing.php:97
 #, php-format
-msgid "Indexation was stopped. %d/%d thesaurus processed."
+msgid "Starting indexing of thesaurus \"%1$s\" (#%2$d)."
 msgstr ""
 
-#: src/Job/Indexing.php:107
+#: src/Job/Indexing.php:106
 #, php-format
-msgid "Thesaurus #%d indexed."
+msgid "Thesaurus \"%1$s\" (#%2$d) indexed."
 msgstr ""
 
-#: src/Job/Indexing.php:113
+#: src/Job/Indexing.php:112
 #, php-format
-msgid "Thesaurus #%d not indexed."
+msgid "Thesaurus \"%1$s\" (#%2$d) not indexed."
 msgstr ""
 
-#: src/Job/Indexing.php:121
-#, php-format
-msgid "Ended indexing of %d thesaurus."
-msgstr ""
-
-#: src/Job/Indexing.php:171
+#: src/Job/Indexing.php:163
 #, php-format
 msgid "Thesaurus #%1$d has a missing root for item #%2$d."
 msgstr ""
 
-#: src/Job/Indexing.php:264
+#: src/Job/Indexing.php:256
 #, php-format
 msgid "Thesaurus #%d has no top concepts."
 msgstr ""
 
-#: src/Job/Indexing.php:295
+#: src/Job/Indexing.php:287
 #, php-format
 msgid "The term #%1$d has more than %2$d levels."
 msgstr ""
 
-#: src/Site/BlockLayout/Thesaurus.php:19
-msgid "Thesaurus"
-msgstr ""
-
-#: src/Generic/InstallResources.php:108
+#: src/Generic/InstallResources.php:85
 #, php-format
 msgid ""
-"A resource template named exists for %s: rename it or remove it before "
-"installing this module."
+"An error occured when loading vocabulary \"%s\": file has no json content."
 msgstr ""
 
-#: src/Generic/InstallResources.php:173
-#, php-format
-msgid "The file \"%s\" cannot be read. Check your file system or the url."
-msgstr ""
-
-#: src/Generic/InstallResources.php:198
+#: src/Generic/InstallResources.php:92
 #, php-format
 msgid ""
 "An error occured when adding the prefix \"%s\": another vocabulary exists. "
 "Resolve the conflict before installing this module."
 msgstr ""
 
-#: src/Generic/InstallResources.php:280
-msgid "The current version of this module requires the module Custom Vocab."
-msgstr ""
-
-#: src/Generic/InstallResources.php:287
+#: src/Generic/InstallResources.php:104
 #, php-format
 msgid ""
-"A custom vocab named \"%s\" exists and has not the needed language (\"%s\"): "
-"check it or remove it before installing this module."
+"A custom vocab exists for \"%s\". Remove it or rename it before installing "
+"this module."
 msgstr ""
 
-#: src/Generic/InstallResources.php:332
+#: src/Generic/InstallResources.php:115
+#, php-format
+msgid ""
+"A resource template exists for %s. Rename it or remove it before installing "
+"this module."
+msgstr ""
+
+#: src/Generic/InstallResources.php:304
 #, php-format
 msgid "The vocabulary \"%s\" was already installed and was kept."
 msgstr ""
 
-#: src/Generic/InstallResources.php:342
+#: src/Generic/InstallResources.php:313
 #, php-format
 msgid ""
 "An error occured when adding the prefix \"%s\": another vocabulary exists "
 "with the same prefix. Resolve the conflict before installing this module."
 msgstr ""
 
-#: src/Generic/InstallResources.php:362
+#: src/Generic/InstallResources.php:325
 #, php-format
 msgid ""
 "An error occured when adding the prefix \"%s\" and the associated "
 "properties: %s"
 msgstr ""
 
-#: src/Generic/InstallResources.php:390
+#: src/Generic/InstallResources.php:405 src/Generic/InstallResources.php:415
+#, php-format
+msgid ""
+"An error occured when updating vocabulary \"%s\" and the associated "
+"properties: %s"
+msgstr ""
+
+#: src/Generic/InstallResources.php:509
+#, php-format
+msgid "The following \"%1$s\" of the vocabulary \"%2$s\" were replaced: %3$s"
+msgstr ""
+
+#: src/Generic/InstallResources.php:518
+msgid ""
+"Resources, values and templates were updated, but you may check settings "
+"where the old ones were used."
+msgstr ""
+
+#: src/Generic/InstallResources.php:543
 #, php-format
 msgid "The resource template named \"%s\" is already available and is skipped."
 msgstr ""
 
-#: src/Generic/InstallResources.php:652
+#: src/Generic/InstallResources.php:805
 #, php-format
 msgid "The custom vocab named \"%s\" is not available."
 msgstr ""
 
-#: config/module.config.php:71
-msgid "index"
+#: src/Generic/InstallResources.php:911
+msgid "No file or url set for the vocabulary."
+msgstr ""
+
+#: src/Generic/InstallResources.php:921
+#, php-format
+msgid "The file \"%s\" cannot be read. Check the url."
+msgstr ""
+
+#: src/Generic/InstallResources.php:931
+#, php-format
+msgid "The file \"%s\" cannot be read. Check the file."
+msgstr ""
+
+#: src/Generic/InstallResources.php:952
+msgid "A vocabulary must have a namespace uri and a prefix."
 msgstr ""

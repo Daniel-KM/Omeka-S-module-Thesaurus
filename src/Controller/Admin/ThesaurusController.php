@@ -71,7 +71,7 @@ class ThesaurusController extends ItemController
         ];
         $job = $dispatcher->dispatch(\Thesaurus\Job\Indexing::class, $args);
         $message = new \Omeka\Stdlib\Message(
-            'Indexing terms in background (%1$sjob #%2$d%3$s, %4$slogs%3$s).', // @translate
+            'Indexing concepts in background (%1$sjob #%2$d%3$s, %4$slogs%3$s).', // @translate
             sprintf(
                 '<a href="%s">',
                 htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))

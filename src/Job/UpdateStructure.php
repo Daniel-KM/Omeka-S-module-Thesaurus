@@ -133,7 +133,7 @@ class UpdateStructure extends AbstractJob
             ];
             $dispatcher->dispatch(\Thesaurus\Job\Indexing::class, $args, $synchronous);
             $message = new Message(
-                'Terms were restructured and reindexed for thesaurus "%1$s" (#%2$d).', // @translate
+                'Concepts were restructured and reindexed for thesaurus "%1$s" (#%2$d).', // @translate
                 $scheme->displayTitle(), $schemeId
             );
             $this->logger->notice($message);

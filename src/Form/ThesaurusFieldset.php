@@ -77,7 +77,7 @@ class ThesaurusFieldset extends Fieldset
                     'label' => 'Type of link', // @translate
                     'empty_option' => '',
                     'value_options' => [
-                        'term' => 'Terms', // @translate
+                        'term' => 'Concepts', // @translate
                         'resource' => 'Resources', // @translate
                         'both' => 'Both', // @translate
                         'none' => 'None', // @translate

@@ -15,7 +15,7 @@ class ConvertForm extends Form
             'type' => 'file',
             'options' => [
                 'label' => 'Thesaurus text file', // @translate
-                'info' => 'The thesaurus is a simple txt file, with one term by line, and tabulations to indicate the hierarchic level.', //@translate
+                'info' => 'The thesaurus is a simple txt file, with one concept by line, and tabulations to indicate the hierarchic level.', //@translate
             ],
             'attributes' => [
                 'id' => 'txt',

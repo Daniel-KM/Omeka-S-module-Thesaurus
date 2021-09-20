@@ -20,7 +20,7 @@ $deleteButton = $item->userIsAllowed('delete')
 var valuesJson = <?php echo json_encode($item->values()); ?>;
 </script>
 
-<?= $this->pageTitle($item->displayTitle(), 1, $translate('Thésaurus'), $translate('Edit')) ?>
+<?= $this->pageTitle($item->displayTitle(), 1, $translate('Thesaurus'), $translate('Edit')) ?>
 <?php $this->trigger('view.edit.before'); ?>
 <?= $this->partial('thesaurus/admin/thesaurus/form.phtml', [
     'form' => $form,
