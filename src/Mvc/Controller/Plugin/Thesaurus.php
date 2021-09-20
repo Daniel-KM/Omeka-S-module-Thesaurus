@@ -154,10 +154,8 @@ class Thesaurus extends AbstractPlugin
      * It is not recommended to return items with big thesaurus.
      *
      * @deprecated Use self::itemFromData() instead, in particular for big thesaurus.
-     * @param bool $returnItem
-     * @return \Thesaurus\Mvc\Controller\Plugin\Thesaurus
      */
-    public function setReturnItem($returnItem = false)
+    public function setReturnItem(bool $returnItem = false): self
     {
         $this->returnItem = (bool) $returnItem;
         return $this;
@@ -165,14 +163,11 @@ class Thesaurus extends AbstractPlugin
 
     /**
      * Helper to get the item representation from item data.
-     *
-     * @param array $itemData
-     * @return ItemRepresentation|null
      */
-    public function itemFromData(array $itemData = null)
+    public function itemFromData(array $itemData = null): ?ItemRepresentation
     {
         return $itemData
-            ? $this->api->searchOne('items', ['id' => $itemData['id']], ['initialize' => false, 'finalize' => false])->getContent()
+            ? $this->api->searchOne('items', ['id' => $itemData['id']], ['initialize' => false])->getContent()
             : null;
     }
 
@@ -185,10 +180,8 @@ class Thesaurus extends AbstractPlugin
      * The terms are checked with the prefix "skos" only.
      * The class may not be a skos class in order to manage sub classes of it,
      * not directly managed by Omeka.
-     *
-     * @return bool
      */
-    public function isSkos()
+    public function isSkos(): bool
     {
         if (is_null($this->isSkos)) {
             $class = $this->resourceClassName($this->item);
@@ -207,10 +200,8 @@ class Thesaurus extends AbstractPlugin
 
     /**
      * This item is a scheme if it has the class ConceptScheme or a top concept.
-     *
-     * @return bool
      */
-    public function isScheme()
+    public function isScheme(): bool
     {
         if (is_null($this->isScheme)) {
             $this->isScheme = $this->resourceClassName($this->item) === self::ROOT_CLASS
@@ -222,10 +213,8 @@ class Thesaurus extends AbstractPlugin
     /**
      * This item is a concept if it has the class Concept or a required property
      * of a concept (skos:broader, skos:narrower or skos:topConceptOf).
-     *
-     * @return bool
      */
-    public function isConcept()
+    public function isConcept(): bool
     {
         if (is_null($this->isConcept)) {
             if ($this->resourceClassName($this->item) === self::ITEM_CLASS) {
@@ -241,15 +230,21 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
+     * Check if a concept is a root (top concept).
+     */
+    public function isRoot(): bool
+    {
+        return $this->isSkos
+            && !empty($this->structure[$this->itemId]['top']);
+    }
+
+    /**
      * This item is a collection if it has class Collection or OrderedCollection
      * or properties skos:member or skos:memberList.
      *
      * Note: an OrderedCollection is a Collection.
-     *
-     * @param bool $strict
-     * @return bool
      */
-    public function isCollection($strict = false)
+    public function isCollection(bool $strict = false): bool
     {
         if (is_null($this->isCollection)) {
             if ($strict) {
@@ -269,10 +264,8 @@ class Thesaurus extends AbstractPlugin
     /**
      * This item is an ordered collection if it has the class OrderedCollection,
      * or a property skos:memberList.
-     *
-     * @return bool
      */
-    public function isOrderedCollection()
+    public function isOrderedCollection(): bool
     {
         if (is_null($this->isOrderedCollection)) {
             $this->isScheme = $this->resourceClassName($this->item) === 'skos:OrderedCollection'
@@ -283,10 +276,8 @@ class Thesaurus extends AbstractPlugin
 
     /**
      * Get the scheme of this item.
-     *
-     * @return ItemRepresentation|null
      */
-    public function scheme()
+    public function scheme(): ?ItemRepresentation
     {
         if (is_null($this->scheme)) {
             $this->scheme = $this->isScheme()
@@ -301,20 +292,9 @@ class Thesaurus extends AbstractPlugin
      *
      * @return ItemRepresentation[]|array
      */
-    public function tops()
+    public function tops(): array
     {
         return $this->returnFromData($this->tops);
-    }
-
-    /**
-     * Check if a concept is a root (top concept).
-     *
-     * @return bool
-     */
-    public function isRoot()
-    {
-        return $this->isSkos
-            && !empty($this->structure[$this->itemId]['top']);
     }
 
     /**
@@ -322,7 +302,7 @@ class Thesaurus extends AbstractPlugin
      *
      * @todo Check performance to get the root concept.
      *
-     * @return ItemRepresentation|[]|null
+     * @return ItemRepresentation|array|null
      */
     public function root()
     {
@@ -334,7 +314,7 @@ class Thesaurus extends AbstractPlugin
     /**
      * Get the broader concept of this item.
      *
-     * @return ItemRepresentation|[]|null
+     * @return ItemRepresentation|array|null
      */
     public function broader()
     {
@@ -348,7 +328,7 @@ class Thesaurus extends AbstractPlugin
      *
      * @return ItemRepresentation[]|array
      */
-    public function narrowers()
+    public function narrowers(): array
     {
         return $this->isSkos && $this->isConcept()
             ? $this->returnFromData($this->children($this->structure[$this->itemId]))
@@ -360,7 +340,7 @@ class Thesaurus extends AbstractPlugin
      *
      * @return ItemRepresentation[]|array
      */
-    public function relateds()
+    public function relateds(): array
     {
         if (!$this->isSkos || $this->isScheme()) {
             return [];
@@ -375,7 +355,7 @@ class Thesaurus extends AbstractPlugin
      *
      * @return ItemRepresentation[]|array
      */
-    public function relatedsOrSelf()
+    public function relatedsOrSelf(): array
     {
         if (!$this->isSkos || $this->isScheme()) {
             return [];
@@ -390,7 +370,7 @@ class Thesaurus extends AbstractPlugin
      *
      * @return ItemRepresentation[]|array
      */
-    public function siblings()
+    public function siblings(): array
     {
         if (!$this->isSkos || $this->isScheme) {
             return [];
@@ -405,7 +385,7 @@ class Thesaurus extends AbstractPlugin
      *
      * @return ItemRepresentation[]|array
      */
-    public function siblingsOrSelf()
+    public function siblingsOrSelf(): array
     {
         if (!$this->isSkos || $this->isScheme()) {
             return [];
@@ -425,7 +405,7 @@ class Thesaurus extends AbstractPlugin
      *
      * @return ItemRepresentation[]|array
      */
-    public function ascendants()
+    public function ascendants(): array
     {
         return $this->isSkos && $this->isConcept()
             ? $this->returnFromData($this->ancestors($this->structure[$this->itemId]))
@@ -437,7 +417,7 @@ class Thesaurus extends AbstractPlugin
      *
      * @return ItemRepresentation[]|array
      */
-    public function ascendantsOrSelf()
+    public function ascendantsOrSelf(): array
     {
         if (!$this->isSkos || $this->isScheme()) {
             return [];
@@ -451,7 +431,7 @@ class Thesaurus extends AbstractPlugin
      *
      * @return ItemRepresentation[]|array
      */
-    public function descendants()
+    public function descendants(): array
     {
         return $this->isSkos && $this->isConcept()
             ? $this->returnFromData($this->listDescendants($this->structure[$this->itemId]))
@@ -463,7 +443,7 @@ class Thesaurus extends AbstractPlugin
      *
      * @return ItemRepresentation[]|array
      */
-    public function descendantsOrSelf()
+    public function descendantsOrSelf(): array
     {
         if (!$this->isSkos || $this->isScheme()) {
             return [];
@@ -475,10 +455,8 @@ class Thesaurus extends AbstractPlugin
 
     /**
      * Get the hierarchy of this item from the root (top concepts).
-     *
-     * @return array
      */
-    public function tree()
+    public function tree(): array
     {
         if (!$this->isSkos) {
             return [];
@@ -506,10 +484,8 @@ class Thesaurus extends AbstractPlugin
 
     /**
      * Get the hierarchy branch of this item, self included.
-     *
-     * @return array
      */
-    public function branch()
+    public function branch(): array
     {
         if (!$this->isSkos || $this->isScheme()) {
             return [];
@@ -531,10 +507,8 @@ class Thesaurus extends AbstractPlugin
 
     /**
      * Get the flat hierarchy of this item from the root (top concept).
-     *
-     * @return array
      */
-    public function flatTree()
+    public function flatTree(): array
     {
         if (!$this->isSkos || $this->isScheme()) {
             return [];
@@ -562,10 +536,8 @@ class Thesaurus extends AbstractPlugin
 
     /**
      * Get the flat hierarchy branch of this item, self included.
-     *
-     * @return array
      */
-    public function flatBranch()
+    public function flatBranch(): array
     {
         if (!$this->isSkos || $this->isScheme()) {
             return [];
@@ -584,9 +556,8 @@ class Thesaurus extends AbstractPlugin
      * This output is recommended for a select element form (terms).
      *
      * @param array $options May be: Indent, prepend_id.
-     * @return array
      */
-    public function listTree(array $options = null)
+    public function listTree(array $options = null): array
     {
         $result = $this->flatTree();
         return $this->list($result, is_null($options) ? [] : $options);
@@ -598,9 +569,8 @@ class Thesaurus extends AbstractPlugin
      * This output is recommended for a select element form (terms).
      *
      * @param array $options May be: Indent, prepend_id.
-     * @return array
      */
-    public function listBranch(array $options = null)
+    public function listBranch(array $options = null): array
     {
         $result = $this->flatBranch();
         return $this->list($result, is_null($options) ? [] : $options);
@@ -619,7 +589,7 @@ class Thesaurus extends AbstractPlugin
      * - max_length (int): Max size of the terms.
      * @return array
      */
-    protected function list(array $list, array $options)
+    protected function list(array $list, array $options): array
     {
         if ($this->returnItem) {
             return array_combine(array_keys($list), array_column($list, 'self'));
@@ -661,9 +631,8 @@ class Thesaurus extends AbstractPlugin
      * Get the name of the current resource class.
      *
      * @param ItemRepresentation $item
-     * @return string
      */
-    protected function resourceClassName(ItemRepresentation $item)
+    protected function resourceClassName(ItemRepresentation $item): string
     {
         $resourceClass = $item->resourceClass();
         return $resourceClass
@@ -676,9 +645,8 @@ class Thesaurus extends AbstractPlugin
      *
      * @param ItemRepresentation $item
      * @param string $term
-     * @return ItemRepresentation|null
      */
-    protected function resourceFromValue(ItemRepresentation $item, $term)
+    protected function resourceFromValue(ItemRepresentation $item, $term): ?ItemRepresentation
     {
         $values = $item->values();
         if (isset($values[$term])) {
@@ -689,6 +657,7 @@ class Thesaurus extends AbstractPlugin
                 }
             }
         }
+        return null;
     }
 
     /**
@@ -696,9 +665,8 @@ class Thesaurus extends AbstractPlugin
      *
      * @param array $itemData
      * @param string $term
-     * @return array
      */
-    protected function resourcesFromValue(array $itemData, $term)
+    protected function resourcesFromValue(array $itemData, $term): array
     {
         $item = $this->itemFromData($itemData);
         return array_map(function ($v) {
@@ -713,7 +681,7 @@ class Thesaurus extends AbstractPlugin
      * @param string $term
      * @return ItemRepresentation[]
      */
-    protected function resourcesItemsFromValue(ItemRepresentation $item, $term)
+    protected function resourcesItemsFromValue(ItemRepresentation $item, $term): array
     {
         $result = [];
         $values = $item->values();
@@ -738,7 +706,7 @@ class Thesaurus extends AbstractPlugin
      * @param array $itemData
      * @return array|null
      */
-    protected function parent(array $itemData)
+    protected function parent(array $itemData): ?array
     {
         $parent = $this->structure[$itemData['id']]['parent'];
         return $parent ? $this->structure[$parent] : null;
@@ -748,9 +716,8 @@ class Thesaurus extends AbstractPlugin
      * Get the narrower items of an item.
      *
      * @param array $itemData
-     * @return array
      */
-    protected function children(array $itemData)
+    protected function children(array $itemData): array
     {
         return array_map(function ($v) {
             return $this->structure[$v];
@@ -762,9 +729,8 @@ class Thesaurus extends AbstractPlugin
      *
      * @param array $itemData
      * @param int $level
-     * @return array
      */
-    protected function ancestor(array $itemData, $level = 0)
+    protected function ancestor(array $itemData, $level = 0): array
     {
         if ($level > $this->maxAncestors) {
             throw new \Omeka\Api\Exception\BadResponseException(sprintf(
@@ -784,9 +750,8 @@ class Thesaurus extends AbstractPlugin
      * @param array $itemData
      * @param array $list Internal param for recursive process.
      * @param int $level
-     * @return array
      */
-    protected function ancestors(array $itemData, array $list = [], $level = 0)
+    protected function ancestors(array $itemData, array $list = [], $level = 0): array
     {
         if ($level > $this->maxAncestors) {
             throw new \Omeka\Api\Exception\BadResponseException(sprintf(
@@ -834,9 +799,8 @@ class Thesaurus extends AbstractPlugin
      * @param array $itemData
      * @param array $branch Internal param for recursive process.
      * @param int $level
-     * @return array
      */
-    protected function recursiveBranch(array $itemData, array $branch = [], $level = 0)
+    protected function recursiveBranch(array $itemData, array $branch = [], $level = 0): array
     {
         if ($level > $this->maxAncestors) {
             throw new \Omeka\Api\Exception\BadResponseException(sprintf(
@@ -862,9 +826,8 @@ class Thesaurus extends AbstractPlugin
      * @param ItemRepresentation $item
      * @param array $branch Internal param for recursive process.
      * @param int $level
-     * @return array
      */
-    protected function recursiveBranchItems(ItemRepresentation $item, array $branch = [], $level = 0)
+    protected function recursiveBranchItems(ItemRepresentation $item, array $branch = [], $level = 0): array
     {
         if ($level > $this->maxAncestors) {
             throw new \Omeka\Api\Exception\BadResponseException(sprintf(
@@ -892,9 +855,8 @@ class Thesaurus extends AbstractPlugin
      * @param array $itemData
      * @param array $branch Internal param for recursive process.
      * @param int $level
-     * @return array
      */
-    protected function recursiveFlatBranch(array $itemData, array $branch = [], $level = 0)
+    protected function recursiveFlatBranch(array $itemData, array $branch = [], int $level = 0): array
     {
         if ($level > $this->maxAncestors) {
             throw new \Omeka\Api\Exception\BadResponseException(sprintf(
@@ -915,10 +877,7 @@ class Thesaurus extends AbstractPlugin
         return $branch;
     }
 
-    /**
-     * @return self
-     */
-    protected function cacheTerms()
+    protected function cacheTerms(): self
     {
         if (count($this->terms)) {
             return $this;
@@ -934,7 +893,7 @@ class Thesaurus extends AbstractPlugin
      *
      * @return array Associative array of ids by term.
      */
-    protected function getPropertyIds()
+    protected function getPropertyIds(): array
     {
         if (isset($this->terms['property'])) {
             return $this->terms['property'];
@@ -969,7 +928,7 @@ class Thesaurus extends AbstractPlugin
      *
      * @return array Associative array of ids by term.
      */
-    protected function getResourceClassIds()
+    protected function getResourceClassIds(): array
     {
         if (isset($this->terms['class'])) {
             return $this->terms['class'];
@@ -999,10 +958,7 @@ class Thesaurus extends AbstractPlugin
         return $this->terms['class'];
     }
 
-    /**
-     * @return self
-     */
-    protected function cacheStructure()
+    protected function cacheStructure(): self
     {
         $this->structure = [];
 

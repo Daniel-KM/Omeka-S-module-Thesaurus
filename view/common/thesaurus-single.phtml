@@ -19,18 +19,18 @@ if (isset($options['title'])):
     $title = $options['title'];
 else:
     $title = [
-        'root' => $translate('Root concept'),
-        'broader' => $translate('Broader concept'),
-        'custom' => $translate('Specific concept'),
+        'root' => 'Root concept', // @translate
+        'broader' => 'Broader concept', // @translate
+        'custom' => 'Specific concept', // @translate
     ];
-    $title = $title[$type];
+    $title = isset($title[$type]) ? $translate($title[$type]) : '';
 endif;
 
 $linkTerm = $this->linkTerm($options);
 ?>
 
 <div class="thesaurus thesaurus-single <?= $options['class'] ?>">
-    <h4><?= $title ?></h4>
+    <h4><?= $escape($title) ?></h4>
     <?php if (empty($data)): ?>
     <p>
         <?= $translate('No concept.') ?>

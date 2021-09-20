@@ -5,6 +5,7 @@
  * @var array $options
  * @var \Thesaurus\View\Helper\LinkTerm $linkTerm
  * @var int $level
+ * @var \Laminas\View\Helper\Partial $partial
  */
 
 ?>
@@ -12,7 +13,13 @@
     <?php foreach ($data as $current): ?>
     <li><?= $linkTerm->render($current['self']) ?>
         <?php if (!empty($current['children'])): ?>
-        <?= $this->partial('common/thesaurus-tree-recursive', ['data' => $current['children'], 'options' => $options, 'linkTerm' => $linkTerm, 'level' => $level + 1]) ?>
+        <?= $partial('common/thesaurus-tree-recursive', [
+            'data' => $current['children'],
+            'options' => $options,
+            'linkTerm' => $linkTerm,
+            'partial' => $partial,
+            'level' => $level + 1,
+        ]) ?>
         <?php endif; ?>
    </li>
    <?php endforeach; ?>

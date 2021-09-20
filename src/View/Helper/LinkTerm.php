@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Thesaurus\View\Helper;
 
 use Laminas\View\Helper\AbstractHelper;
@@ -42,9 +43,8 @@ class LinkTerm extends AbstractHelper
      * @param array $options "link": term, resource, none or both; "term", the
      * property to use for resource links; "browseString", the string to use to
      * browse resource when link is both.
-     * @return self
      */
-    public function __invoke(array $options = [])
+    public function __invoke(?array $options = []): self
     {
         $view = $this->getView();
         $plugins = $view->getHelperPluginManager();
@@ -55,11 +55,14 @@ class LinkTerm extends AbstractHelper
         $urlHelper = $this->url;
         $currentSiteSlug = $this->currentSite()->slug();
 
-        $this->options = $options + [
+        $defaultOptions = [
             'link' => 'both',
             'term' => 'dcterms:subject',
             'browseString' => $translate('browse'), // @translate
         ];
+        $this->options = $options
+            ? $options + $defaultOptions
+            : $defaultOptions;
 
         $query = [
             'property' => [
@@ -82,9 +85,8 @@ class LinkTerm extends AbstractHelper
      * Display data according to options.
      *
      * @param ItemRepresentation|array $data
-     * @return string
      */
-    public function render($data)
+    public function render($data): string
     {
         return is_object($data)
             ? $this->renderItem($data)
@@ -98,23 +100,18 @@ class LinkTerm extends AbstractHelper
      * the internationalisation of  the title.
      *
      * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::itemFromData()
-     * @param array $itemData
-     * @return ItemRepresentation|null
      */
-    public function itemFromData(array $itemData = null)
+    public function itemFromData(?array $itemData = null): ?ItemRepresentation
     {
         return $itemData
-            ? $this->api->searchOne('items', ['id' => $itemData['id']], ['initialize' => false, 'finalize' => false])->getContent()
+            ? $this->api->searchOne('items', ['id' => $itemData['id']], ['initialize' => false])->getContent()
             : null;
     }
 
     /**
      * Display term data according to options.
-     *
-     * @param array $termData
-     * @return string
      */
-    protected function renderData(array $termData)
+    protected function renderData(array $termData): string
     {
         switch ($this->options['link']) {
             case 'term':
@@ -136,10 +133,8 @@ class LinkTerm extends AbstractHelper
      * Display term item according to options.
      *
      * @deprecated
-     * @param ItemRepresentation $item
-     * @return string
      */
-    protected function renderItem(ItemRepresentation $item)
+    protected function renderItem(ItemRepresentation $item): string
     {
         switch ($this->options['link']) {
             case 'term':
@@ -162,7 +157,7 @@ class LinkTerm extends AbstractHelper
      */
     protected function currentSite(): ?\Omeka\Api\Representation\SiteRepresentation
     {
-        return $this->view->site ?? $this->view
+        return $this->view->site ?? $this->view->site = $this->view
             ->getHelperPluginManager()
             ->get('Laminas\View\Helper\ViewModel')
             ->getRoot()

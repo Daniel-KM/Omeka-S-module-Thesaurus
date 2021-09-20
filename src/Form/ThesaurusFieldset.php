@@ -45,10 +45,13 @@ class ThesaurusFieldset extends Fieldset
                         'tops' => 'Top concepts', // @translate
                         'narrowers' => 'Narrower concepts', // @translate
                         'relateds' => 'Related concepts', // @translate
+                        'relatedsOfSelf' => 'Related concepts or self', // @translate
                         'siblings' => 'Sibling concepts', // @translate
                         'siblingsOrSelf' => 'Sibling concepts or self', // @translate
                         'ascendants' => 'Ascendants as list', // @translate
-                        'descendants' => 'Descendant as list', // @translate
+                        'ascendantsOrSelf' => 'Ascendants or self as list', // @translate
+                        'descendants' => 'Descendants as list', // @translate
+                        'descendantsOrSelf' => 'Descendants or self as list', // @translate
                         'tree' => 'Tree structure', // @translate
                         'branch' => 'Branch', // @translate
                         'flatTree' => 'Flat tree', // @translate

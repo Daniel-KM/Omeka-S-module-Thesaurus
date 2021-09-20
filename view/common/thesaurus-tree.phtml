@@ -8,33 +8,42 @@
  * @var array $options
  */
 
-$translate = $this->plugin('translate');
-
 if (empty($data) && !empty($options['hideIfEmpty'])):
     return;
 endif;
+
+$plugins = $this->getHelperPluginManager();
+$translate = $plugins->get('translate');
+$escape = $plugins->get('escapeHtml');
+$partial = $plugins->get('partial');
 
 if (isset($options['title'])):
     $title = $options['title'];
 else:
     $title = [
-        'tree' => $translate('Tree of concepts'),
-        'branch' => $translate('Branch of current concept'),
-        'custom' => $translate('Tree of concepts'),
+        'tree' => 'Tree of concepts', // @translate
+        'branch' => 'Branch of current concept', // @translate
+        'custom' => 'Tree of concepts', // @translate
     ];
-    $title = $title[$type];
+    $title = isset($title[$type]) ? $translate($title[$type]) : '';
 endif;
 
 $linkTerm = $this->linkTerm($options);
 ?>
 
 <div class="thesaurus thesaurus-tree <?= $options['class'] ?>">
-    <h4><?= $title ?></h4>
+    <h4><?= $escape($title) ?></h4>
     <?php if (!count($data)): ?>
     <p>
         <?= $translate('No concept.') ?>
     </p>
     <?php else: ?>
-        <?= $this->partial('common/thesaurus-tree-recursive', ['data' => $data, 'options' => $options, 'linkTerm' => $linkTerm, 'level' => 0]) ?>
+        <?= $partial('common/thesaurus-tree-recursive', [
+            'data' => $data,
+            'options' => $options,
+            'linkTerm' => $linkTerm,
+            'partial' => $partial,
+            'level' => 0,
+        ]) ?>
     <?php endif; ?>
 </div>

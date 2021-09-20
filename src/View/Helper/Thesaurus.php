@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Thesaurus\View\Helper;
 
 use Laminas\View\Helper\AbstractHelper;
@@ -30,11 +31,8 @@ class Thesaurus extends AbstractHelper
 
     /**
      * Get the thesaurus helper.
-     *
-     * @param ItemRepresentation $item
-     * @return mixed.
      */
-    public function __invoke(ItemRepresentation $item)
+    public function __invoke(ItemRepresentation $item): self
     {
         $this->item = $item;
         $thesaurusPlugin = $this->thesaurus;
@@ -49,11 +47,10 @@ class Thesaurus extends AbstractHelper
      * It is not recommended to return items with big thesaurus.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::setReturnItem()
+     *
      * @deprecated Use itemFromData() instead, in particular for big thesaurus.
-     * @param bool $returnItem
-     * @return \Thesaurus\Mvc\Controller\Plugin\Thesaurus
      */
-    public function setReturnItem($returnItem = false)
+    public function setReturnItem(bool $returnItem = false): self
     {
         $this->thesaurus->setReturnItem();
         return $this;
@@ -63,10 +60,8 @@ class Thesaurus extends AbstractHelper
      * Helper to get the item representation from item data.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::itemFromData()
-     * @param array $itemData
-     * @return ItemRepresentation|null
      */
-    public function itemFromData(array $itemData = null)
+    public function itemFromData(array $itemData = null): ?ItemRepresentation
     {
         return $this->thesaurus->itemFromData($itemData);
     }
@@ -75,9 +70,8 @@ class Thesaurus extends AbstractHelper
      * This item is a skos item if it has at a skos class or a skos property.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isSkos()
-     * @return bool
      */
-    public function isSkos()
+    public function isSkos(): bool
     {
         return $this->thesaurus->isSkos();
     }
@@ -86,9 +80,8 @@ class Thesaurus extends AbstractHelper
      * This item is a scheme if it has the class ConceptScheme or a top concept.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isScheme()
-     * @return bool
      */
-    public function isScheme()
+    public function isScheme(): bool
     {
         return $this->thesaurus->isScheme();
     }
@@ -98,11 +91,20 @@ class Thesaurus extends AbstractHelper
      * of a concept (skos:broader, skos:narrower or skos:topConceptOf).
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isConcept()
-     * @return bool
      */
-    public function isConcept()
+    public function isConcept(): bool
     {
         return $this->thesaurus->isConcept();
+    }
+
+    /**
+     * Check if a concept is a root (top concept).
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isRoot()
+     */
+    public function isRoot(): bool
+    {
+        return $this->thesaurus->isRoot();
     }
 
     /**
@@ -112,10 +114,8 @@ class Thesaurus extends AbstractHelper
      * Note: an OrderedCollection is a collection.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isCollection()
-     * @param bool $strict
-     * @return bool
      */
-    public function isCollection($strict = false)
+    public function isCollection(bool $strict = false): bool
     {
         return $this->thesaurus->isCollection($strict);
     }
@@ -125,9 +125,8 @@ class Thesaurus extends AbstractHelper
      * or a property skos:memberList.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isOrderedCollection()
-     * @return bool
      */
-    public function isOrderedCollection()
+    public function isOrderedCollection(): bool
     {
         return $this->thesaurus->isOrderedCollection();
     }
@@ -136,9 +135,8 @@ class Thesaurus extends AbstractHelper
      * Get the scheme of this item.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::scheme()
-     * @return ItemRepresentation|null
      */
-    public function scheme()
+    public function scheme(): ?ItemRepresentation
     {
         return $this->thesaurus->scheme();
     }
@@ -147,29 +145,18 @@ class Thesaurus extends AbstractHelper
      * Get the top concepts of the scheme.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::tops()
-     * @return ItemRepresentation[]
+     * @return ItemRepresentation[]|array
      */
-    public function tops()
+    public function tops(): array
     {
         return $this->thesaurus->tops();
-    }
-
-    /**
-     * Check if a concept is a root (top concept).
-     *
-     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isRoot()
-     * @return bool
-     */
-    public function isRoot()
-    {
-        return $this->thesaurus->isRoot();
     }
 
     /**
      * Get the root concept of this item, that may be itself.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::root()
-     * @return ItemRepresentation
+     * @return ItemRepresentation|array|null
      */
     public function root()
     {
@@ -180,7 +167,7 @@ class Thesaurus extends AbstractHelper
      * Get the broader concept of this item.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::broader()
-     * @return ItemRepresentation|null
+     * @return ItemRepresentation|array|null
      */
     public function broader()
     {
@@ -191,9 +178,9 @@ class Thesaurus extends AbstractHelper
      * Get the narrower concepts of this item.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::narrowers()
-     * @return ItemRepresentation[]
+     * @return ItemRepresentation[]|array
      */
-    public function narrowers()
+    public function narrowers(): array
     {
         return $this->thesaurus->narrowers();
     }
@@ -202,9 +189,9 @@ class Thesaurus extends AbstractHelper
      * Get the related concepts of this item.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::relateds()
-     * @return ItemRepresentation[]
+     * @return ItemRepresentation[]|array
      */
-    public function relateds()
+    public function relateds(): array
     {
         return $this->thesaurus->relateds();
     }
@@ -213,9 +200,9 @@ class Thesaurus extends AbstractHelper
      * Get the related concepts of this item, with self.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::relatedsOrSelf()
-     * @return ItemRepresentation[]
+     * @return ItemRepresentation[]|array
      */
-    public function relatedsOrSelf()
+    public function relatedsOrSelf(): array
     {
         return $this->thesaurus->relatedsOrSelf();
     }
@@ -224,9 +211,9 @@ class Thesaurus extends AbstractHelper
      * Get the sibling concepts of this item (self not included).
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::siblings()
-     * @return ItemRepresentation[]
+     * @return ItemRepresentation[]|array
      */
-    public function siblings()
+    public function siblings(): array
     {
         return $this->thesaurus->siblings();
     }
@@ -235,9 +222,9 @@ class Thesaurus extends AbstractHelper
      * Get the sibling concepts of this item (self included).
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::siblingsOrSelf()
-     * @return ItemRepresentation[]
+     * @return ItemRepresentation[]|array
      */
-    public function siblingsOrSelf()
+    public function siblingsOrSelf(): array
     {
         return $this->thesaurus->siblingsOrSelf();
     }
@@ -246,9 +233,9 @@ class Thesaurus extends AbstractHelper
      * Get the list of ascendants of this item, from closest to top concept.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::ascendants()
-     * @return ItemRepresentation[]
+     * @return ItemRepresentation[]|array
      */
-    public function ascendants()
+    public function ascendants(): array
     {
         return $this->thesaurus->ascendants();
     }
@@ -257,9 +244,9 @@ class Thesaurus extends AbstractHelper
      * Get the list of ascendants of this item, from self first to top concept.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::ascendantsOrSelf()
-     * @return ItemRepresentation[]
+     * @return ItemRepresentation[]|array
      */
-    public function ascendantsOrSelf()
+    public function ascendantsOrSelf(): array
     {
         return $this->thesaurus->ascendantsOrSelf();
     }
@@ -268,9 +255,9 @@ class Thesaurus extends AbstractHelper
      * Get the list of descendants of this item.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::descendants()
-     * @return ItemRepresentation[]
+     * @return ItemRepresentation[]|array
      */
-    public function descendants()
+    public function descendants(): array
     {
         return $this->thesaurus->descendants();
     }
@@ -279,9 +266,9 @@ class Thesaurus extends AbstractHelper
      * Get the list of descendants of this item, with self last.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::descendantsOrSelf()
-     * @return ItemRepresentation[]
+     * @return ItemRepresentation[]|array
      */
-    public function descendantsOrSelf()
+    public function descendantsOrSelf(): array
     {
         return $this->thesaurus->descendantsOrSelf();
     }
@@ -290,9 +277,8 @@ class Thesaurus extends AbstractHelper
      * Get the hierarchy of this item from the root (top concepts).
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::tree()
-     * @return array
      */
-    public function tree()
+    public function tree(): array
     {
         return $this->thesaurus->tree();
     }
@@ -301,9 +287,8 @@ class Thesaurus extends AbstractHelper
      * Get the hierarchy branch of this item, self included.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::branch()
-     * @return array
      */
-    public function branch()
+    public function branch(): array
     {
         return $this->thesaurus->branch();
     }
@@ -312,9 +297,8 @@ class Thesaurus extends AbstractHelper
      * Get the flat hierarchy of this item from the root (top concepts).
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::flatTree()
-     * @return array
      */
-    public function flatTree()
+    public function flatTree(): array
     {
         return $this->thesaurus->flatTree();
     }
@@ -323,9 +307,8 @@ class Thesaurus extends AbstractHelper
      * Get the flat hierarchy branch of this item, self included.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::flatBranch()
-     * @return array
      */
-    public function flatBranch()
+    public function flatBranch(): array
     {
         return $this->thesaurus->flatBranch();
     }
@@ -337,9 +320,8 @@ class Thesaurus extends AbstractHelper
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::listTree()
      * @param array $options May be: Indent, prepend_id.
-     * @return array
      */
-    public function listTree(array $options = null)
+    public function listTree(array $options = null): array
     {
         return $this->thesaurus->listTree($options);
     }
@@ -351,9 +333,8 @@ class Thesaurus extends AbstractHelper
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::listBranch()
      * @param array $options May be: Indent, prepend_id.
-     * @return array
      */
-    public function listBranch(array $options = null)
+    public function listBranch(array $options = null): array
     {
         return $this->thesaurus->listBranch($options);
     }
@@ -382,10 +363,13 @@ class Thesaurus extends AbstractHelper
                 'tops' => 'list',
                 'narrowers' => 'list',
                 'relateds' => 'list',
+                'relatedsOrSelf' => 'list',
                 'siblings' => 'list',
                 'siblingsOrSelf' => 'list',
                 'ascendants' => 'list',
+                'ascendantsOrSelf' => 'list',
                 'descendants' => 'list',
+                'descendantsOrSelf' => 'list',
                 'tree' => 'tree',
                 'branch' => 'tree',
                 'flatTree' => 'flat',
@@ -440,7 +424,7 @@ class Thesaurus extends AbstractHelper
      */
     protected function currentSite(): ?\Omeka\Api\Representation\SiteRepresentation
     {
-        return $this->view->site ?? $this->view
+        return $this->view->site ?? $this->view->site = $this->view
             ->getHelperPluginManager()
             ->get('Laminas\View\Helper\ViewModel')
             ->getRoot()

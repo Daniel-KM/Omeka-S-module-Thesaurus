@@ -8,7 +8,9 @@
  * @var array $options
  */
 
+$plugins = $this->getHelperPluginManager();
 $translate = $this->plugin('translate');
+$escape = $plugins->get('escapeHtml');
 
 if (empty($data) && !empty($options['hideIfEmpty'])):
     return;
@@ -18,17 +20,20 @@ if (isset($options['title'])):
     $title = $options['title'];
 else:
     $title = [
-        'tops' => $translate('Top concepts'),
-        'narrowers' => $translate('Narrower concepts'),
-        'relateds' => $translate('Related concepts'),
-        'siblings' => $translate('Sibling concepts'),
-        // The title is the same than siblings.
-        'siblingsOrSelf' => $translate('Sibling concepts'),
-        'ascendants' => $translate('Ascendant concepts'),
-        'descendants' => $translate('Descendant concepts'),
-        'custom' => $translate('Linked concepts'),
+        'tops' => 'Top concepts', // @translate
+        'narrowers' => 'Narrower concepts', // @translate
+        'narrowersOrSelf' => 'Narrower concepts', // @translate
+        'relateds' => 'Related concepts', // @translate
+        'relatedsOrSelf' => 'Related concepts', // @translate
+        'siblings' => 'Sibling concepts', // @translate
+        'siblingsOrSelf' => 'Sibling concepts', // @translate
+        'ascendants' => 'Ascendant concepts', // @translate
+        'ascendantsOrSelf' => 'Ascendant concepts', // @translate
+        'descendants' => 'Descendant concepts', // @translate
+        'descendantsOrSelf' => 'Descendant concepts', // @translate
+        'custom' => 'Linked concepts', // @translate
     ];
-    $title = $title[$type];
+    $title = isset($title[$type]) ? $translate($title[$type]) : '';
 endif;
 
 $itemId = $item ? $item->id() : null;
@@ -36,7 +41,7 @@ $linkTerm = $this->linkTerm($options);
 ?>
 
 <div class="thesaurus thesaurus-list <?= $options['class'] ?>">
-    <h4><?= $title ?></h4>
+    <h4><?= $escape($title) ?></h4>
     <?php if (empty($data)): ?>
     <p>
         <?= $translate('No concept.') ?>

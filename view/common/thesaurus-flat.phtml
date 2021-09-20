@@ -8,7 +8,9 @@
  * @var array $options
  */
 
+$plugins = $this->getHelperPluginManager();
 $translate = $this->plugin('translate');
+$escape = $plugins->get('escapeHtml');
 
 $repeat = '- ';
 
@@ -20,11 +22,11 @@ if (isset($options['title'])):
     $title = $options['title'];
 else:
     $title = [
-        'flatTree' => $translate('Tree of concepts'),
-        'flatBranch' => $translate('Branch of current concept'),
-        'custom' => $translate('Tree of concepts'),
+        'flatTree' => 'Tree of concepts', // @translate
+        'flatBranch' => 'Branch of current concept', // @translate
+        'custom' => 'Tree of concepts', // @translate
     ];
-    $title = $title[$type];
+    $title = isset($title[$type]) ? $translate($title[$type]) : '';
 endif;
 
 $itemId = $item ? $item->id() : null;
@@ -32,7 +34,7 @@ $linkTerm = $this->linkTerm($options);
 ?>
 
 <div class="thesaurus thesaurus-flat <?= $options['class'] ?>">
-    <h4><?= $title ?></h4>
+    <h4><?= $escape($title) ?></h4>
     <?php if (empty($data)): ?>
     <p>
         <?= $translate('No concept.') ?>
