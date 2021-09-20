@@ -23,6 +23,11 @@ class LinkTerm extends AbstractHelper
     protected $templateResourceUrl;
 
     /**
+     * @var string
+     */
+    protected $currentSiteSlug;
+
+    /**
      * @var \Omeka\View\Helper\Hyperlink
      */
     protected $hyperlink;
@@ -53,7 +58,8 @@ class LinkTerm extends AbstractHelper
         $this->api = $plugins->get('api');
         $translate = $plugins->get('translate');
         $urlHelper = $this->url;
-        $currentSiteSlug = $this->currentSite()->slug();
+
+        $this->currentSiteSlug = $this->currentSite()->slug();
 
         $defaultOptions = [
             'link' => 'both',
@@ -77,9 +83,9 @@ class LinkTerm extends AbstractHelper
         if ($this->options['link_append_concept']) {
             $query['concept'] = '__link_term_id__';
         }
-        $this->templateUrl = $urlHelper('site/resource', ['site-slug' => $currentSiteSlug, 'controller' => 'item'], ['query' => $query], false);
+        $this->templateUrl = $urlHelper('site/resource', ['site-slug' => $this->currentSiteSlug, 'controller' => 'item'], ['query' => $query], false);
 
-        $this->templateResourceUrl = $urlHelper('site/resource-id', ['site-slug' => $currentSiteSlug, 'controller' => 'item', 'id' => 0]);
+        $this->templateResourceUrl = $urlHelper('site/resource-id', ['site-slug' => $this->currentSiteSlug, 'controller' => 'item', 'id' => 0]);
         $this->templateResourceUrl = mb_substr($this->templateResourceUrl, 0, mb_strlen($this->templateResourceUrl) - 1);
 
         return $this;
@@ -95,6 +101,43 @@ class LinkTerm extends AbstractHelper
         return is_object($data)
             ? $this->renderItem($data)
             : $this->renderData($data);
+    }
+
+    /**
+     * Get the url of a concept.
+     *
+     * @param ItemRepresentation|array $data
+     * @param bool $browse Get url of the resource (default), else browse page.
+     */
+    public function url($data, bool $browse = false): string
+    {
+        return $browse
+            ? $this->urlBrowse($data)
+            : $this->urlResource($data);
+    }
+
+    /**
+     * Get the url of a concept.
+     *
+     * @param ItemRepresentation|array $data
+     */
+    public function urlResource($data, bool $browse = false): string
+    {
+        return is_object($data)
+            ? $data->siteUrl($this->currentSiteSlug)
+            : $this->templateResourceUrl . $data['id'];
+    }
+
+    /**
+     * Get the url of a concept.
+     *
+     * @param ItemRepresentation|array $data
+     */
+    public function urlBrowse($data): string
+    {
+        return is_object($data)
+            ? str_replace('__link_term_id__', $data->id(), $this->templateUrl)
+            : str_replace('__link_term_id__', $data['id'], $this->templateUrl);
     }
 
     /**
