@@ -72,53 +72,45 @@ class Indexing extends AbstractJob
 
         $this->api = $services->get('Omeka\ApiManager');
 
-        $conceptSchemeId = $this->api->search('resource_classes', ['term' => 'skos:ConceptScheme'])->getContent()[0]->id();
-        $response = $this->api->search('items', ['resource_class_id' => $conceptSchemeId]);
-        $totalSchemes = $response->getTotalResults();
-        if (!$totalSchemes) {
-            $this->logger->warn(
-                'No thesaurus to index.' // @translate
+        $schemeId = (int) $this->getArg('scheme');
+        if (!$schemeId) {
+            $this->logger->err(
+                'No thesaurus specified.' // @translate
             );
             return;
         }
 
-        $message = new Message(
-            'Starting indexing of %d thesaurus.', // @translate
-            $totalSchemes
-        );
-        $this->logger->notice($message);
-
-        foreach ($response->getContent() as $key => $scheme) {
-            if ($this->shouldStop()) {
-                $message = new Message(
-                    'Indexation was stopped. %d/%d thesaurus processed.', // @translate
-                    $key,
-                    count($totalSchemes)
-                );
-                $this->logger->notice($message);
-                return;
-            }
-            $result = $this->indexScheme($scheme);
-            if ($result) {
-                $message = new Message(
-                    'Thesaurus #%d indexed.', // @translate
-                    $scheme->id()
-                );
-                $this->logger->notice($message);
-            } else {
-                $message = new Message(
-                    'Thesaurus #%d not indexed.', // @translate
-                    $scheme->id()
-                );
-                $this->logger->err($message);
-            }
+        $scheme = $this->api->search('items', ['id' => $schemeId])->getContent();
+        if (!$scheme) {
+            $this->logger->err(
+                'Thesaurus #%d not found.', // @translate
+                $schemeId
+            );
+            return;
         }
+        $scheme = reset($scheme);
 
         $message = new Message(
-            'Ended indexing of %d thesaurus.', // @translate
-            $totalSchemes
+            'Starting indexing of thesaurus "%1$s" (#%2$d).', // @translate
+            $scheme->displayTitle(), $schemeId
         );
         $this->logger->notice($message);
+
+        $result = $this->indexScheme($scheme);
+
+        if ($result) {
+            $message = new Message(
+                'Thesaurus "%1$s" (#%2$d) indexed.', // @translate
+                $scheme->displayTitle(), $schemeId
+            );
+            $this->logger->notice($message);
+        } else {
+            $message = new Message(
+                'Thesaurus "%1$s" (#%2$d) not indexed.', // @translate
+                $scheme->displayTitle(), $schemeId
+            );
+            $this->logger->err($message);
+        }
     }
 
     /**

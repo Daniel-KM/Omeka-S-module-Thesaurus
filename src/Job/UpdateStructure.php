@@ -123,19 +123,27 @@ class UpdateStructure extends AbstractJob
         );
         $this->logger->notice($message);
 
-        $this->restructureThesaurus($thesaurus, $structure);
+        $result = $this->restructureThesaurus($thesaurus, $structure);
 
-        $message = new Message(
-            'Ended restructuration of thesaurus "%1$s" (#%2$d).', // @translate
-            $scheme->displayTitle(), $schemeId
-        );
-        $this->logger->notice($message);
-
-        $message = new Message(
-            'Don’t forget to reindex thesaurus "%1$s" (#%2$d).', // @translate
-            $scheme->displayTitle(), $schemeId
-        );
-        $this->logger->warn($message);
+        if ($result) {
+            $dispatcher = $services->get(\Omeka\Job\Dispatcher::class);
+            $synchronous = $services->get('Omeka\Job\DispatchStrategy\Synchronous');
+            $args = [
+                'scheme' => $scheme->id(),
+            ];
+            $dispatcher->dispatch(\Thesaurus\Job\Indexing::class, $args, $synchronous);
+            $message = new Message(
+                'Terms were restructured and reindexed for thesaurus "%1$s" (#%2$d).', // @translate
+                $scheme->displayTitle(), $schemeId
+            );
+            $this->logger->notice($message);
+        } else {
+            $message = new Message(
+                'An error occurred. Ended restructuration of thesaurus "%1$s" (#%2$d).', // @translate
+                $scheme->displayTitle(), $schemeId
+            );
+            $this->logger->warn($message);
+        }
     }
 
     /**

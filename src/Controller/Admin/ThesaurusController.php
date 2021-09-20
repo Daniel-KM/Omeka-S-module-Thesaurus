@@ -48,6 +48,43 @@ class ThesaurusController extends ItemController
             : $result;
     }
 
+    public function reindexAction()
+    {
+        /** @var \Omeka\Api\Representation\ItemRepresentation $item */
+        $item = $this->api()->read('items', $this->params('id'))->getContent();
+
+        /** @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus */
+        $thesaurus = $this->thesaurus($item);
+        if (!$thesaurus->isSkos()) {
+            $message = 'The item #%d does not belong to a thesaurus.'; // @translate
+            $message = new Message(
+                $message,
+                $item->id()
+            );
+            $this->messenger()->addError($message);
+            return $this->redirect()->toRoute('admin/thesaurus/default');
+        }
+
+        $dispatcher = $this->jobDispatcher();
+        $args = [
+            'scheme' => (int) $thesaurus->scheme()->id(),
+        ];
+        $job = $dispatcher->dispatch(\Thesaurus\Job\Indexing::class, $args);
+        $message = new \Omeka\Stdlib\Message(
+            'Indexing terms in background (%1$sjob #%2$d%3$s, %4$slogs%3$s).', // @translate
+            sprintf(
+                '<a href="%s">',
+                htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))
+            ),
+            $job->getId(),
+            '</a>',
+            sprintf('<a href="%1$s">', class_exists('Log\Entity\Log') ? $this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]) :  $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()]))
+        );
+        $message->setEscapeHtml(false);
+        $this->messenger()->addSuccess($message);
+        return $this->redirect()->toRoute('admin/thesaurus/default');
+    }
+
     public function structureAction()
     {
         /** @var \Omeka\Api\Representation\ItemRepresentation $item */
