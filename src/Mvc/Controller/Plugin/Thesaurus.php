@@ -230,12 +230,23 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
-     * Check if a concept is a root (top concept).
+     * Check if a concept is a top concept.
      */
-    public function isRoot(): bool
+    public function isTop(): bool
     {
         return $this->isSkos
             && !empty($this->structure[$this->itemId]['top']);
+    }
+
+    /**
+     * Check if a concept is a root (top concept).
+     *
+     * @deprecated Use isTop() instead. Root is more like the scheme.
+     * @see self:isTop()
+     */
+    public function isRoot(): bool
+    {
+        return $this->isTop();
     }
 
     /**
@@ -298,17 +309,29 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
-     * Get the root concept of this item.
+     * Get the top concept of this item, that may be itself.
      *
      * @todo Check performance to get the root concept.
      *
      * @return ItemRepresentation|array|null
      */
-    public function root()
+    public function top()
     {
         return $this->isSkos && $this->isConcept()
             ? $this->returnFromData($this->ancestor($this->structure[$this->itemId]))
             : null;
+    }
+
+    /**
+     * Get the root concept of this item, that may be itself.
+     *
+     * @deprecated Use self::top() instead. Root is more like the scheme.
+     * @uses self::top()
+     * @return ItemRepresentation|array|null
+     */
+    public function root()
+    {
+        return $this->top();
     }
 
     /**
@@ -404,7 +427,7 @@ class Thesaurus extends AbstractPlugin
         if (!$this->isSkos || $this->isScheme()) {
             return [];
         }
-        if ($this->isRoot()) {
+        if ($this->isTop()) {
             return $this->tops();
         }
         // Don't use $this->broader() in order to keep data.

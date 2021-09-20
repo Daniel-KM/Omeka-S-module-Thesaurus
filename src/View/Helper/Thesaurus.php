@@ -98,13 +98,25 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
+     * Check if a concept is a top concept.
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isTop()
+     */
+    public function isTop(): bool
+    {
+        return $this->thesaurus->isTop();
+    }
+
+    /**
      * Check if a concept is a root (top concept).
      *
-     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isRoot()
+     * @deprecated Use isTop() instead. Root is more like the scheme.
+     * @see self:isTop()
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isTop()
      */
     public function isRoot(): bool
     {
-        return $this->thesaurus->isRoot();
+        return $this->thesaurus->isTop();
     }
 
     /**
@@ -153,14 +165,26 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
+     * Get the top concept of this item, that may be itself.
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::top()
+     * @return ItemRepresentation|array|null
+     */
+    public function top()
+    {
+        return $this->thesaurus->top();
+    }
+
+    /**
      * Get the root concept of this item, that may be itself.
      *
+     * @deprecated Use self::top() instead. Root is more like the scheme.
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::root()
      * @return ItemRepresentation|array|null
      */
     public function root()
     {
-        return $this->thesaurus->root();
+        return $this->thesaurus->top();
     }
 
     /**
