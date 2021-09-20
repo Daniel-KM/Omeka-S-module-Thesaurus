@@ -1,0 +1,36 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\ItemRepresentation $item
+ * @var \Omeka\Api\Representation\ItemRepresentation $resource
+ */
+
+$plugins = $this->getHelperPluginManager();
+$translate = $plugins->get('translate');
+$escapeAttr = $plugins->get('escapeHtmlAttr');
+$url = $plugins->get('url');
+$assetUrl = $plugins->get('assetUrl');
+$thesaurus = $plugins->get('thesaurus');
+
+/** @var \Thesaurus\View\Helper\Thesaurus $thesaurus */
+$thesaurus = $thesaurus($item);
+
+$this->headLink()
+    ->prependStylesheet($assetUrl('css/advanced-search.css', 'Omeka'))
+    ->appendStylesheet($assetUrl('css/jstree.css', 'Omeka'))
+    ->appendStylesheet($assetUrl('css/query-form.css', 'Omeka'));
+$this->headScript()
+    ->appendFile($assetUrl('vendor/jstree/jstree.min.js', 'Omeka'))
+    ->appendFile($assetUrl('js/thesaurus-admin.js', 'Thesaurus'))
+    ->appendFile($assetUrl('js/advanced-search.js', 'Omeka'))
+    ->appendFile($assetUrl('js/query-form.js', 'Omeka'));
+
+$this->htmlElement('body')->appendAttribute('class', 'thesaurus tree');
+?>
+
+<?= $this->pageTitle($item->displayTitle(), 1, $translate('Thesaurus')) ?>
+
+<div id="thesaurus-tree"
+    data-link-form-url="<?= $form ? $escapeAttr($url('admin/thesaurus/id', ['action' => 'tree'], true)) : '' ?>"
+    data-jstree-data="<?= $escapeAttr(json_encode($thesaurus->jsFlatTree(), 320)) ?>">
+</div>

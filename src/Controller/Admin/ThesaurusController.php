@@ -47,6 +47,16 @@ class ThesaurusController extends ItemController
             : $result;
     }
 
+    public function treeAction()
+    {
+        /** @var \Omeka\Api\Representation\ItemRepresentation $item */
+        $item = $this->api()->read('items', $this->params('id'))->getContent();
+        return new ViewModel([
+            'item' => $item,
+            'resource' => $item,
+        ]);
+    }
+
     public function convertAction()
     {
         /** @var \Thesaurus\Form\ConvertForm $form */
