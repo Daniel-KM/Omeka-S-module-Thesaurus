@@ -263,7 +263,7 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
-     * Get the list of descendants of this item, with self last.
+     * Get the list of descendants of this item, with self first.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::descendantsOrSelf()
      * @return ItemRepresentation[]|array

@@ -439,7 +439,7 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
-     * Get the list of descendants of this item, with self last.
+     * Get the list of descendants of this item, with self first.
      *
      * @return ItemRepresentation[]|array
      */
@@ -448,9 +448,8 @@ class Thesaurus extends AbstractPlugin
         if (!$this->isSkos || $this->isScheme()) {
             return [];
         }
-        $list = $this->descendants();
-        $list[$this->itemId] = $this->returnItem ? $this->item : $this->structure[$this->itemId];
-        return $list;
+        return [$this->itemId => $this->returnItem ? $this->item : $this->structure[$this->itemId]]
+            + $this->descendants();
     }
 
     /**
