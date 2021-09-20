@@ -318,6 +318,14 @@ class Module extends AbstractModule
         $settings->set('thesaurus_skos_scheme_class_id', $resourceClass->id());
         $resourceClass = $api->read('resource_classes', ['vocabulary' => $vocabulary->id(), 'localName' => 'Concept'])->getContent();
         $settings->set('thesaurus_skos_concept_class_id', $resourceClass->id());
+
+        // Update the template one time at least.
+        // Automatically throw exception.
+        $template = $api->read('resource_templates', ['label' => 'Thesaurus Scheme'])->getContent();
+        $settings->set('thesaurus_skos_scheme_template_id', $template->id());
+        $template = $api->read('resource_templates', ['label' => 'Thesaurus Concept'])->getContent();
+        $settings->set('thesaurus_skos_concept_template_id', $template->id());
+
         return $this;
     }
 }

@@ -43,3 +43,7 @@ ALTER TABLE term ADD CONSTRAINT FK_A50FE78D5646636A FOREIGN KEY (broader_id) REF
 SQL;
     $connection->exec($sql);
 }
+
+if (version_compare($oldVersion, '3.3.7.0', '<')) {
+    $this->storeSchemeAndConceptIds();
+}
