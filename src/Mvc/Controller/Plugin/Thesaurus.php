@@ -4,6 +4,7 @@ namespace Thesaurus\Mvc\Controller\Plugin;
 
 use Doctrine\ORM\EntityManager;
 use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
+use Laminas\Mvc\Plugin\Identity\Identity;
 use Omeka\Api\Adapter\ItemAdapter;
 use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Mvc\Controller\Plugin\Api;
@@ -109,15 +110,20 @@ class Thesaurus extends AbstractPlugin
     protected $api;
 
     /**
-     * @param EntityManager $entityManager
-     * @param ItemAdapter $itemAdapter
-     * @param Api $api
+     * @param ?\Omeka\Entity\User
      */
-    public function __construct(EntityManager $entityManager, ItemAdapter $itemAdapter, Api $api)
-    {
+    protected $user;
+
+    public function __construct(
+        EntityManager $entityManager,
+        ItemAdapter $itemAdapter,
+        Api $api,
+        Identity $identity
+    ) {
         $this->entityManager = $entityManager;
         $this->itemAdapter = $itemAdapter;
         $this->api = $api;
+        $this->user = $identity();
     }
 
     /**
@@ -1010,8 +1016,8 @@ class Thesaurus extends AbstractPlugin
             return $this;
         }
 
-        $user = $this->getController()->identity();
-        $this->isPublic = empty($user);
+        $this->isPublic = empty($this->user)
+            || $this->user->getRole() === 'guest';
 
         // Get all ids via api.
         // This allows to check visibility and to get the full list of concepts.
