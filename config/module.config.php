@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Thesaurus;
 
 return [
@@ -22,6 +23,9 @@ return [
         'strategies' => [
             'ViewJsonStrategy',
         ],
+        // 'controller_map' => [
+        //     Controller\Admin\ThesaurusController::class => 'omeka/admin/item',
+        // ],
     ],
     'view_helpers' => [
         'invokables' => [
@@ -29,7 +33,7 @@ return [
         ],
         'factories' => [
             'thesaurus' => Service\ViewHelper\ThesaurusFactory::class,
-            'thesaurusItem' => Service\ViewHelper\ThesaurusItemFactory::class,
+            // 'thesaurusItem' => Service\ViewHelper\ThesaurusItemFactory::class,
         ],
     ],
     'block_layouts' => [
@@ -45,8 +49,8 @@ return [
         ],
     ],
     'controllers' => [
-        'invokables' => [
-            Controller\Admin\ThesaurusController::class => Controller\Admin\ThesaurusController::class,
+        'factories' => [
+            Controller\Admin\ThesaurusController::class => Service\Controller\Admin\ThesaurusControllerFactory::class,
         ],
     ],
     'controller_plugins' => [
@@ -54,21 +58,55 @@ return [
             'thesaurus' => Service\ControllerPlugin\ThesaurusFactory::class,
         ],
     ],
+    'listeners' => [
+        Mvc\MvcListeners::class,
+    ],
+    'service_manager' => [
+        'invokables' => [
+            Mvc\MvcListeners::class => Mvc\MvcListeners::class,
+        ],
+    ],
     'router' => [
         'routes' => [
             'admin' => [
                 'child_routes' => [
                     'thesaurus' => [
-                        'type' => \Laminas\Router\Http\Segment::class,
+                        'type' => \Laminas\Router\Http\Literal::class,
                         'options' => [
-                            'route' => '/thesaurus[/:action]',
-                            'constraints' => [
-                                'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
-                            ],
+                            'route' => '/thesaurus',
                             'defaults' => [
                                 '__NAMESPACE__' => 'Thesaurus\Controller\Admin',
+                                '__ADMIN__' => true,
                                 'controller' => Controller\Admin\ThesaurusController::class,
-                                'action' => 'index',
+                                'action' => 'browse',
+                            ],
+                        ],
+                        'may_terminate' => true,
+                        'child_routes' => [
+                            'default' => [
+                                'type' => \Laminas\Router\Http\Segment::class,
+                                'options' => [
+                                    'route' => '/:action',
+                                    'constraints' => [
+                                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                                    ],
+                                    'defaults' => [
+                                        'action' => 'browse',
+                                    ],
+                                ],
+                            ],
+                            'id' => [
+                                'type' => \Laminas\Router\Http\Segment::class,
+                                'options' => [
+                                    'route' => '/:id[/:action]',
+                                    'constraints' => [
+                                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                                        'id' => '\d+',
+                                    ],
+                                    'defaults' => [
+                                        'action' => 'show',
+                                    ],
+                                ],
                             ],
                         ],
                     ],
@@ -76,16 +114,32 @@ return [
             ],
         ],
     ],
-    /* // TODO Clariflying place of the old tool to build a static flat thesaurus.
     'navigation' => [
-        'AdminModule' => [
-            [
+        'AdminResource' => [
+            'thesaurus' => [
                 'label' => 'Thesaurus', // @translate
-                'route' => 'admin/thesaurus',
+                // Or fa-project-diagram or fa-folder-tree when available.
+                'class' => 'thesaurus far fa-sitemap',
+                'route' => 'admin/thesaurus/default',
+                'action' => 'browse',
+                'resource' => Controller\Admin\ThesaurusController::class,
+                'privilege' => 'browse',
+                'pages' => [
+                    [
+                        'route' => 'admin/thesaurus/id',
+                        'controller' => Controller\Admin\ThesaurusController::class,
+                        'visible' => false,
+                    ],
+                    [
+                        'route' => 'admin/thesaurus/default',
+                        'controller' => Controller\Admin\ThesaurusController::class,
+                        'visible' => false,
+                    ],
+                    // TODO Clariflying place of the old tool to build a static flat thesaurus.
+                 ],
             ],
         ],
     ],
-    */
     'translator' => [
         'translation_file_patterns' => [
             [

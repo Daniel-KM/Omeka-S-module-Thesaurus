@@ -40,6 +40,7 @@ use Generic\AbstractModule;
 use Laminas\EventManager\Event;
 use Laminas\EventManager\SharedEventManagerInterface;
 use Laminas\Mvc\Controller\AbstractController;
+use Laminas\Mvc\MvcEvent;
 use Laminas\View\Renderer\PhpRenderer;
 
 /**
@@ -57,6 +58,54 @@ class Module extends AbstractModule
     protected function postInstall(): void
     {
         $this->storeSchemeAndConceptIds();
+    }
+
+    public function onBootstrap(MvcEvent $event)
+    {
+        parent::onBootstrap($event);
+        $this->addAclRoleAndRules();
+    }
+
+    /**
+     * Add ACL role and rules for this module.
+     */
+    protected function addAclRoleAndRules()
+    {
+        /**
+         * @var \Omeka\Permissions\Acl $acl
+         * @see \Omeka\Service\AclFactory
+         */
+        $services = $this->getServiceLocator();
+        $acl = $services->get('Omeka\Acl');
+
+        // Access rights like items.
+        // Rights for controllers only, since schemes and concepts are items.
+
+        $roles = $acl->getRoles();
+
+        $acl
+            ->allow(
+                // TODO Except Guest.
+                $roles,
+                [Controller\Admin\ThesaurusController::class],
+                [
+                    'index', 'browse', 'show', 'show-details', 'sidebar-select', 'search',
+                ]
+            )
+            ->allow(
+                ['author', 'reviewer'],
+                [Controller\Admin\ThesaurusController::class],
+                [
+                    'index', 'browse', 'show', 'show-details', 'sidebar-select', 'search', 'add', 'edit', 'delete', 'delete-confirm',
+                ]
+            )
+            ->allow(
+                ['editor'],
+                [Controller\Admin\ThesaurusController::class],
+                [
+                    'index', 'browse', 'show', 'show-details', 'sidebar-select', 'search', 'add', 'edit', 'delete', 'delete-confirm', 'batch-edit', 'batch-delete',
+                ]
+            );
     }
 
     public function attachListeners(SharedEventManagerInterface $sharedEventManager): void

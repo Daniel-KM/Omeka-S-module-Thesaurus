@@ -1,0 +1,25 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Form\ResourceForm $form
+ * @var array $mediaForms
+ */
+
+$plugins = $this->getHelperPluginManager();
+$translate = $plugins->get('translate');
+
+$this->htmlElement('body')->appendAttribute('class', 'add items thesaurus schemes');
+?>
+
+<?= $this->pageTitle($translate('New thesaurus'), 1, $translate('Thesaurus')) ?>
+<?php $this->trigger('view.add.before'); ?>
+<?= $this->partial('thesaurus/admin/thesaurus/form.phtml', [
+    'form' => $form,
+    'item' => null,
+    'mediaForms' => $mediaForms,
+    'submitLabel' => $translate('Add'),
+    'sectionNavEvent' => 'view.add.section_nav',
+    'action' => 'add',
+]) ?>
+
+<?php $this->trigger('view.add.after'); ?>

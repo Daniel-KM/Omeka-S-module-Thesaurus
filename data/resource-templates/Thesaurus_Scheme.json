@@ -91,5 +91,13 @@
         "vocabulary_label": "Simple Knowledge Organization System",
         "local_name": "definition",
         "label": "definition"
+    },
+    "o:data": {
+        "closed_property_list": "1",
+        "value_languages": [],
+        "default_language": "",
+        "no_language": "0",
+        "autocomplete": "no",
+        "autofillers": []
     }
 }

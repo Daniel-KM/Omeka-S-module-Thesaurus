@@ -8,13 +8,13 @@ $translate = $this->plugin('translate');
 $form->prepare();
 ?>
 
-<?php echo $this->pageTitle($translate('Thesaurus convert')); ?>
-<h3><?php echo $translate('Convert'); ?></h3>
+<?= $this->pageTitle($translate('Thesaurus convert')) ?>
+<h3><?= $translate('Convert') ?></h3>
 <p class="explanation">
-    <?php echo $translate('Convert a flat list into a flat thesaurus.'); ?>
+    <?= $translate('Convert a flat list into a flat thesaurus.') ?>
 </p>
 <p>
-    <?php echo $this->form()->openTag($form); ?>
-    <?php echo $this->formCollection($form, false); ?>
-    <?php echo $this->form()->closeTag($form); ?>
+    <?= $this->form()->openTag($form) ?>
+    <?= $this->formCollection($form, false) ?>
+    <?= $this->form()->closeTag($form) ?>
 </p>

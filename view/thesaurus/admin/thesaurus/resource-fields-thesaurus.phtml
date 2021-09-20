@@ -1,0 +1,65 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Form\ResourceForm $form
+ * @var \Omeka\Api\Representation\ItemRepresentation $resource
+ * @var string $action
+ */
+
+// Like common/resource-fields, but force template and class and template is fixed.
+
+$plugins = $this->getHelperPluginManager();
+$translate = $plugins->get('translate');
+$escapeAttr = $plugins->get('escapeHtmlAttr');
+$urlHelper = $plugins->get('url');
+$setting = $plugins->get('setting');
+
+$thumbnailInput = $form->get('o:thumbnail[o:id]');
+$ownerSelect = $form->get('o:owner[o:id]');
+if (isset($resource)) {
+    if ($thumbnail = $resource->thumbnail()) {
+        $thumbnailInput->setValue($thumbnail->id());
+    }
+    if ($owner = $resource->owner()) {
+        $ownerSelect->setValue($owner->id());
+    }
+}
+
+$resourceTemplateId = $setting('thesaurus_skos_scheme_template_id');
+$resourceClassId = $setting('thesaurus_skos_scheme_class_id');
+
+$form->get('o:resource_template[o:id]')->setValue($resourceTemplateId);
+$form->get('o:resource_class[o:id]')->setValue($resourceClassId);
+?>
+
+<fieldset id="resource-values"
+    class="section active"
+    aria-labelledby="resource-values-label"
+    data-resource-id="<?= isset($resource) ? $resource->id() : '' ?>">
+    <div class="non-properties">
+        <?php // The id allows to enable the js by default. ?>
+        <input type="hidden" name="o:resource_template[o:id]" value="<?= $resourceTemplateId ?>" id="resource-template-select" data-api-base-url="<?= $urlHelper('api/default', ['resource' => 'resource_templates']) ?>"/>
+        <input type="hidden" name="o:resource_class[o:id]" value="<?= $resourceClassId ?>"/>
+    </div>
+    <div id="properties"></div>
+    <input type="hidden" name="values_json" id="values-json">
+    <datalist id="value-languages" class="value-languages">
+    <?php foreach ($setting('value_languages', []) as $value => $language): ?>
+        <option value="<?= $escapeAttr($value) ?>" label="<?= $escapeAttr(strlen($language) ? $language : $value) ?>"></option>
+        <?php endforeach; ?>
+    </datalist>
+    <?php // Load selector to get the css. ?>
+    <?= $this->propertySelector() ?>
+    <button id="property-selector-button" class="mobile-only" data-watch-target="#properties"><?= $translate('Add property') ?></button>
+    <?= $this->partial('common/resource-select-sidebar') ?>
+</fieldset>
+
+<fieldset id="advanced-settings"
+    class="section"
+    aria-labelledby="advanced-settings-label">
+    <?= $this->formRow($thumbnailInput) ?>
+    <?php if ($resource && $resource->userIsAllowed('change-owner')): ?>
+    <?= $this->formRow($ownerSelect) ?>
+    <?php endif; ?>
+    <?php $this->trigger("view.$action.form.advanced", ['form' => $form]); ?>
+</fieldset>

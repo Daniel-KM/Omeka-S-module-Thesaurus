@@ -3,16 +3,48 @@
 namespace Thesaurus\Controller\Admin;
 
 use finfo;
-use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
+use Omeka\Controller\Admin\ItemController;
 use Omeka\Stdlib\Message;
 use Thesaurus\Form\ConvertForm;
 
-class ThesaurusController extends AbstractActionController
+/**
+ * Note: Use item templates as default.
+ */
+class ThesaurusController extends ItemController
 {
-    public function indexAction()
+    public function searchAction()
     {
-        return $this->redirect()->toRoute('admin/thesaurus', ['action' => 'convert']);
+        return parent::searchAction()
+            ->setTemplate('omeka/admin/item/search');
+    }
+
+    public function showDetailsAction()
+    {
+        return parent::showDetailsAction()
+            ->setTemplate('omeka/admin/item/show-details');
+    }
+
+    public function sidebarSelectAction()
+    {
+        return parent::sidebarSelectAction()
+            ->setTemplate('omeka/admin/item/sidebar-select');
+    }
+
+    public function batchEditAction()
+    {
+        $result = parent::batchEditAction();
+        return $result instanceof ViewModel
+            ? $result->setTemplate('omeka/admin/item/batch-edit')
+            : $result;
+    }
+
+    public function batchEditAllAction()
+    {
+        $result = parent::batchEditAllAction();
+        return $result instanceof ViewModel
+            ? $result->setTemplate('omeka/admin/item/batch-edit-all')
+            : $result;
     }
 
     public function convertAction()

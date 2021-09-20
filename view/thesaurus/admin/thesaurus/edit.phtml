@@ -1,0 +1,38 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Form\ResourceForm $form
+ * @var \Omeka\Api\Representation\ItemRepresentation $item
+ * @var \Omeka\Api\Representation\ItemRepresentation $resource
+ * @var array $mediaForms
+ */
+
+$plugins = $this->getHelperPluginManager();
+$translate = $plugins->get('translate');
+
+$this->htmlElement('body')->appendAttribute('class', 'edit items thesaurus');
+$deleteButton = $item->userIsAllowed('delete')
+    ? '<a href="#" class="delete button">' . $translate('Delete') . '</a>'
+    : null;
+?>
+
+<script type='text/javascript'>
+var valuesJson = <?php echo json_encode($item->values()); ?>;
+</script>
+
+<?= $this->pageTitle($item->displayTitle(), 1, $translate('Thésaurus'), $translate('Edit')) ?>
+<?php $this->trigger('view.edit.before'); ?>
+<?= $this->partial('thesaurus/admin/thesaurus/form.phtml', [
+    'form' => $form,
+    'item' => $item,
+    'resource' => $resource,
+    'mediaForms' => $mediaForms,
+    'submitLabel' => $translate('Save'),
+    'deleteButton' => $deleteButton,
+    'sectionNavEvent' => 'view.edit.section_nav',
+    'action' => 'edit',
+]) ?>
+
+<?= $this->deleteConfirm($item, 'thesaurus') ?>
+
+<?php $this->trigger('view.edit.after'); ?>

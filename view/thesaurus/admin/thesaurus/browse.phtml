@@ -1,0 +1,183 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\ItemRepresentation[] $items
+ * @var \Omeka\Api\Representation\ItemRepresentation[] $resources
+ */
+
+$plugins = $this->getHelperPluginManager();
+$translate = $plugins->get('translate');
+$escape = $plugins->get('escapeHtml');
+$hyperlink = $plugins->get('hyperlink');
+$url = $plugins->get('url');
+$i18n = $plugins->get('i18n');
+
+$this->htmlElement('body')->appendAttribute('class', 'items browse');
+
+$sortHeadings = [
+    [
+        'label' => $translate('Name'),
+        'value' => 'title',
+    ],
+    [
+        'label' => $translate('Identifier'),
+        'value' => 'dcterms:identifier',
+    ],
+    [
+        'label' => $translate('Class'),
+        'value' => 'resource_class_label',
+    ],
+    [
+        'label' => $translate('Owner'),
+        'value' => 'owner_name',
+    ],
+    [
+        'label' => $translate('Created'),
+        'value' => 'created',
+    ],
+];
+?>
+
+<?= $this->pageTitle($translate('Thesaurus')) ?>
+
+<?= $this->searchFilters() ?>
+
+<div class="browse-controls">
+    <?= $this->pagination() ?>
+    <?= $hyperlink($translate('Advanced search'), $url(null, ['action' => 'search'], ['query' => $this->params()->fromQuery()], true), ['class' => 'advanced-search']) ?>
+    <?= $this->sortSelector($sortHeadings) ?>
+</div>
+
+<div id="page-actions">
+    <?php if ($this->userIsAllowed('Omeka\Api\Adapter\ItemAdapter', 'create')): ?>
+    <?= $hyperlink($translate('Add new item'), $url(null, ['action' => 'add'], true), ['class' => 'button']) ?>
+    <?php endif; ?>
+</div>
+
+<?php $this->trigger('view.browse.before'); ?>
+<?php if (!empty($items)): ?>
+<form method="post" id="batch-form" class="disable-unsaved-warning">
+
+<table class="tablesaw batch-edit" data-tablesaw-mode="stack">
+    <thead>
+        <tr>
+            <th><?= $translate('Name') ?></th>
+            <th><?= $translate('Class') ?></th>
+            <th><?= $translate('Owner') ?></th>
+            <th><?= $translate('Created') ?></th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($items as $item): ?>
+        <?php
+        if ($owner = $item->owner()) {
+            $ownerText = $hyperlink(
+                $owner->name(),
+                $url('admin/id', [
+                    'controller' => 'user',
+                    'action' => 'show',
+                    'id' => $owner->id(),
+                ])
+            );
+        } else {
+            $ownerText = $translate('[no owner]');
+        }
+        ?>
+        <tr>
+            <td>
+                <?= $item->linkPretty() ?>
+                <?php if (!$item->isPublic()): ?>
+                    <span class="o-icon-private" aria-label="<?= $translate('Private') ?>"></span>
+                <?php endif; ?>
+                <ul class="actions">
+                    <?php if ($item->userIsAllowed('update')): ?>
+                    <li><?= $item->link('', 'edit', [
+                        'class' => 'o-icon-edit',
+                        'title' => $translate('Edit'),
+                    ]) ?></li>
+                    <?php endif; ?>
+                    <?php if ($item->userIsAllowed('delete')): ?>
+                    <li><?= $hyperlink('', '#', [
+                        'data-sidebar-selector' => '#sidebar',
+                        'data-sidebar-content-url' => $item->url('delete-confirm'),
+                        'class' => 'o-icon-delete sidebar-content',
+                        'title' => $translate('Delete'),
+                    ]) ?></li>
+                    <?php endif; ?>
+                    <li><?= $hyperlink('', '#', [
+                        'data-sidebar-selector' => '#sidebar',
+                        'data-sidebar-content-url' => $item->url('show-details'),
+                        'class' => 'o-icon-more sidebar-content',
+                        'title' => $translate('Details'),
+                    ]) ?></li>
+                </ul>
+            </td>
+            <td><?= $escape($translate($item->displayResourceClassLabel())) ?></td>
+            <td><?= $ownerText ?></td>
+            <td><?= $escape($i18n->dateFormat($item->created())) ?></td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+
+</form>
+
+<?php $this->trigger('view.browse.after'); ?>
+<div class="browse-controls">
+    <?= $this->pagination() ?>
+</div>
+
+<div id="sidebar" class="sidebar">
+    <?= $hyperlink('', '#', [
+        'class' => 'sidebar-close o-icon-close',
+        'title' => $translate('Close'),
+    ]) ?>
+    <div class="sidebar-content"></div>
+</div>
+<div id="sidebar-delete-selected" class="sidebar">
+    <?= $hyperlink('', '#', [
+        'class' => 'sidebar-close o-icon-close',
+        'title' => $translate('Close'),
+    ]) ?>
+    <div class="sidebar-content">
+        <div id="sidebar-confirm">
+            <h3><?= $translate('Delete items') ?></h3>
+            <p><?= $translate('Are you sure you would like to delete the selected items?') ?></p>
+            <p class="error"><?= sprintf(
+                $translate('%1$s: this action will permanently delete %2$s items and cannot be undone.'),
+                sprintf('<strong>%s</strong>', $translate('Warning')),
+                '<strong><span id="delete-selected-count"></span></strong>'
+            ) ?></p>
+            <?= $this->form($this->formDeleteSelected) ?>
+        </div>
+    </div>
+</div>
+<div id="sidebar-delete-all" class="sidebar">
+    <?= $hyperlink('', '#', [
+        'class' => 'sidebar-close o-icon-close',
+        'title' => $translate('Close'),
+    ]) ?>
+    <div class="sidebar-content">
+        <div id="sidebar-confirm">
+            <h3><?= $translate('Delete items') ?></h3>
+            <p><?= $translate('Are you sure you would like to delete all items on all pages of this result?') ?></p>
+            <p class="error"><?= sprintf(
+                $translate('%1$s: this action will permanently delete %2$s items and cannot be undone.'),
+                sprintf('<strong>%s</strong>', $translate('Warning')),
+                sprintf('<strong>%s</strong>', number_format($this->pagination()->getPaginator()->getTotalCount()))
+            ) ?></p>
+            <label><input type="checkbox" name="confirm-delete-all-check"> <?= $translate('Are you sure?') ?></label>
+            <?= $this->form($this->formDeleteAll) ?>
+        </div>
+    </div>
+</div>
+
+<?php else: ?>
+
+<div class="no-resources">
+    <p><?= $translate('Omeka could not find any items.') ?></p>
+</div>
+
+<?php endif; ?>
+
+
