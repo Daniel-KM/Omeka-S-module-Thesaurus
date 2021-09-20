@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Thesaurus;
 
 /*
@@ -53,6 +54,11 @@ class Module extends AbstractModule
 {
     const NAMESPACE = __NAMESPACE__;
 
+    protected function postInstall(): void
+    {
+        $this->storeSchemeAndConceptIds();
+    }
+
     public function attachListeners(SharedEventManagerInterface $sharedEventManager): void
     {
         // Add the search query filters for resources.
@@ -101,6 +107,8 @@ class Module extends AbstractModule
 
     public function getConfigForm(PhpRenderer $renderer)
     {
+        $this->storeSchemeAndConceptIds();
+
         $message = new \Omeka\Stdlib\Message(
             'The indexing must be run each time the structure of the thesaurus is updated.' // @translate
         );
@@ -241,7 +249,7 @@ class Module extends AbstractModule
             }
 
             // TODO Improve performance: currently, the thesaurus is built manually each time.
-            $item = $api->searchOne('items', ['id' => (int) $queryProperty['text']])->getContent();
+            $item = $api->searchOne('items', ['id' => (int) $queryProperty['text']], ['initialize' => false])->getContent();
             if (!$item) {
                 continue;
             }
@@ -295,5 +303,21 @@ class Module extends AbstractModule
         if ($where) {
             $qb->andWhere($where);
         }
+    }
+
+    protected function storeSchemeAndConceptIds(): self
+    {
+        $services = $this->getServiceLocator();
+        $api = $services->get('Omeka\ApiManager');
+        $settings = $services->get('Omeka\Settings');
+
+        // Update the classes one time at least.
+        // Automatically throw exception.
+        $vocabulary = $api->read('vocabularies', ['namespaceUri' => 'http://www.w3.org/2004/02/skos/core#'])->getContent();
+        $resourceClass = $api->read('resource_classes', ['vocabulary' => $vocabulary->id(), 'localName' => 'ConceptScheme'])->getContent();
+        $settings->set('thesaurus_skos_scheme_class_id', $resourceClass->id());
+        $resourceClass = $api->read('resource_classes', ['vocabulary' => $vocabulary->id(), 'localName' => 'Concept'])->getContent();
+        $settings->set('thesaurus_skos_concept_class_id', $resourceClass->id());
+        return $this;
     }
 }

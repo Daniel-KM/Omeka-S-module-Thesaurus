@@ -99,6 +99,9 @@ return [
     'thesaurus' => [
         // Keep empty config for automatic management.
         'config' => [
+            // Hidden options to store resource classes.
+            'thesaurus_skos_scheme_class_id' => null,
+            'thesaurus_skos_concept_class_id' => null,
         ],
         'block_settings' => [
             'thesaurus' => [
