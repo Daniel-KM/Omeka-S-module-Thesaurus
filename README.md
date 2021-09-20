@@ -5,17 +5,17 @@ Thesaurus (module for Omeka S)
 > are available on [GitLab], which seems to respect users and privacy better
 > than the previous repository.__
 
-[Thesaurus] is a module for [Omeka S] that contains helpers to manage a standard
-thesaurus (ontology [skos]) to describe documents.
+[Thesaurus] is a module for [Omeka S] that allows to manage a standard thesaurus
+(ontology [skos]) to describe documents with a tree structure (_arborescence_):
 
-The helpers are:
 - the skos ontology is included;
 - a resource template to build the thesaurus as a list of items (recommended);
+- an admin view to manage the tree structure;
 - a view helper to display the tree of concepts in the theme, or part of it.
 - a block template to display the thesaurus as a tree (via module [Block Plus]).
 
 The view helper can be used for any purpose, for example to build a hierarchical
-list of item sets.
+list of item sets, but this is not the main purpose.
 
 The thesaurus is available as a endpoint for [Value Suggest], through module [Value Suggest: Any].
 
@@ -86,9 +86,8 @@ item id of the scheme.
 TODO
 ----
 
-* [ ] Manage terms as a full resources, separetly from items (like Annotation)?
-* [ ] Manage representation when a term belongs to multiple thesaurus? Probably
-  useless with association.
+* [ ] Manage terms as a full resources, separetly from items (like Annotation)? No.
+* [ ] Manage representation when a term belongs to multiple thesaurus? Probably useless with association.
 * [ ] Implement a tree iterator in representation, plugin and helper.
 * [ ] Uninstall vocabulary and resources templates if not used.
 
