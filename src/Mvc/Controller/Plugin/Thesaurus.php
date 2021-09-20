@@ -308,7 +308,7 @@ class Thesaurus extends AbstractPlugin
     public function isRoot()
     {
         return $this->isSkos
-            && $this->structure[$this->itemId]['top'];
+            && !empty($this->structure[$this->itemId]['top']);
     }
 
     /**
@@ -320,7 +320,7 @@ class Thesaurus extends AbstractPlugin
      */
     public function root()
     {
-        return $this->isSkos
+        return $this->isSkos && $this->isConcept()
             ? $this->returnFromData($this->ancestor($this->structure[$this->itemId]))
             : null;
     }
@@ -332,7 +332,7 @@ class Thesaurus extends AbstractPlugin
      */
     public function broader()
     {
-        return $this->isSkos
+        return $this->isSkos && $this->isConcept()
             ? $this->returnFromData($this->parent($this->structure[$this->itemId]))
             : null;
     }
@@ -344,7 +344,7 @@ class Thesaurus extends AbstractPlugin
      */
     public function narrowers()
     {
-        return $this->isSkos
+        return $this->isSkos && $this->isConcept()
             ? $this->returnFromData($this->children($this->structure[$this->itemId]))
             : [];
     }
@@ -356,7 +356,7 @@ class Thesaurus extends AbstractPlugin
      */
     public function relateds()
     {
-        if (!$this->isSkos) {
+        if (!$this->isSkos || $this->isScheme()) {
             return [];
         }
         return $this->returnItem
@@ -371,7 +371,7 @@ class Thesaurus extends AbstractPlugin
      */
     public function relatedsOrSelf()
     {
-        if (!$this->isSkos) {
+        if (!$this->isSkos || $this->isScheme()) {
             return [];
         }
         $list = $this->relateds();
@@ -386,7 +386,7 @@ class Thesaurus extends AbstractPlugin
      */
     public function siblings()
     {
-        if (!$this->isSkos) {
+        if (!$this->isSkos || $this->isScheme) {
             return [];
         }
         $result = $this->siblingsOrSelf();
@@ -401,7 +401,7 @@ class Thesaurus extends AbstractPlugin
      */
     public function siblingsOrSelf()
     {
-        if (!$this->isSkos) {
+        if (!$this->isSkos || $this->isScheme()) {
             return [];
         }
         if ($this->isRoot()) {
@@ -421,7 +421,7 @@ class Thesaurus extends AbstractPlugin
      */
     public function ascendants()
     {
-        return $this->isSkos
+        return $this->isSkos && $this->isConcept()
             ? $this->returnFromData($this->ancestors($this->structure[$this->itemId]))
             : [];
     }
@@ -433,7 +433,7 @@ class Thesaurus extends AbstractPlugin
      */
     public function ascendantsOrSelf()
     {
-        if (!$this->isSkos) {
+        if (!$this->isSkos || $this->isScheme()) {
             return [];
         }
         return [$this->itemId => $this->returnItem ? $this->item : $this->structure[$this->itemId]]
@@ -447,7 +447,7 @@ class Thesaurus extends AbstractPlugin
      */
     public function descendants()
     {
-        return $this->isSkos
+        return $this->isSkos && $this->isConcept()
             ? $this->returnFromData($this->listDescendants($this->structure[$this->itemId]))
             : [];
     }
@@ -459,7 +459,7 @@ class Thesaurus extends AbstractPlugin
      */
     public function descendantsOrSelf()
     {
-        if (!$this->isSkos) {
+        if (!$this->isSkos || $this->isScheme()) {
             return [];
         }
         $list = $this->descendants();
@@ -505,7 +505,7 @@ class Thesaurus extends AbstractPlugin
      */
     public function branch()
     {
-        if (!$this->isSkos) {
+        if (!$this->isSkos || $this->isScheme()) {
             return [];
         }
         $result = [];
@@ -530,7 +530,7 @@ class Thesaurus extends AbstractPlugin
      */
     public function flatTree()
     {
-        if (!$this->isSkos) {
+        if (!$this->isSkos || $this->isScheme()) {
             return [];
         }
         $result = [];
@@ -561,7 +561,7 @@ class Thesaurus extends AbstractPlugin
      */
     public function flatBranch()
     {
-        if (!$this->isSkos) {
+        if (!$this->isSkos || $this->isScheme()) {
             return [];
         }
         $result = [];
