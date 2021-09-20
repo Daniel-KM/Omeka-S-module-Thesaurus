@@ -321,7 +321,7 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
-     * Get the hierarchy of this item from the root (top concepts).
+     * Get the hierarchy of this item from the top concepts.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::tree()
      */
@@ -372,7 +372,7 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
-     * Get the flat hierarchy of this item from the root (top concepts).
+     * Get the flat hierarchy of this item from the top concepts.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::flatTree()
      */
@@ -415,6 +415,17 @@ class Thesaurus extends AbstractHelper
     public function listBranch(array $options = null): array
     {
         return $this->thesaurus->listBranch($options);
+    }
+
+    /**
+     * Specific output for the jQuery plugin jstree, used for Omeka navigation.
+     *
+     * @see https://www.jstree.com
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::jsFlatTree()
+     */
+    public function jsFlatTree()
+    {
+        return $this->thesaurus->jsFlatTree();
     }
 
     /**

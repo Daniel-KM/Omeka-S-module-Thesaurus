@@ -498,7 +498,7 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
-     * Get the hierarchy of this item from the root (top concepts).
+     * Get the hierarchy of this item from the top concepts.
      */
     public function tree(): array
     {
@@ -601,11 +601,11 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
-     * Get the flat hierarchy of this item from the root (top concept).
+     * Get the flat hierarchy of this item from the top concepts.
      */
     public function flatTree(): array
     {
-        if (!$this->isSkos || $this->isScheme()) {
+        if (!$this->isSkos) {
             return [];
         }
         $result = [];
@@ -669,6 +669,34 @@ class Thesaurus extends AbstractPlugin
     {
         $result = $this->flatBranch();
         return $this->list($result, is_null($options) ? [] : $options);
+    }
+
+    /**
+     * Specific output for the jQuery plugin jstree, used for Omeka navigation.
+     * Output is the flat format, simpler to manage here.
+     *
+     * @see https://www.jstree.com
+     */
+    public function jsFlatTree(): array
+    {
+        $tree = $this->flatTree();
+        foreach ($tree as &$element) {
+            $element = [
+                'id' => $element['self']['id'],
+                'parent' => $element['self']['top'] || empty($element['self']['parent']) ? '#' : $element['self']['parent'],
+                'text' => $element['self']['title'],
+                // 'icon' => null,
+                // 'state' => [
+                //     'opened' => true,
+                //     'disabled' => false,
+                //     'selected' => false,
+                // ],
+                // 'li_attr' => [],
+                // 'a_attr' => [],
+            ];
+        }
+        unset($element);
+        return array_values($tree);
     }
 
     /**
