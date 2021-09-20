@@ -39,6 +39,7 @@ $linkTerm = $this->linkTerm($options);
     </p>
     <?php else: ?>
         <?= $partial('common/thesaurus-tree-recursive', [
+            'itemId' => $item->id(),
             'data' => $data,
             'options' => $options,
             'linkTerm' => $linkTerm,

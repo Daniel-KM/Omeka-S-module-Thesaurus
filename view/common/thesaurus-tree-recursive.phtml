@@ -5,15 +5,20 @@
  * @var array $options
  * @var \Thesaurus\View\Helper\LinkTerm $linkTerm
  * @var int $level
+ * @var int $itemId
  * @var \Laminas\View\Helper\Partial $partial
  */
 
 ?>
+
 <ul>
     <?php foreach ($data as $current): ?>
-    <li><?= $linkTerm->render($current['self']) ?>
+    <?php $isCurrent = (is_object($current['self']) ? $current['self']->id() : $current['self']['id']) === $itemId; ?>
+    <li<?php if ($isCurrent) echo ' class="active"'; ?>>
+        <?= $linkTerm->render($current['self']) ?>
         <?php if (!empty($current['children'])): ?>
         <?= $partial('common/thesaurus-tree-recursive', [
+            'itemId' => $itemId,
             'data' => $current['children'],
             'options' => $options,
             'linkTerm' => $linkTerm,
