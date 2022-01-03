@@ -190,6 +190,27 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
+     * Return the data for the item used to build the thesaurus or any item.
+     *
+     * @param ItemRepresentation|int $item
+     */
+    public function itemToData($itemOrId = null): ?array
+    {
+        if (is_null($itemOrId)) {
+            $id = $this->itemId;
+        } else {
+            $id = is_numeric($itemOrId) ? (int) $itemOrId : $itemOrId->id();
+        }
+        if (empty($this->structure[$id])) {
+            return null;
+        }
+        return [
+            'self' => $this->structure[$id],
+            'level' => count($this->ancestors($this->structure[$id])),
+        ];
+    }
+
+    /**
      * This item is a skos item if it has at a skos class or a skos property.
      *
      * Required properties when class is not set are skos:hasTopConcept for

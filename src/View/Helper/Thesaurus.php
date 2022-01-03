@@ -82,6 +82,18 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
+     * Return the data for the item used to build the thesaurus or any item.
+     *
+     * @param ItemRepresentation|int $item
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::itemToData()
+     */
+    public function itemToData($itemOrId = null): ?array
+    {
+        return $this->thesaurus->itemToData($itemOrId);
+    }
+
+    /**
      * This item is a skos item if it has at a skos class or a skos property.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isSkos()
