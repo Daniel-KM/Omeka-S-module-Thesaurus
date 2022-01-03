@@ -1057,24 +1057,20 @@ class Thesaurus extends AbstractPlugin
         $connection = $this->entityManager->getConnection();
         $qb = $connection->createQueryBuilder();
         $qb
-            ->select([
-                'DISTINCT property.id AS id',
-                'CONCAT(vocabulary.prefix, ":", property.local_name) AS term',
+            ->select(
+                'DISTINCT CONCAT(vocabulary.prefix, ":", property.local_name) AS term',
+                'property.id AS id',
                 // Only the two first selects are needed, but some databases
                 // require "order by" or "group by" value to be in the select.
-                'vocabulary.id',
-                'property.id',
-            ])
+                'vocabulary.id'
+            )
             ->from('property', 'property')
             ->innerJoin('property', 'vocabulary', 'vocabulary', 'property.vocabulary_id = vocabulary.id')
             ->orderBy('vocabulary.id', 'asc')
             ->addOrderBy('property.id', 'asc')
             ->addGroupBy('property.id')
         ;
-        $stmt = $connection->executeQuery($qb);
-        // Fetch by key pair is not supported by doctrine 2.0.
-        $this->terms['property'] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        $this->terms['property'] = array_map('intval', array_column($this->terms['property'], 'id', 'term'));
+        $this->terms['property'] = array_map('intval', $connection->executeQuery($qb)->fetchAllKeyValue());
         return $this->terms['property'];
     }
 
@@ -1092,24 +1088,20 @@ class Thesaurus extends AbstractPlugin
         $connection = $this->entityManager->getConnection();
         $qb = $connection->createQueryBuilder();
         $qb
-            ->select([
-                'DISTINCT resource_class.id AS id',
-                'CONCAT(vocabulary.prefix, ":", resource_class.local_name) AS term',
+            ->select(
+                'DISTINCT CONCAT(vocabulary.prefix, ":", resource_class.local_name) AS term',
+                'resource_class.id AS id',
                 // Only the two first selects are needed, but some databases
                 // require "order by" or "group by" value to be in the select.
-                'vocabulary.id',
-                'resource_class.id',
-            ])
+                'vocabulary.id'
+            )
             ->from('resource_class', 'resource_class')
             ->innerJoin('resource_class', 'vocabulary', 'vocabulary', 'resource_class.vocabulary_id = vocabulary.id')
             ->orderBy('vocabulary.id', 'asc')
             ->addOrderBy('resource_class.id', 'asc')
             ->addGroupBy('resource_class.id')
         ;
-        $stmt = $connection->executeQuery($qb);
-        // Fetch by key pair is not supported by doctrine 2.0.
-        $this->terms['class'] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        $this->terms['class'] = array_map('intval', array_column($this->terms['class'], 'id', 'term'));
+        $this->terms['class'] = array_map('intval', $connection->executeQuery($qb)->fetchAllKeyValue());
         return $this->terms['class'];
     }
 
@@ -1172,11 +1164,11 @@ class Thesaurus extends AbstractPlugin
 
         // Get all parents.
         $qb = $this->entityManager->createQueryBuilder()
-            ->select([
+            ->select(
                 'item.id',
                 // There is only zero or one parent, but this is a grouped query.
-                'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource)) AS ids',
-            ])
+                'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource)) AS ids'
+            )
             ->from(\Omeka\Entity\Item::class, 'item')
             ->leftJoin(\Omeka\Entity\Value::class, 'value', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('value.property', ':propertyInScheme'))
             ->andWhere($expr->eq('item.resourceClass', ':concept'))
@@ -1203,10 +1195,10 @@ class Thesaurus extends AbstractPlugin
 
         // Get all children.
         $qb = $this->entityManager->createQueryBuilder()
-            ->select([
+            ->select(
                 'item.id',
-                'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource) ORDER BY value_list.id) AS ids',
-            ])
+                'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource) ORDER BY value_list.id) AS ids'
+            )
             ->from(\Omeka\Entity\Item::class, 'item')
             ->leftJoin(\Omeka\Entity\Value::class, 'value', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('value.property', ':propertyInScheme'))
             ->andWhere($expr->eq('item.resourceClass', ':concept'))
@@ -1277,11 +1269,11 @@ class Thesaurus extends AbstractPlugin
             ->select('item')
             ->from(\Omeka\Entity\Item::class, 'item')
             ->where($qb->expr()->in('item', ':ids'))
-            ->setParameter('ids', array_keys($data), \Doctrine\DBAL\Types\Type::INTEGER)
+            ->setParameter('ids', array_keys($data), \Doctrine\DBAL\Types\Types::INTEGER)
         ;
         $result = $qb->getQuery()->getResult();
-        foreach ($result as &$item) {
-            $item = $this->adapter->getRepresentation($item);
+        foreach ($result as &$itemData) {
+            $itemData = $this->adapter->getRepresentation($itemData);
         }
 
         return $isSingle
