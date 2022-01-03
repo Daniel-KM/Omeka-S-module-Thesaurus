@@ -43,7 +43,7 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
-     * If true, return item representations, else  a small array of term data.
+     * If true, return item representations, else a small array of term data.
      *
      * The method scheme() always returns an item.
      * It is not recommended to return items with big thesaurus.
@@ -69,11 +69,14 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
-     * Helper to get the item representation from item data.
+     * Get the item representation from item data or id, or get current item.
+     *
+     * @param array|int|null $itemData
+     * @return ItemRepresentation Return the current item when empty
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::itemFromData()
      */
-    public function itemFromData(array $itemData = null): ?ItemRepresentation
+    public function itemFromData($itemData = null): ?ItemRepresentation
     {
         return $this->thesaurus->itemFromData($itemData);
     }

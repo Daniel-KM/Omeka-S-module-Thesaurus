@@ -148,7 +148,7 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
-     * If true, return item representations, else  a small array of term data.
+     * If true, return item representations, else a small array of term data.
      *
      * The method scheme() always returns an item.
      * It is not recommended to return items with big thesaurus.
@@ -170,12 +170,22 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
-     * Helper to get the item representation from item data.
+     * Get the item representation from item data or id, or get current item.
+     *
+     * @param array|int| $itemData
+     * @return ItemRepresentation Return the current item when empty
      */
-    public function itemFromData(array $itemData = null): ?ItemRepresentation
+    public function itemFromData($itemData = null): ?ItemRepresentation
     {
-        return $itemData
-            ? $this->api->searchOne('items', ['id' => $itemData['id']], ['initialize' => false])->getContent()
+        if (is_null($itemData)) {
+            return $this->item;
+        } elseif (is_numeric($itemData)) {
+            $id = (int) $itemData;
+        } elseif (is_array($itemData)) {
+            $id = $itemData['id'] ?? $itemData['self']['id'] ?? null;
+        }
+        return $id
+            ? $this->api->searchOne('items', ['id' => $id], ['initialize' => false])->getContent()
             : null;
     }
 
