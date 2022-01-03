@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-20 00:00+0000\n"
-"PO-Revision-Date: 2021-09-20 00:00+0000\n"
+"POT-Creation-Date: 2022-01-03 00:00+0000\n"
+"PO-Revision-Date: 2022-01-03 00:00+0000\n"
 "Last-Translator: Daniel Berthereau <Daniel.fr@Berthereau.net>\n"
 "Language-Team: \n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: Poedit 3.0.1\n"
 
 #: src/Generic/AbstractModule.php:66
 #, php-format
@@ -114,22 +114,22 @@ msgstr "Arborescence du concept en cours"
 msgid "Descendants of current concept"
 msgstr "Descendants du concept en cours"
 
-#: view/common/thesaurus-list.phtml:23 src/Form/ThesaurusFieldset.php:45
+#: view/common/thesaurus-list.phtml:23 src/Form/ThesaurusFieldset.php:44
 msgid "Top concepts"
 msgstr "Concepts racines"
 
 #: view/common/thesaurus-list.phtml:24 view/common/thesaurus-list.phtml:25
-#: src/Form/ThesaurusFieldset.php:46
+#: src/Form/ThesaurusFieldset.php:45
 msgid "Narrower concepts"
 msgstr "Concepts spécifiques"
 
 #: view/common/thesaurus-list.phtml:26 view/common/thesaurus-list.phtml:27
-#: src/Form/ThesaurusFieldset.php:48
+#: src/Form/ThesaurusFieldset.php:47
 msgid "Related concepts"
 msgstr "Concepts liés"
 
 #: view/common/thesaurus-list.phtml:28 view/common/thesaurus-list.phtml:29
-#: src/Form/ThesaurusFieldset.php:50
+#: src/Form/ThesaurusFieldset.php:49
 msgid "Sibling concepts"
 msgstr "Concepts équivalents"
 
@@ -145,129 +145,131 @@ msgstr "Concepts descendants"
 msgid "Linked concepts"
 msgstr "Concepts associés"
 
+#: data/scripts/upgrade.php:58
+msgid ""
+"It is now possible to get thesaurus data for another item without rebuilding "
+"it."
+msgstr ""
+
 #: src/Form/ThesaurusFieldset.php:17
 msgid "Block title"
 msgstr "Titre du bloc"
 
-#: src/Form/ThesaurusFieldset.php:18
-msgid "Heading for the block, if any."
-msgstr "Entête du bloc."
-
-#: src/Form/ThesaurusFieldset.php:28
+#: src/Form/ThesaurusFieldset.php:27
 msgid "Scheme or concept id"
 msgstr "Schéma ou id du concept"
 
-#: src/Form/ThesaurusFieldset.php:40
+#: src/Form/ThesaurusFieldset.php:39
 msgid "Type of display"
 msgstr "Type d’affichage"
 
-#: src/Form/ThesaurusFieldset.php:43
+#: src/Form/ThesaurusFieldset.php:42
 msgid "Root"
 msgstr "Racine"
 
-#: src/Form/ThesaurusFieldset.php:44
+#: src/Form/ThesaurusFieldset.php:43
 msgid "Broader"
 msgstr "Générique"
 
-#: src/Form/ThesaurusFieldset.php:47
+#: src/Form/ThesaurusFieldset.php:46
 msgid "Narrower concepts or self"
 msgstr "Concepts spécifiques ou lui-même"
 
-#: src/Form/ThesaurusFieldset.php:49
+#: src/Form/ThesaurusFieldset.php:48
 msgid "Related concepts or self"
 msgstr "Concepts liés ou lui-même"
 
-#: src/Form/ThesaurusFieldset.php:51
+#: src/Form/ThesaurusFieldset.php:50
 msgid "Sibling concepts or self"
 msgstr "Concepts équivalents ou lui--même"
 
-#: src/Form/ThesaurusFieldset.php:52
+#: src/Form/ThesaurusFieldset.php:51
 msgid "Ascendants as list"
 msgstr "Ascendants en liste"
 
-#: src/Form/ThesaurusFieldset.php:53
+#: src/Form/ThesaurusFieldset.php:52
 msgid "Ascendants or self as list"
 msgstr "Ascendants ou lui-même en liste"
 
-#: src/Form/ThesaurusFieldset.php:54
+#: src/Form/ThesaurusFieldset.php:53
 msgid "Descendants as list"
 msgstr "Descendants en liste"
 
-#: src/Form/ThesaurusFieldset.php:55
+#: src/Form/ThesaurusFieldset.php:54
 msgid "Descendants or self as list"
 msgstr "Descendants ou lui-même en liste"
 
-#: src/Form/ThesaurusFieldset.php:56
+#: src/Form/ThesaurusFieldset.php:55
 msgid "Tree structure"
 msgstr "Structure en arborescence"
 
-#: src/Form/ThesaurusFieldset.php:57
+#: src/Form/ThesaurusFieldset.php:56
 msgid "Branch"
 msgstr "Branche"
 
-#: src/Form/ThesaurusFieldset.php:58
+#: src/Form/ThesaurusFieldset.php:57
 msgid "Branch without top"
 msgstr "Branche sans top-concept"
 
-#: src/Form/ThesaurusFieldset.php:59
+#: src/Form/ThesaurusFieldset.php:58
 msgid "Branch from item"
 msgstr "Branche depuis l’item"
 
-#: src/Form/ThesaurusFieldset.php:60
+#: src/Form/ThesaurusFieldset.php:59
 msgid "Branch below item"
 msgstr "Branche sous l’item"
 
-#: src/Form/ThesaurusFieldset.php:61
+#: src/Form/ThesaurusFieldset.php:60
 msgid "Flat tree"
 msgstr "Arborescence plate"
 
-#: src/Form/ThesaurusFieldset.php:62
+#: src/Form/ThesaurusFieldset.php:61
 msgid "Flat branch"
 msgstr "Branche plate"
 
-#: src/Form/ThesaurusFieldset.php:70
+#: src/Form/ThesaurusFieldset.php:69
 msgid "Select type…"
 msgstr "Choisir le type…"
 
-#: src/Form/ThesaurusFieldset.php:77
+#: src/Form/ThesaurusFieldset.php:76
 msgid "Type of link"
 msgstr "Type de lien"
 
-#: src/Form/ThesaurusFieldset.php:80
+#: src/Form/ThesaurusFieldset.php:79
 msgid "Concepts"
 msgstr "Concepts"
 
-#: src/Form/ThesaurusFieldset.php:82
+#: src/Form/ThesaurusFieldset.php:81
 msgid "Both"
 msgstr "Les deux"
 
-#: src/Form/ThesaurusFieldset.php:95
+#: src/Form/ThesaurusFieldset.php:94
 msgid "Property for links"
 msgstr "Propriété pour les liens"
 
-#: src/Form/ThesaurusFieldset.php:96
+#: src/Form/ThesaurusFieldset.php:95
 msgid "Generally, it is \"dcterms:subject\"."
 msgstr "Il s’agit généralement de \"dcterms:subject\"."
 
-#: src/Form/ThesaurusFieldset.php:112
+#: src/Form/ThesaurusFieldset.php:111
 msgid "Hide if empty"
 msgstr "Cacher si vide"
 
-#: src/Form/ThesaurusFieldset.php:122
+#: src/Form/ThesaurusFieldset.php:121
 msgid "Level expanded"
 msgstr "Profondeur initiale"
 
-#: src/Form/ThesaurusFieldset.php:123
+#: src/Form/ThesaurusFieldset.php:122
 msgid "Set 0 to start closed, a big number to display all levels."
 msgstr ""
 "Indiquer 0 pour afficher l’arborescence fermée, un grand nombre pour "
 "afficher tous les niveaux."
 
-#: src/Form/ThesaurusFieldset.php:136
+#: src/Form/ThesaurusFieldset.php:135
 msgid "Template to display"
 msgstr "Gabarit à afficher"
 
-#: src/Form/ThesaurusFieldset.php:137
+#: src/Form/ThesaurusFieldset.php:136
 msgid ""
 "Templates are in folder \"common/block-layout\" of the theme and should "
 "start with \"thesaurus\"."
@@ -358,8 +360,8 @@ msgstr ""
 #: src/Api/Representation/TermRepresentation.php:362
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:560
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:582
-#: src/Mvc/Controller/Plugin/Thesaurus.php:861
-#: src/Mvc/Controller/Plugin/Thesaurus.php:882
+#: src/Mvc/Controller/Plugin/Thesaurus.php:911
+#: src/Mvc/Controller/Plugin/Thesaurus.php:932
 #, php-format
 msgid "There cannot be more than %d ancestors."
 msgstr "Il ne peut pas y avoir plus de %d ancêtres."
@@ -370,10 +372,10 @@ msgstr "Il ne peut pas y avoir plus de %d ancêtres."
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:606
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:633
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:662
-#: src/Mvc/Controller/Plugin/Thesaurus.php:906
-#: src/Mvc/Controller/Plugin/Thesaurus.php:931
-#: src/Mvc/Controller/Plugin/Thesaurus.php:958
-#: src/Mvc/Controller/Plugin/Thesaurus.php:987
+#: src/Mvc/Controller/Plugin/Thesaurus.php:956
+#: src/Mvc/Controller/Plugin/Thesaurus.php:981
+#: src/Mvc/Controller/Plugin/Thesaurus.php:1008
+#: src/Mvc/Controller/Plugin/Thesaurus.php:1037
 #, php-format
 msgid "There cannot be more than %d levels of descendants."
 msgstr "Il ne peut pas y avoir plus de %d niveaux de descendants."
@@ -398,21 +400,21 @@ msgstr "Le schéma du concept générique doit être le même que le concept."
 msgid "A term must not be a ancestor of itself."
 msgstr "Un concept ne peut pas être un ancêtre de lui-même."
 
-#: src/Job/UpdateStructure.php:84 src/Job/Indexing.php:81
+#: src/Job/UpdateStructure.php:81 src/Job/Indexing.php:78
 msgid "No thesaurus specified."
 msgstr "Pas de thésaurus indiqué."
 
-#: src/Job/UpdateStructure.php:92 src/Job/Indexing.php:89
+#: src/Job/UpdateStructure.php:89 src/Job/Indexing.php:86
 #, php-format
 msgid "Thesaurus #%d not found."
 msgstr "Le thésaurus #%d n’a pas été trouvé."
 
-#: src/Job/UpdateStructure.php:104
+#: src/Job/UpdateStructure.php:101
 #, php-format
 msgid "Item #%d is not a thesaurus."
 msgstr "Le contenu #%d n’est pas un thésaurus."
 
-#: src/Job/UpdateStructure.php:117
+#: src/Job/UpdateStructure.php:114
 #, php-format
 msgid ""
 "The thesaurus \"%1$s\" (#%1$d) is empty. No process can be done for now. "
@@ -421,12 +423,12 @@ msgstr ""
 "Le thésaurus \"%1$s\" (#%1$d) est vide. Aucune restructuration ne peut être "
 "effectuée. Inclure d’abord les concepts dans le thésaurus."
 
-#: src/Job/UpdateStructure.php:124
+#: src/Job/UpdateStructure.php:121
 #, php-format
 msgid "Starting restructuration of thesaurus \"%1$s\" (#%2$d)."
 msgstr "Lancement de la restructuration du thésaurus \"%1$s\" (#%2$d)."
 
-#: src/Job/UpdateStructure.php:139
+#: src/Job/UpdateStructure.php:136
 #, php-format
 msgid ""
 "Concepts were restructured and reindexed for thesaurus \"%1$s\" (#%2$d)."
@@ -434,48 +436,48 @@ msgstr ""
 "Les concepts ont été restructurés et réindexés pour le thésaurus \"%1$s\" (#"
 "%2$d)."
 
-#: src/Job/UpdateStructure.php:145
+#: src/Job/UpdateStructure.php:142
 #, php-format
 msgid "An error occurred. Ended restructuration of thesaurus \"%1$s\" (#%2$d)."
 msgstr ""
 "Une erreur s’est produite. Fin de la restructuration du thésaurus \"%1$s\" (#"
 "%2$d)."
 
-#: src/Job/UpdateStructure.php:176
+#: src/Job/UpdateStructure.php:173
 #, php-format
 msgid "Missing id or parent key for id #%d."
 msgstr "Id manquant ou clé \"parent\" manquante pour id #%d."
 
-#: src/Job/UpdateStructure.php:222
+#: src/Job/UpdateStructure.php:219
 msgid "The thesaurus is now empty."
 msgstr "Le thésaurus est désormais vide."
 
-#: src/Job/Indexing.php:97
+#: src/Job/Indexing.php:94
 #, php-format
 msgid "Starting indexing of thesaurus \"%1$s\" (#%2$d)."
 msgstr "Lancement de l’indexation du thésaurus \"%1$s\" (#%2$d)."
 
-#: src/Job/Indexing.php:106
+#: src/Job/Indexing.php:103
 #, php-format
 msgid "Thesaurus \"%1$s\" (#%2$d) indexed."
 msgstr "Le thésaurus \"%1$s\" (#%2$d) a été indexé."
 
-#: src/Job/Indexing.php:112
+#: src/Job/Indexing.php:109
 #, php-format
 msgid "Thesaurus \"%1$s\" (#%2$d) not indexed."
 msgstr "Le thésaurus \"%1$s\" (#%2$d) n’a pas été indexé."
 
-#: src/Job/Indexing.php:163
+#: src/Job/Indexing.php:160
 #, php-format
 msgid "Thesaurus #%1$d has a missing root for item #%2$d."
 msgstr "Le thésaurus #%1$d a une racine manquante pour le contenu #%2$d."
 
-#: src/Job/Indexing.php:256
+#: src/Job/Indexing.php:253
 #, php-format
 msgid "Thesaurus #%d has no top concepts."
 msgstr "Le thésaurus #%d n’a pas de concepts racine."
 
-#: src/Job/Indexing.php:287
+#: src/Job/Indexing.php:284
 #, php-format
 msgid "The term #%1$d has more than %2$d levels."
 msgstr "Le concept #%1$d a plus de %2$d niveaux."
@@ -594,6 +596,9 @@ msgstr ""
 #: src/Generic/InstallResources.php:952
 msgid "A vocabulary must have a namespace uri and a prefix."
 msgstr "Un vocabulaire doit avoir une uri pour l’espace de nom et un préfixe."
+
+#~ msgid "Heading for the block, if any."
+#~ msgstr "Entête du bloc."
 
 #~ msgid "Thésaurus"
 #~ msgstr "Thésaurus"
