@@ -3,7 +3,7 @@
 namespace Thesaurus;
 
 /*
- * Copyright Daniel Berthereau, 2019-2020
+ * Copyright Daniel Berthereau, 2018-2022
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or

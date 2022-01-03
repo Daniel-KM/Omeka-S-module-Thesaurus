@@ -1,5 +1,9 @@
 <?php declare(strict_types=1);
+
 namespace Thesaurus;
+
+use Omeka\Mvc\Controller\Plugin\Messenger;
+use Omeka\Stdlib\Message;
 
 /**
  * @var Module $this
@@ -46,4 +50,12 @@ SQL;
 
 if (version_compare($oldVersion, '3.3.7.0', '<')) {
     $this->storeSchemeAndConceptIds();
+}
+
+if (version_compare($oldVersion, '3.3.8.0', '<')) {
+    $messenger = new Messenger();
+    $message = new Message(
+        'It is now possible to get thesaurus data for another item without rebuilding it.' // @translate
+    );
+    $messenger->addWarning($message);
 }
