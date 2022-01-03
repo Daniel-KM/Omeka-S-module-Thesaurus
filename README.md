@@ -82,6 +82,21 @@ or in php:
 Here, `xxx` is the resource class id of `skos:ConceptScheme` and `yyy` is the
 item id of the scheme.
 
+### Controller plugin and view helper `thesaurus()`
+
+The controller or view helper thesaurus() allows to create a thesaurus and to
+get the whole tree, the tops, any branch, the ascendants, the descendants, etc.
+It can be used in the theme or anywhere else.
+
+To build a thesaurus, use `$thesaurus = $this->thesaurus($item)`, where item is
+the scheme or any concept. Then, you can get any data for it with the methods.
+
+To get data for any other concept of the thesaurus, set it first. For example,
+to get the  ascendants for a concept, use `$this->thesaurus()->setItem($item)->ascendants()`.
+
+The view helper has the specific method `display()` to display the tree, a list,
+or anything else via a view template.
+
 
 TODO
 ----
@@ -133,7 +148,7 @@ altered, and that no provisions are either added or removed herefrom.
 Copyright
 ---------
 
-* Copyright Daniel Berthereau, 2018-2021 (see [Daniel-KM] on GitLab)
+* Copyright Daniel Berthereau, 2018-2022 (see [Daniel-KM] on GitLab)
 
 First version of this module was developed for the project [Ontologie du christianisme médiéval en images]
 for the [Institut national d’histoire de l’art] (INHA).
