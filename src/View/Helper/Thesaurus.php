@@ -17,12 +17,7 @@ class Thesaurus extends AbstractHelper
     protected $thesaurus;
 
     /**
-     * @param ItemRepresentation
-     */
-    protected $item;
-
-    /**
-     * @fixme The same thesaurus is shared between all helpers.
+     * @fixme The same thesaurus is shared between all helpers (even if it can be reinit with another item).
      *
      * @param ThesaurusPlugin $thesaurus
      */
@@ -33,10 +28,12 @@ class Thesaurus extends AbstractHelper
 
     /**
      * Get the thesaurus helper.
+     *
+     * @param ItemRepresentation $item The item should be a scheme or a concept.
+     * It will be used by default in other methods until another method modify it.
      */
-    public function __invoke(ItemRepresentation $item): self
+    public function __invoke(?ItemRepresentation $item): self
     {
-        $this->item = $item;
         $thesaurusPlugin = $this->thesaurus;
         $thesaurusPlugin($item);
         return $this;
@@ -54,18 +51,44 @@ class Thesaurus extends AbstractHelper
      */
     public function setReturnItem(bool $returnItem = false): self
     {
-        $this->thesaurus->setReturnItem();
+        $this->thesaurus->setReturnItem($returnItem);
         return $this;
     }
 
     /**
-     * Return the item used to build the thesaurus.
+     * Set a base item.
+     *
+     * If the item does not belong to the current thesaurus, the thesaurus is
+     * reinitialized. If the item is empty, the thesaurus is reset.
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::setItem()
+     */
+    public function setItem(?ItemRepresentation $item): self
+    {
+        $this->thesaurus->setItem($item);
+        return $this;
+    }
+
+    /**
+     * Return the item used to build the thesaurus or the last item used.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::getItem()
      */
     public function getItem(): ItemRepresentation
     {
         return $this->thesaurus->getItem();
+    }
+
+    /**
+     * Check if the specified item is in the thesaurus.
+     *
+     * @param ItemRepresentation|int $itemOrId
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::isInThesaurus()
+     */
+    public function isInThesaurus($itemOrId = null): bool
+    {
+        return $this->thesaurus->isInThesaurus($itemOrId);
     }
 
     /**
@@ -525,7 +548,7 @@ class Thesaurus extends AbstractHelper
 
         return $view->partial($template, [
             'site' => $this->currentSite(),
-            'item' => $this->item,
+            'item' => $this->thesaurus->getItem(),
             'type' => $type,
             'data' => $data,
             'options' => $options,

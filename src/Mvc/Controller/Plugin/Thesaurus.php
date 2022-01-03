@@ -124,27 +124,19 @@ class Thesaurus extends AbstractPlugin
         $this->itemAdapter = $itemAdapter;
         $this->api = $api;
         $this->user = $identity();
+        $this->isPublic = empty($this->user)
+            || $this->user->getRole() === 'guest';
     }
 
     /**
      * Manage a thesaurus.
      *
-     * @param ItemRepresentation $item
-     * @return self
+     * @param ItemRepresentation $item The item should be a scheme or a concept.
+     * It will be used by default in other methods until another method modify it.
      */
-    public function __invoke(ItemRepresentation $item)
+    public function __invoke(?ItemRepresentation $item = null): self
     {
-        $this->item = $item;
-        $this->itemId = $item->id();
-        $this->scheme = null;
-        $this->isSkos = null;
-        $this->isScheme = null;
-        $this->isConcept = null;
-        $this->isCollection = null;
-        $this->isOrderedCollection = null;
-        return $this
-            ->cacheTerms()
-            ->cacheStructure();
+        return $this->setItem($item);
     }
 
     /**
@@ -162,11 +154,38 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
-     * Return the item used to build the thesaurus.
+     * Set another base item.
+     *
+     * If the item does not belong to the current thesaurus, the thesaurus is
+     * reinitialized. If the item is empty, the thesaurus is reset.
+     */
+    public function setItem(?ItemRepresentation $item): self
+    {
+        $this->item = $item;
+        return $this->init();
+    }
+
+    /**
+     * Return the item used to build the thesaurus or the last item used.
      */
     public function getItem(): ItemRepresentation
     {
         return $this->item;
+    }
+
+    /**
+     * Check if the specified item is in the thesaurus.
+     *
+     * @param ItemRepresentation|int $itemOrId
+     */
+    public function isInThesaurus($itemOrId = null): bool
+    {
+        if (empty($itemOrId)) {
+            $id = $this->itemId;
+        } else {
+            $id = is_object($itemOrId) ? $itemOrId->id() : (int) $itemOrId;
+        }
+        return !empty($this->structure[$id]);
     }
 
     /**
@@ -177,7 +196,7 @@ class Thesaurus extends AbstractPlugin
      */
     public function itemFromData($itemData = null): ?ItemRepresentation
     {
-        if (is_null($itemData)) {
+        if (empty($itemData)) {
             return $this->item;
         } elseif (is_numeric($itemData)) {
             $id = (int) $itemData;
@@ -196,10 +215,10 @@ class Thesaurus extends AbstractPlugin
      */
     public function itemToData($itemOrId = null): ?array
     {
-        if (is_null($itemOrId)) {
+        if (empty($itemOrId)) {
             $id = $this->itemId;
         } else {
-            $id = is_numeric($itemOrId) ? (int) $itemOrId : $itemOrId->id();
+            $id = is_object($itemOrId) ? $itemOrId->id() : (int) $itemOrId;
         }
         if (empty($this->structure[$id])) {
             return null;
@@ -1032,17 +1051,6 @@ class Thesaurus extends AbstractPlugin
         return $branch;
     }
 
-    protected function cacheTerms(): self
-    {
-        if (count($this->terms)) {
-            return $this;
-        }
-        // Only skos is useful for now, but speed is same with all terms.
-        $this->getResourceClassIds();
-        $this->getPropertyIds();
-        return $this;
-    }
-
     /**
      * Get all property ids by term.
      *
@@ -1105,6 +1113,62 @@ class Thesaurus extends AbstractPlugin
         return $this->terms['class'];
     }
 
+    protected function init(): self
+    {
+        // No base item: reset the thesaurus.
+        if (empty($this->item)) {
+            $this->structure = [];
+            $this->tops = [];
+            $this->itemId = null;
+            $this->scheme = null;
+            $this->isSkos = false;
+            $this->isScheme = false;
+            $this->isConcept = false;
+            $this->isCollection = false;
+            $this->isOrderedCollection = false;
+            return $this;
+        }
+
+        // The structure is already built if the current item is the item id.
+        if ($this->item->id() === $this->itemId) {
+            return $this;
+        }
+
+        // This is a new item.
+        $this->itemId = $this->item->id();
+        $this->isScheme = null;
+        $this->isConcept = null;
+        $this->isCollection = null;
+        $this->isOrderedCollection = null;
+
+        // Don't rebuild the thesaurus if the current item is inside it.
+        // Keep the related data null, so updated only when needed.
+        if ($this->isInThesaurus()) {
+            return $this;
+        }
+
+        // Rebuild the thesaurus.
+        $this->structure = [];
+        $this->tops = [];
+        $this->scheme = null;
+        $this->isSkos = null;
+
+        return $this
+            ->cacheTerms()
+            ->cacheStructure();
+    }
+
+    protected function cacheTerms(): self
+    {
+        if (count($this->terms)) {
+            return $this;
+        }
+        // Only skos is useful for now, but speed is same with all terms.
+        $this->getResourceClassIds();
+        $this->getPropertyIds();
+        return $this;
+    }
+
     protected function cacheStructure(): self
     {
         $this->structure = [];
@@ -1118,9 +1182,6 @@ class Thesaurus extends AbstractPlugin
             $this->isOrderedCollection = false;
             return $this;
         }
-
-        $this->isPublic = empty($this->user)
-            || $this->user->getRole() === 'guest';
 
         // Get all ids via api.
         // This allows to check visibility and to get the full list of concepts.
@@ -1149,8 +1210,11 @@ class Thesaurus extends AbstractPlugin
                 ]
             )
             ->getContent();
+
         // TODO This check is useless: there is at least the item, else there is an issue (item is not visible?).
         if (!count($titles)) {
+            // Set the value isSkos, because it is used directly in many places.
+            $this->isSkos();
             return $this;
         }
 
