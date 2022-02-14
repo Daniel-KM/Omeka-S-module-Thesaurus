@@ -194,6 +194,16 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
+     * Get the current item as array (may be empty).
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::selfItem()
+     */
+    public function selfItem(): array
+    {
+        return $this->thesaurus->selfItem();
+    }
+
+    /**
      * Get the scheme of this item.
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::scheme()

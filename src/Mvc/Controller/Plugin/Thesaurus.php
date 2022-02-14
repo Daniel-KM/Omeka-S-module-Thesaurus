@@ -344,6 +344,20 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
+     * Get the current item as array (may be empty).
+     */
+    public function selfItem(): array
+    {
+        if ($this->returnItem) {
+            return $this->item ? [$this->itemId  => $this->item] : [];
+        }
+        // Normally it should be always set, but issue may occur.
+        return isset($this->structure[$this->itemId])
+            ? [$this->itemId => $this->structure[$this->itemId]]
+            : [];
+    }
+
+    /**
      * Get the scheme of this item.
      */
     public function scheme(): ?ItemRepresentation
@@ -426,7 +440,7 @@ class Thesaurus extends AbstractPlugin
         if (!$this->isSkos || $this->isScheme()) {
             return [];
         }
-        return [$this->itemId => $this->returnItem ? $this->item : $this->structure[$this->itemId]]
+        return $this->selfItem()
             + $this->narrowers();
     }
 
@@ -455,9 +469,8 @@ class Thesaurus extends AbstractPlugin
         if (!$this->isSkos || $this->isScheme()) {
             return [];
         }
-        $list = $this->relateds();
-        $list[$this->itemId] = $this->returnItem ? $this->item : $this->structure[$this->itemId];
-        return $list;
+        return $this->relateds()
+            + $this->selfItem();
     }
 
     /**
@@ -517,7 +530,7 @@ class Thesaurus extends AbstractPlugin
         if (!$this->isSkos || $this->isScheme()) {
             return [];
         }
-        return [$this->itemId => $this->returnItem ? $this->item : $this->structure[$this->itemId]]
+        return $this->selfItem()
             + $this->ascendants();
     }
 
@@ -543,7 +556,7 @@ class Thesaurus extends AbstractPlugin
         if (!$this->isSkos || $this->isScheme()) {
             return [];
         }
-        return [$this->itemId => $this->returnItem ? $this->item : $this->structure[$this->itemId]]
+        return $this->selfItem()
             + $this->descendants();
     }
 
