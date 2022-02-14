@@ -390,7 +390,7 @@ class Thesaurus extends AbstractPlugin
     public function top()
     {
         return $this->isSkos && $this->isConcept()
-            ? $this->returnFromData($this->ancestor($this->structure[$this->itemId]))
+            ? $this->returnFromData($this->ancestor($this->structure[$this->itemId] ?? null))
             : null;
     }
 
@@ -414,7 +414,7 @@ class Thesaurus extends AbstractPlugin
     public function broader()
     {
         return $this->isSkos && $this->isConcept()
-            ? $this->returnFromData($this->parent($this->structure[$this->itemId]))
+            ? $this->returnFromData($this->parent($this->structure[$this->itemId] ?? null))
             : null;
     }
 
@@ -426,7 +426,7 @@ class Thesaurus extends AbstractPlugin
     public function narrowers(): array
     {
         return $this->isSkos && $this->isConcept()
-            ? $this->returnFromData($this->children($this->structure[$this->itemId]))
+            ? $this->returnFromData($this->children($this->structure[$this->itemId] ?? null))
             : [];
     }
 
@@ -455,8 +455,8 @@ class Thesaurus extends AbstractPlugin
             return [];
         }
         return $this->returnItem
-            ? $this->resourcesItemsFromValue($this->structure[$this->item], 'skos:related')
-            : $this->resourcesFromValue($this->structure[$this->itemId], 'skos:related');
+            ? $this->resourcesItemsFromValue($this->structure[$this->itemId] ?? null, 'skos:related')
+            : $this->resourcesFromValue($this->structure[$this->itemId] ?? null, 'skos:related');
     }
 
     /**
@@ -502,7 +502,7 @@ class Thesaurus extends AbstractPlugin
             return $this->tops();
         }
         // Don't use $this->broader() in order to keep data.
-        $broader = $this->parent($this->structure[$this->itemId]);
+        $broader = $this->parent($this->structure[$this->itemId] ?? null);
         return $broader
             ? $this->returnFromData($this->children($broader))
             : [];
@@ -516,7 +516,7 @@ class Thesaurus extends AbstractPlugin
     public function ascendants(): array
     {
         return $this->isSkos && $this->isConcept()
-            ? $this->returnFromData($this->ancestors($this->structure[$this->itemId]))
+            ? $this->returnFromData($this->ancestors($this->structure[$this->itemId] ?? null))
             : [];
     }
 
@@ -542,7 +542,7 @@ class Thesaurus extends AbstractPlugin
     public function descendants(): array
     {
         return $this->isSkos && $this->isConcept()
-            ? $this->returnFromData($this->listDescendants($this->structure[$this->itemId]))
+            ? $this->returnFromData($this->listDescendants($this->structure[$this->itemId] ?? null))
             : [];
     }
 
@@ -644,8 +644,8 @@ class Thesaurus extends AbstractPlugin
             return $result;
         }
         $result[$this->itemId] = [
-            'self' => $this->structure[$this->itemId],
-            'children' => $this->recursiveBranch($this->structure[$this->itemId]),
+            'self' => $this->structure[$this->itemId] ?? null,
+            'children' => $this->recursiveBranch($this->structure[$this->itemId] ?? null),
         ];
         return $result;
     }
@@ -702,10 +702,10 @@ class Thesaurus extends AbstractPlugin
         }
         $result = [];
         $result[$this->itemId] = [
-            'self' => $this->returnItem ? $this->item : $this->structure[$this->itemId],
+            'self' => $this->returnItem ? $this->item : $this->structure[$this->itemId] ?? null,
             'level' => 0,
         ];
-        return $this->recursiveFlatBranch($this->structure[$this->itemId], $result, 1);
+        return $this->recursiveFlatBranch($this->structure[$this->itemId] ?? null, $result, 1);
     }
 
     /**
@@ -852,8 +852,11 @@ class Thesaurus extends AbstractPlugin
      * @param array $itemData
      * @param string $term
      */
-    protected function resourcesFromValue(array $itemData, $term): array
+    protected function resourcesFromValue(?array $itemData, $term): array
     {
+        if (!$itemData) {
+            return [];
+        }
         $item = $this->itemFromData($itemData);
         return array_map(function ($v) {
             return $this->structure[$v];
@@ -892,8 +895,11 @@ class Thesaurus extends AbstractPlugin
      * @param array $itemData
      * @return array|null
      */
-    protected function parent(array $itemData): ?array
+    protected function parent(?array $itemData): ?array
     {
+        if (!$itemData) {
+            return null;
+        }
         $parent = $this->structure[$itemData['id']]['parent'];
         return $parent ? $this->structure[$parent] : null;
     }
@@ -903,8 +909,11 @@ class Thesaurus extends AbstractPlugin
      *
      * @param array $itemData
      */
-    protected function children(array $itemData): array
+    protected function children(?array $itemData): array
     {
+        if (!$itemData) {
+            return [];
+        }
         $children = $this->structure[$itemData['id']]['children'] ?? [];
         return array_map(function ($v) {
             return $this->structure[$v];
@@ -917,8 +926,11 @@ class Thesaurus extends AbstractPlugin
      * @param array $itemData
      * @param int $level
      */
-    protected function ancestor(array $itemData, $level = 0): array
+    protected function ancestor(?array $itemData, $level = 0): ?array
     {
+        if (!$itemData) {
+            return null;
+        }
         if ($level > $this->maxAncestors) {
             throw new \Omeka\Api\Exception\BadResponseException(sprintf(
                 'There cannot be more than %d ancestors.', // @translate
@@ -938,8 +950,11 @@ class Thesaurus extends AbstractPlugin
      * @param array $list Internal param for recursive process.
      * @param int $level
      */
-    protected function ancestors(array $itemData, array $list = [], $level = 0): array
+    protected function ancestors(?array $itemData, array $list = [], $level = 0): array
     {
+        if (!$itemData) {
+            return $list;
+        }
         if ($level > $this->maxAncestors) {
             throw new \Omeka\Api\Exception\BadResponseException(sprintf(
                 'There cannot be more than %d ancestors.', // @translate
@@ -962,8 +977,11 @@ class Thesaurus extends AbstractPlugin
      * @param int $level
      * @return array
      */
-    protected function listDescendants(array $itemData, array $list = [], $level = 0)
+    protected function listDescendants(?array $itemData, array $list = [], $level = 0): array
     {
+        if (!$itemData) {
+            return [];
+        }
         if ($level > $this->maxAncestors) {
             throw new \Omeka\Api\Exception\BadResponseException(sprintf(
                 'There cannot be more than %d levels of descendants.', // @translate
@@ -987,8 +1005,11 @@ class Thesaurus extends AbstractPlugin
      * @param array $branch Internal param for recursive process.
      * @param int $level
      */
-    protected function recursiveBranch(array $itemData, array $branch = [], $level = 0): array
+    protected function recursiveBranch(?array $itemData, array $branch = [], $level = 0): array
     {
+        if (!$itemData) {
+            return [];
+        }
         if ($level > $this->maxAncestors) {
             throw new \Omeka\Api\Exception\BadResponseException(sprintf(
                 'There cannot be more than %d levels of descendants.', // @translate
@@ -1043,8 +1064,11 @@ class Thesaurus extends AbstractPlugin
      * @param array $branch Internal param for recursive process.
      * @param int $level
      */
-    protected function recursiveFlatBranch(array $itemData, array $branch = [], int $level = 0): array
+    protected function recursiveFlatBranch(?array $itemData, array $branch = [], int $level = 0): array
     {
+        if (!$itemData) {
+            return [];
+        }
         if ($level > $this->maxAncestors) {
             throw new \Omeka\Api\Exception\BadResponseException(sprintf(
                 'There cannot be more than %d levels of descendants.', // @translate
@@ -1330,9 +1354,9 @@ class Thesaurus extends AbstractPlugin
         return $this;
     }
 
-    protected function returnFromData(array $data)
+    protected function returnFromData(?array $data)
     {
-        if (!$this->returnItem || !count($data)) {
+        if (!$this->returnItem || is_null($data) || !count($data)) {
             return $data;
         }
 
