@@ -117,8 +117,8 @@ return [
         'AdminResource' => [
             'thesaurus' => [
                 'label' => 'Thesaurus', // @translate
-                // Or fa-project-diagram or fa-folder-tree when available.
-                'class' => 'thesaurus far fa-sitemap',
+                // 'class' => 'o-icon- fa-project-diagram',
+                'class' => 'o-icon- fa-sitemap',
                 'route' => 'admin/thesaurus/default',
                 'action' => 'browse',
                 'resource' => Controller\Admin\ThesaurusController::class,
