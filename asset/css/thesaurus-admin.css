@@ -1,0 +1,7 @@
+@media screen {
+    header nav .thesaurus::before,
+    .thesaurus .subhead::before,
+    .thesaurus .no-resources:before {
+        content: '';
+    }
+}

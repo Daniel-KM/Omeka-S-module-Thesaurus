@@ -17,8 +17,8 @@ $escape = $plugins->get('escapeHtml');
 $formElement = $plugins->get('formElement');
 $assetUrl = $plugins->get('assetUrl');
 
-// $this->headLink()
-//     ->appendStylesheet($assetUrl('css/thesaurus-admin.css', 'Thesaurus'));
+$this->headLink()
+    ->appendStylesheet($assetUrl('css/thesaurus-admin.css', 'Thesaurus'));
 $this->headScript()
     ->appendFile($assetUrl('vendor/sortablejs/Sortable.min.js', 'Omeka'))
     ->appendFile($assetUrl('js/resource-form.js', 'Omeka'));

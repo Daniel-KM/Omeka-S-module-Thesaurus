@@ -5,11 +5,17 @@
  */
 
 $translate = $this->plugin('translate');
+
+$this->headLink()
+    ->appendStylesheet($assetUrl('css/thesaurus-admin.css', 'Thesaurus'));
+
+$this->htmlElement('body')->appendAttribute('class', 'thesaurus tree convert');
+
 $form->prepare();
 ?>
 
-<?= $this->pageTitle($translate('Thesaurus convert')) ?>
-<h3><?= $translate('Convert') ?></h3>
+<?= $this->pageTitle($translate('Convert'), 1, $translate('Thesaurus')) ?>
+
 <p class="explanation">
     <?= $translate('Convert a flat list into a flat thesaurus.') ?>
 </p>

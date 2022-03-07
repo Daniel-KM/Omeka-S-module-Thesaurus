@@ -117,8 +117,9 @@ return [
         'AdminResource' => [
             'thesaurus' => [
                 'label' => 'Thesaurus', // @translate
-                // 'class' => 'o-icon- fa-project-diagram',
-                'class' => 'o-icon- fa-sitemap',
+                // No, it is already used for navigation.
+                // 'class' => 'o-icon- fa-sitemap',
+                'class' => 'o-icon- fa-project-diagram',
                 'route' => 'admin/thesaurus/default',
                 'action' => 'browse',
                 'resource' => Controller\Admin\ThesaurusController::class,
