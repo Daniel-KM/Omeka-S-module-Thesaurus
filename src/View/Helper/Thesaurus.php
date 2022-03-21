@@ -2,6 +2,7 @@
 
 namespace Thesaurus\View\Helper;
 
+use Laminas\Form\FormElementManager\FormElementManagerV3Polyfill as FormElementManager;
 use Laminas\View\Helper\AbstractHelper;
 use Omeka\Api\Representation\AbstractResourceEntityRepresentation;
 use Omeka\Api\Representation\ItemRepresentation;
@@ -18,13 +19,17 @@ class Thesaurus extends AbstractHelper
     protected $thesaurus;
 
     /**
-     * @fixme The same thesaurus is shared between all helpers (even if it can be reinit with another item).
-     *
-     * @param ThesaurusPlugin $thesaurus
+     * @var FormElementManager
      */
-    public function __construct(ThesaurusPlugin $thesaurus)
+    protected $formElementManager;
+
+    /**
+     * @fixme The same thesaurus is shared between all helpers (even if it can be reinit with another item).
+     */
+    public function __construct(ThesaurusPlugin $thesaurus, FormElementManager $formElementManager)
     {
         $this->thesaurus = $thesaurus;
+        $this->formElementManager = $formElementManager;
     }
 
     /**
@@ -36,7 +41,7 @@ class Thesaurus extends AbstractHelper
      *   The thesaurus will be init with this concept or scheme. It will be used
      *   by default in other methods until another method modify it.
      */
-    public function __invoke(?AbstractResourceEntityRepresentation $itemOrItemSet): self
+    public function __invoke(?AbstractResourceEntityRepresentation $itemOrItemSet = null): self
     {
         $thesaurusPlugin = $this->thesaurus;
         $thesaurusPlugin($itemOrItemSet);
@@ -78,7 +83,7 @@ class Thesaurus extends AbstractHelper
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::getItem()
      */
-    public function getItem(): ItemRepresentation
+    public function getItem(): ?ItemRepresentation
     {
         return $this->thesaurus->getItem();
     }
@@ -484,6 +489,24 @@ class Thesaurus extends AbstractHelper
     public function jsFlatTree()
     {
         return $this->thesaurus->jsFlatTree();
+    }
+
+    /**
+     * Get a form element Select from a list tree or a list branch.
+     * @param ?array $options Options from listTree and listBranch can be passed
+     *   and the ones for Select like `empty_option` or `prepend_value_options`.
+     * @see \Thesaurus\Form\Element\ThesaurusSelect::getValueOptions()
+     */
+    public function asSelect(?array $options = null): ?\Thesaurus\Form\Element\ThesaurusSelect
+    {
+        if (is_null($options)) {
+            $options = [];
+        }
+        /** @var \Thesaurus\Form\Element\ThesaurusSelect $select */
+        $select = $this->formElementManager->get(\Thesaurus\Form\Element\ThesaurusSelect::class);
+        return $select
+            ->setOptions($options)
+            ->setThesaurusTerm($this->thesaurus->getItem());
     }
 
     /**

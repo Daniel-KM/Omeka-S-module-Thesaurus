@@ -139,7 +139,7 @@ class Thesaurus extends AbstractPlugin
      *   The thesaurus will be init with this concept or scheme. It will be used
      *   by default in other methods until another method modify it.
      */
-    public function __invoke(?AbstractResourceEntityRepresentation $itemOrItemSet): self
+    public function __invoke(?AbstractResourceEntityRepresentation $itemOrItemSet = null): self
     {
         if ($itemOrItemSet) {
             if ($itemOrItemSet instanceof ItemSetRepresentation) {
@@ -190,7 +190,7 @@ class Thesaurus extends AbstractPlugin
     /**
      * Return the item used to build the thesaurus or the last item used.
      */
-    public function getItem(): ItemRepresentation
+    public function getItem(): ?ItemRepresentation
     {
         return $this->item;
     }

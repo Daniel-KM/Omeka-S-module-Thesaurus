@@ -46,6 +46,9 @@ return [
             Form\ConvertForm::class => Form\ConvertForm::class,
             Form\ThesaurusFieldset::class => Form\ThesaurusFieldset::class,
         ],
+        'factories' => [
+            Form\Element\ThesaurusSelect::class => Service\Form\Element\ThesaurusSelectFactory::class,
+        ],
     ],
     'controllers' => [
         'factories' => [

@@ -12,7 +12,6 @@ class ThesaurusSelectFactory implements FactoryInterface
     {
         $element = new ThesaurusSelect(null, $options);
         return $element
-            ->setApiManager($services->get('Omeka\ApiManager'))
             ->setThesaurus($services->get('ControllerPluginManager')->get('thesaurus'));
     }
 }
