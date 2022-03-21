@@ -6,7 +6,9 @@ use Doctrine\ORM\EntityManager;
 use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
 use Laminas\Mvc\Plugin\Identity\Identity;
 use Omeka\Api\Adapter\ItemAdapter;
+use Omeka\Api\Representation\AbstractResourceEntityRepresentation;
 use Omeka\Api\Representation\ItemRepresentation;
+use Omeka\Api\Representation\ItemSetRepresentation;
 use Omeka\Mvc\Controller\Plugin\Api;
 
 /**
@@ -131,12 +133,32 @@ class Thesaurus extends AbstractPlugin
     /**
      * Manage a thesaurus.
      *
-     * @param ItemRepresentation $item The item should be a scheme or a concept.
-     * It will be used by default in other methods until another method modify it.
+     * @param AbstractResourceEntityRepresentation $itemOrItemSet
+     *   The item should be a scheme or a concept. If item set, it should be a
+     *   skos collection or a skos ordered collection that contains a scheme.
+     *   The thesaurus will be init with this concept or scheme. It will be used
+     *   by default in other methods until another method modify it.
      */
-    public function __invoke(?ItemRepresentation $item = null): self
+    public function __invoke(?AbstractResourceEntityRepresentation $itemOrItemSet): self
     {
-        return $this->setItem($item);
+        if ($itemOrItemSet) {
+            if ($itemOrItemSet instanceof ItemSetRepresentation) {
+                $class = $itemOrItemSet->resourceClass();
+                $classTerm = $class ? $class->term() : null;
+                if (in_array($classTerm, ['skos:Collection', 'skos:OrderedCollection'])) {
+                    $this->cacheTerms();
+                    $itemOrItemSet = $this->api->searchOne('items', [
+                        'item_set_id' => $itemOrItemSet->id(),
+                        'resource_class_id' => $this->terms['class'][self::ROOT_CLASS],
+                    ], ['initialize' => false])->getContent();
+                } else {
+                    $itemOrItemSet = null;
+                }
+            } elseif (!$itemOrItemSet instanceof ItemRepresentation) {
+                $itemOrItemSet = null;
+            }
+        }
+        return $this->setItem($itemOrItemSet);
     }
 
     /**

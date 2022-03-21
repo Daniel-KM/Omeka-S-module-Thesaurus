@@ -3,6 +3,7 @@
 namespace Thesaurus\View\Helper;
 
 use Laminas\View\Helper\AbstractHelper;
+use Omeka\Api\Representation\AbstractResourceEntityRepresentation;
 use Omeka\Api\Representation\ItemRepresentation;
 use Thesaurus\Mvc\Controller\Plugin\Thesaurus as ThesaurusPlugin;
 
@@ -29,13 +30,16 @@ class Thesaurus extends AbstractHelper
     /**
      * Get the thesaurus helper.
      *
-     * @param ItemRepresentation $item The item should be a scheme or a concept.
-     * It will be used by default in other methods until another method modify it.
+     * @param AbstractResourceEntityRepresentation $itemOrItemSet
+     *   The item should be a scheme or a concept. If item set, it should be a
+     *   skos collection or a skos ordered collection that contains a scheme.
+     *   The thesaurus will be init with this concept or scheme. It will be used
+     *   by default in other methods until another method modify it.
      */
-    public function __invoke(?ItemRepresentation $item): self
+    public function __invoke(?AbstractResourceEntityRepresentation $itemOrItemSet): self
     {
         $thesaurusPlugin = $this->thesaurus;
-        $thesaurusPlugin($item);
+        $thesaurusPlugin($itemOrItemSet);
         return $this;
     }
 
