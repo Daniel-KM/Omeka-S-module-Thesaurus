@@ -95,22 +95,22 @@ class Thesaurus extends AbstractPlugin
     protected $isPublic;
 
     /**
-     * @param EntityManager
+     * @var EntityManager
      */
     protected $entityManager;
 
     /**
-     * @param ItemAdapter
+     * @var ItemAdapter
      */
     protected $itemAdapter;
 
     /**
-     * @param Api
+     * @var Api
      */
     protected $api;
 
     /**
-     * @param ?\Omeka\Entity\User
+     * @var ?\Omeka\Entity\User
      */
     protected $user;
 
@@ -713,9 +713,13 @@ class Thesaurus extends AbstractPlugin
      *
      * This output is recommended for a select element form (terms).
      *
-     * @param array $options May be: Indent, prepend_id.
+     * @uses self::list()
+     * @param array $options May be:
+     *   - indent (string): String like "– " to prepend to terms to show level.
+     *   - prepend_id (bool): Prepend the id of the terms.
+     *   - max_length (int): Max size of the terms.
      */
-    public function listTree(array $options = null): array
+    public function listTree(?array $options = null): array
     {
         $result = $this->flatTree();
         return $this->list($result, is_null($options) ? [] : $options);
@@ -726,9 +730,13 @@ class Thesaurus extends AbstractPlugin
      *
      * This output is recommended for a select element form (terms).
      *
-     * @param array $options May be: Indent, prepend_id.
+     * @uses self::list()
+     * @param array $options May be:
+     *   - indent (string): String like "– " to prepend to terms to show level.
+     *   - prepend_id (bool): Prepend the id of the terms.
+     *   - max_length (int): Max size of the terms.
      */
-    public function listBranch(array $options = null): array
+    public function listBranch(?array $options = null): array
     {
         $result = $this->flatBranch();
         return $this->list($result, is_null($options) ? [] : $options);
@@ -770,10 +778,9 @@ class Thesaurus extends AbstractPlugin
      * @todo Add option group: Get tops terms as group for a grouped select.
      *
      * @param array $options Only valable for term output.
-     * - indent (string): String like "- " to prepend to terms to show level.
-     * - prepend_id (bool): Prepend the id of the terms.
-     * - max_length (int): Max size of the terms.
-     * @return array
+     *   - indent (string): String like "– " to prepend to terms to show level.
+     *   - prepend_id (bool): Prepend the id of the terms.
+     *   - max_length (int): Max size of the terms.
      */
     protected function list(array $list, array $options): array
     {
@@ -1197,7 +1204,7 @@ class Thesaurus extends AbstractPlugin
 
     protected function cacheTerms(): self
     {
-        if (count($this->terms)) {
+        if (count($this->terms) === 2) {
             return $this;
         }
         // Only skos is useful for now, but speed is same with all terms.

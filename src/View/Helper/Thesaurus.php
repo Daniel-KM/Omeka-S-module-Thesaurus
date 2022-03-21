@@ -12,7 +12,7 @@ use Thesaurus\Mvc\Controller\Plugin\Thesaurus as ThesaurusPlugin;
 class Thesaurus extends AbstractHelper
 {
     /**
-     * @param ThesaurusPlugin
+     * @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus
      */
     protected $thesaurus;
 
@@ -445,9 +445,12 @@ class Thesaurus extends AbstractHelper
      * This output is recommended for a select element form (terms).
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::listTree()
-     * @param array $options May be: Indent, prepend_id.
+     * @param array $options May be:
+     *   - indent (string): String like "– " to prepend to terms to show level.
+     *   - prepend_id (bool): Prepend the id of the terms.
+     *   - max_length (int): Max size of the terms.
      */
-    public function listTree(array $options = null): array
+    public function listTree(?array $options = null): array
     {
         return $this->thesaurus->listTree($options);
     }
@@ -458,9 +461,12 @@ class Thesaurus extends AbstractHelper
      * This output is recommended for a select element form (terms).
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::listBranch()
-     * @param array $options May be: Indent, prepend_id.
+     * @param array $options May be:
+     *   - indent (string): String like "– " to prepend to terms to show level.
+     *   - prepend_id (bool): Prepend the id of the terms.
+     *   - max_length (int): Max size of the terms.
      */
-    public function listBranch(array $options = null): array
+    public function listBranch(?array $options = null): array
     {
         return $this->thesaurus->listBranch($options);
     }
