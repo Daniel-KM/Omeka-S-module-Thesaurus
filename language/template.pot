@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-03 00:00+0000\n"
+"POT-Creation-Date: 2022-03-21 00:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/Generic/AbstractModule.php:66
+#: src/Generic/AbstractModule.php:66 src/Generic/AbstractModule.php:740
 #, php-format
 msgid "This module requires the module \"%s\"."
 msgstr ""
@@ -31,7 +31,23 @@ msgstr ""
 msgid "This module has resources that cannot be installed."
 msgstr ""
 
-#: src/Generic/AbstractModule.php:725
+#: src/Generic/AbstractModule.php:87
+msgid ""
+"This module cannot install its tables, because they exist already. Try to "
+"remove them first."
+msgstr ""
+
+#: src/Generic/AbstractModule.php:328
+#, php-format
+msgid "The module removed tables \"%s\" from a previous broken install."
+msgstr ""
+
+#: src/Generic/AbstractModule.php:735
+#, php-format
+msgid "This module requires the module \"%s\", version %s or above."
+msgstr ""
+
+#: src/Generic/AbstractModule.php:832
 #, php-format
 msgid ""
 "The module \"%s\" was automatically deactivated because the dependencies are "
@@ -53,8 +69,9 @@ msgstr ""
 
 #: view/thesaurus/admin/thesaurus/add.phtml:14
 #: view/thesaurus/admin/thesaurus/browse.phtml:41
+#: view/thesaurus/admin/thesaurus/convert.phtml:17
 #: view/thesaurus/admin/thesaurus/edit.phtml:23
-#: view/thesaurus/admin/thesaurus/structure.phtml:36
+#: view/thesaurus/admin/thesaurus/structure.phtml:37
 msgid "Thesaurus"
 msgstr ""
 
@@ -66,15 +83,11 @@ msgstr ""
 msgid "Reindex"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/convert.phtml:11
-msgid "Thesaurus convert"
-msgstr ""
-
-#: view/thesaurus/admin/thesaurus/convert.phtml:12
+#: view/thesaurus/admin/thesaurus/convert.phtml:17
 msgid "Convert"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/convert.phtml:14
+#: view/thesaurus/admin/thesaurus/convert.phtml:20
 msgid "Convert a flat list into a flat thesaurus."
 msgstr ""
 
@@ -347,8 +360,8 @@ msgstr ""
 #: src/Api/Representation/TermRepresentation.php:362
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:560
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:582
-#: src/Mvc/Controller/Plugin/Thesaurus.php:911
-#: src/Mvc/Controller/Plugin/Thesaurus.php:932
+#: src/Mvc/Controller/Plugin/Thesaurus.php:965
+#: src/Mvc/Controller/Plugin/Thesaurus.php:989
 #, php-format
 msgid "There cannot be more than %d ancestors."
 msgstr ""
@@ -359,10 +372,10 @@ msgstr ""
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:606
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:633
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:662
-#: src/Mvc/Controller/Plugin/Thesaurus.php:956
-#: src/Mvc/Controller/Plugin/Thesaurus.php:981
-#: src/Mvc/Controller/Plugin/Thesaurus.php:1008
-#: src/Mvc/Controller/Plugin/Thesaurus.php:1037
+#: src/Mvc/Controller/Plugin/Thesaurus.php:1016
+#: src/Mvc/Controller/Plugin/Thesaurus.php:1044
+#: src/Mvc/Controller/Plugin/Thesaurus.php:1071
+#: src/Mvc/Controller/Plugin/Thesaurus.php:1103
 #, php-format
 msgid "There cannot be more than %d levels of descendants."
 msgstr ""
@@ -527,30 +540,30 @@ msgid ""
 "where the old ones were used."
 msgstr ""
 
-#: src/Generic/InstallResources.php:543
+#: src/Generic/InstallResources.php:544
 #, php-format
 msgid "The resource template named \"%s\" is already available and is skipped."
 msgstr ""
 
-#: src/Generic/InstallResources.php:805
+#: src/Generic/InstallResources.php:808
 #, php-format
 msgid "The custom vocab named \"%s\" is not available."
 msgstr ""
 
-#: src/Generic/InstallResources.php:911
+#: src/Generic/InstallResources.php:914
 msgid "No file or url set for the vocabulary."
 msgstr ""
 
-#: src/Generic/InstallResources.php:921
+#: src/Generic/InstallResources.php:924
 #, php-format
 msgid "The file \"%s\" cannot be read. Check the url."
 msgstr ""
 
-#: src/Generic/InstallResources.php:931
+#: src/Generic/InstallResources.php:934
 #, php-format
 msgid "The file \"%s\" cannot be read. Check the file."
 msgstr ""
 
-#: src/Generic/InstallResources.php:952
+#: src/Generic/InstallResources.php:955
 msgid "A vocabulary must have a namespace uri and a prefix."
 msgstr ""

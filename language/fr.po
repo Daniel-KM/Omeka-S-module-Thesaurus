@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-03 00:00+0000\n"
-"PO-Revision-Date: 2022-01-03 00:00+0000\n"
+"POT-Creation-Date: 2022-03-21 00:00+0000\n"
+"PO-Revision-Date: 2022-03-21 00:00+0000\n"
 "Last-Translator: Daniel Berthereau <Daniel.fr@Berthereau.net>\n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -17,21 +17,40 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: src/Generic/AbstractModule.php:66
+#: src/Generic/AbstractModule.php:66 src/Generic/AbstractModule.php:740
 #, php-format
 msgid "This module requires the module \"%s\"."
-msgstr "Ce module requiert le module \"%s\"."
+msgstr "Ce module requiert le module « %s »."
 
 #: src/Generic/AbstractModule.php:73
 #, php-format
 msgid "This module requires modules \"%s\"."
-msgstr "Ce module requiert les modules \"%s\"."
+msgstr "Ce module requiert les modules « %s »."
 
 #: src/Generic/AbstractModule.php:80
 msgid "This module has resources that cannot be installed."
 msgstr "Ce module a des ressources qui ne peuvent pas être installées."
 
-#: src/Generic/AbstractModule.php:725
+#: src/Generic/AbstractModule.php:87
+msgid ""
+"This module cannot install its tables, because they exist already. Try to "
+"remove them first."
+msgstr ""
+"Ce module ne peut pas installer ses tables car elles existent déjà. Essayez "
+"de les supprimer manuellement."
+
+#: src/Generic/AbstractModule.php:328
+#, php-format
+msgid "The module removed tables \"%s\" from a previous broken install."
+msgstr ""
+"Le module a supprimé les tables « %s » depuis une installation échouée."
+
+#: src/Generic/AbstractModule.php:735
+#, php-format
+msgid "This module requires the module \"%s\", version %s or above."
+msgstr "Ce module requiert le module « %s », version %s ou supérieure."
+
+#: src/Generic/AbstractModule.php:832
 #, php-format
 msgid ""
 "The module \"%s\" was automatically deactivated because the dependencies are "
@@ -55,8 +74,9 @@ msgstr "Nouveau thésaurus"
 
 #: view/thesaurus/admin/thesaurus/add.phtml:14
 #: view/thesaurus/admin/thesaurus/browse.phtml:41
+#: view/thesaurus/admin/thesaurus/convert.phtml:17
 #: view/thesaurus/admin/thesaurus/edit.phtml:23
-#: view/thesaurus/admin/thesaurus/structure.phtml:36
+#: view/thesaurus/admin/thesaurus/structure.phtml:37
 msgid "Thesaurus"
 msgstr "Thésaurus"
 
@@ -68,15 +88,11 @@ msgstr "Modifier l’arborescence"
 msgid "Reindex"
 msgstr "Réindexer"
 
-#: view/thesaurus/admin/thesaurus/convert.phtml:11
-msgid "Thesaurus convert"
-msgstr "Thésaurus converti"
-
-#: view/thesaurus/admin/thesaurus/convert.phtml:12
+#: view/thesaurus/admin/thesaurus/convert.phtml:17
 msgid "Convert"
 msgstr "Convertir"
 
-#: view/thesaurus/admin/thesaurus/convert.phtml:14
+#: view/thesaurus/admin/thesaurus/convert.phtml:20
 msgid "Convert a flat list into a flat thesaurus."
 msgstr "Convertir une liste plate en un thésaurus plat."
 
@@ -150,6 +166,8 @@ msgid ""
 "It is now possible to get thesaurus data for another item without rebuilding "
 "it."
 msgstr ""
+"Il est désormais possible de récupérer les données d’un thésaurus pour un "
+"autre contenu sans le reconstruire."
 
 #: src/Form/ThesaurusFieldset.php:17
 msgid "Block title"
@@ -302,8 +320,8 @@ msgstr "Le contenu #%d n’appartient pas à un thésaurus."
 #, php-format
 msgid "Indexing concepts in background (%1$sjob #%2$d%3$s, %4$slogs%3$s)."
 msgstr ""
-"Indexation des concepts en arrière-plan (%1$stâche #%2$d%3$s, %4$sjournaux"
-"%3$s)."
+"Indexation des concepts en arrière-plan (%1$stâche #%2$d%3$s, "
+"%4$sjournaux%3$s)."
 
 #: src/Controller/Admin/ThesaurusController.php:102
 #, php-format
@@ -360,8 +378,8 @@ msgstr ""
 #: src/Api/Representation/TermRepresentation.php:362
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:560
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:582
-#: src/Mvc/Controller/Plugin/Thesaurus.php:911
-#: src/Mvc/Controller/Plugin/Thesaurus.php:932
+#: src/Mvc/Controller/Plugin/Thesaurus.php:965
+#: src/Mvc/Controller/Plugin/Thesaurus.php:989
 #, php-format
 msgid "There cannot be more than %d ancestors."
 msgstr "Il ne peut pas y avoir plus de %d ancêtres."
@@ -372,10 +390,10 @@ msgstr "Il ne peut pas y avoir plus de %d ancêtres."
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:606
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:633
 #: src/Mvc/Controller/Plugin/ThesaurusItem.php:662
-#: src/Mvc/Controller/Plugin/Thesaurus.php:956
-#: src/Mvc/Controller/Plugin/Thesaurus.php:981
-#: src/Mvc/Controller/Plugin/Thesaurus.php:1008
-#: src/Mvc/Controller/Plugin/Thesaurus.php:1037
+#: src/Mvc/Controller/Plugin/Thesaurus.php:1016
+#: src/Mvc/Controller/Plugin/Thesaurus.php:1044
+#: src/Mvc/Controller/Plugin/Thesaurus.php:1071
+#: src/Mvc/Controller/Plugin/Thesaurus.php:1103
 #, php-format
 msgid "There cannot be more than %d levels of descendants."
 msgstr "Il ne peut pas y avoir plus de %d niveaux de descendants."
@@ -433,15 +451,15 @@ msgstr "Lancement de la restructuration du thésaurus \"%1$s\" (#%2$d)."
 msgid ""
 "Concepts were restructured and reindexed for thesaurus \"%1$s\" (#%2$d)."
 msgstr ""
-"Les concepts ont été restructurés et réindexés pour le thésaurus \"%1$s\" (#"
-"%2$d)."
+"Les concepts ont été restructurés et réindexés pour le thésaurus "
+"\"%1$s\" (#%2$d)."
 
 #: src/Job/UpdateStructure.php:142
 #, php-format
 msgid "An error occurred. Ended restructuration of thesaurus \"%1$s\" (#%2$d)."
 msgstr ""
-"Une erreur s’est produite. Fin de la restructuration du thésaurus \"%1$s\" (#"
-"%2$d)."
+"Une erreur s’est produite. Fin de la restructuration du thésaurus "
+"\"%1$s\" (#%2$d)."
 
 #: src/Job/UpdateStructure.php:173
 #, php-format
@@ -505,7 +523,7 @@ msgid ""
 "A custom vocab exists for \"%s\". Remove it or rename it before installing "
 "this module."
 msgstr ""
-"Un vocabulaire personnalisé existe pour %s : renommez-le ou supprimez-le "
+"Un vocabulaire personnalisé existe pour « %s » : renommez-le ou supprimez-le "
 "avant d’installer ce module."
 
 #: src/Generic/InstallResources.php:115
@@ -514,7 +532,7 @@ msgid ""
 "A resource template exists for %s. Rename it or remove it before installing "
 "this module."
 msgstr ""
-"Un modèle de ressource nommé \"%s\" existe : merci de le renommer ou de le "
+"Un modèle de ressource nommé « %s » existe : merci de le renommer ou de le "
 "supprimer avant d'installer ce module."
 
 #: src/Generic/InstallResources.php:304
@@ -564,38 +582,41 @@ msgstr ""
 "Les ressources, valeurs et modèles ont été mis à jour, mais vous pouvez "
 "vérifier les paramètres où les anciennes valeurs étaient utilisées."
 
-#: src/Generic/InstallResources.php:543
+#: src/Generic/InstallResources.php:544
 #, php-format
 msgid "The resource template named \"%s\" is already available and is skipped."
 msgstr ""
 "Le modèle de ressource nommé \"%s\" est déjà disponible et a été conservé."
 
-#: src/Generic/InstallResources.php:805
+#: src/Generic/InstallResources.php:808
 #, php-format
 msgid "The custom vocab named \"%s\" is not available."
 msgstr "Le vocabulaire personnalisé nommé \"%s\" n'est pas disponible."
 
-#: src/Generic/InstallResources.php:911
+#: src/Generic/InstallResources.php:914
 msgid "No file or url set for the vocabulary."
 msgstr "Pas de fichier ou d’url pour le vocabulaire."
 
-#: src/Generic/InstallResources.php:921
+#: src/Generic/InstallResources.php:924
 #, php-format
 msgid "The file \"%s\" cannot be read. Check the url."
 msgstr ""
 "Le fichier \"%s\" ne peut pas être lu. Merci de vérifier le système de "
 "fichiers ou l’url."
 
-#: src/Generic/InstallResources.php:931
+#: src/Generic/InstallResources.php:934
 #, php-format
 msgid "The file \"%s\" cannot be read. Check the file."
 msgstr ""
 "Le fichier \"%s\" ne peut pas être lu. Merci de vérifier le système de "
 "fichiers."
 
-#: src/Generic/InstallResources.php:952
+#: src/Generic/InstallResources.php:955
 msgid "A vocabulary must have a namespace uri and a prefix."
 msgstr "Un vocabulaire doit avoir une uri pour l’espace de nom et un préfixe."
+
+#~ msgid "Thesaurus convert"
+#~ msgstr "Thésaurus converti"
 
 #~ msgid "Heading for the block, if any."
 #~ msgstr "Entête du bloc."
@@ -634,8 +655,8 @@ msgstr "Un vocabulaire doit avoir une uri pour l’espace de nom et un préfixe.
 
 #, php-format
 #~ msgid ""
-#~ "A custom vocab named \"%s\" exists and has not the needed language (\"%s"
-#~ "\"): check it or remove it before installing this module."
+#~ "A custom vocab named \"%s\" exists and has not the needed language "
+#~ "(\"%s\"): check it or remove it before installing this module."
 #~ msgstr ""
-#~ "A custom vocab named \"%s\" exists and has not the needed language (\"%s"
-#~ "\"): check it or remove it before installing this module."
+#~ "A custom vocab named \"%s\" exists and has not the needed language "
+#~ "(\"%s\"): check it or remove it before installing this module."
