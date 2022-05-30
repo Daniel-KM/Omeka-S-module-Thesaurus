@@ -3,8 +3,8 @@
 namespace Thesaurus\Form\Element;
 
 use Laminas\Form\Element\Select;
-use Thesaurus\Mvc\Controller\Plugin\Thesaurus;
 use Omeka\Api\Representation\AbstractResourceEntityRepresentation;
+use Thesaurus\Mvc\Controller\Plugin\Thesaurus;
 
 class ThesaurusSelect extends Select
 {

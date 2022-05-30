@@ -42,7 +42,7 @@ class UpdateStructure extends AbstractJob
      */
     protected $itemRepository;
 
-        /**
+    /**
      * @var \Doctrine\ORM\EntityRepository
      */
     protected $vocabularyRepository;
@@ -52,7 +52,7 @@ class UpdateStructure extends AbstractJob
      */
     protected $propertyRepository;
 
-/**
+    /**
      * @var array
      */
     protected $flatTree;

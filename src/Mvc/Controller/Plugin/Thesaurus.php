@@ -385,7 +385,7 @@ class Thesaurus extends AbstractPlugin
     public function selfItem(): array
     {
         if ($this->returnItem) {
-            return $this->item ? [$this->itemId  => $this->item] : [];
+            return $this->item ? [$this->itemId => $this->item] : [];
         }
         // Normally it should be always set, but issue may occur.
         return isset($this->structure[$this->itemId])

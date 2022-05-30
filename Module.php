@@ -58,7 +58,7 @@ class Module extends AbstractModule
         $this->storeSchemeAndConceptIds();
     }
 
-    public function onBootstrap(MvcEvent $event)
+    public function onBootstrap(MvcEvent $event): void
     {
         parent::onBootstrap($event);
         $this->addAclRoleAndRules();
@@ -67,7 +67,7 @@ class Module extends AbstractModule
     /**
      * Add ACL role and rules for this module.
      */
-    protected function addAclRoleAndRules()
+    protected function addAclRoleAndRules(): void
     {
         /**
          * @var \Omeka\Permissions\Acl $acl
