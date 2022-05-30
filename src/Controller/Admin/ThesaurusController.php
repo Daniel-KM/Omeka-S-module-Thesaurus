@@ -3,9 +3,12 @@
 namespace Thesaurus\Controller\Admin;
 
 use finfo;
+use Laminas\View\Model\JsonModel;
 use Laminas\View\Model\ViewModel;
 use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Controller\Admin\ItemController;
+use Omeka\Mvc\Exception\NotFoundException;
+use Omeka\Mvc\Exception\RuntimeException;
 use Omeka\Stdlib\Message;
 use Thesaurus\Form\ConvertForm;
 
@@ -46,6 +49,33 @@ class ThesaurusController extends ItemController
         return $result instanceof ViewModel
             ? $result->setTemplate('omeka/admin/item/batch-edit-all')
             : $result;
+    }
+
+    /**
+     * @see \Menu\Controller\SiteAdmin\MenuController::jstreeAction()
+     */
+    public function jstreeAction()
+    {
+        if (!$this->getRequest()->isXmlHttpRequest()) {
+            throw new NotFoundException();
+        }
+
+        // Automatically throw exception when not found.
+        $id = (int) $this->params()->fromRoute('id');
+        $item = $this->api()->read('items', ['id' => $id])->getContent();
+
+        /** @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus */
+        $thesaurus = $this->thesaurus($item);
+        if (!$thesaurus->isSkos()) {
+            throw new RuntimeException(new Message(
+                'Item #%d is not a skos scheme and is not a thesaurus.', // @translate
+                $id
+            ));
+        }
+
+        return new JsonModel(
+            $thesaurus->jsFlatTree()
+        );
     }
 
     public function reindexAction()

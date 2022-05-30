@@ -30,7 +30,7 @@ $(document).ready( function() {
                     var icon = $(e.currentTarget);
                     var node = icon.closest('.jstree-node');
                     var nodeObj = this.get_node(node);
-                    var nodeUrl = nodeObj.data.url;
+                    var nodeUrl = basePath + 'admin/item/' + nodeObj.id;
                     window.open(nodeUrl, '_blank');
                 }, this)
             );
@@ -39,7 +39,7 @@ $(document).ready( function() {
             node = parent.redraw_node.apply(this, arguments);
             if (node) {
                 var nodeObj = this.get_node(node);
-                var nodeUrl = nodeObj.data.url;
+                var nodeUrl = basePath + 'admin/item/' + nodeObj.id;
                 if (nodeUrl) {
                     var nodeJq = $(node);
                     var anchor = nodeJq.children('.jstree-anchor');
@@ -52,23 +52,23 @@ $(document).ready( function() {
         };
     };
 
-    // Add "data" to be be able to load core plugins, and include item url.
-    tree.data('jstree-data')
-        .forEach(function(element, index) {
-            this[index].data = {
-                url: basePath + 'admin/item/' + element.id,
-            };
-        }, tree.data('jstree-data'));
-
     var jstree = tree
         .jstree({
             'core': {
                 'check_callback': true,
                 'force_text': true,
-                'data': tree.data('jstree-data'),
+                // Get jstree data from attributes when an error occurs (not yet saved).
+                // Add "data" to be be able to load core plugins, and include item url.
+                data: tree.data('jstree-data')
+                    ? tree.data('jstree-data')
+                    : {
+                        // Only an url for the root node.
+                        url: tree.data('jstree-url'),
+                    },
             },
             // Plugins jstree and omeka (jstree-plugins).
-            'plugins': ['dnd', 'removenode', /*'editlink'*/, 'displayElement']
+            // TODO Use lazy massload?
+             'plugins': ['dnd', 'removenode', /*'editlink'*/, 'displayElement']
         })
         .on('loaded.jstree', function() {
             // Open all nodes by default.

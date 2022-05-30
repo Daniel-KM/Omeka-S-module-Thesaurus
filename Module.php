@@ -83,28 +83,30 @@ class Module extends AbstractModule
 
         $acl
             ->allow(
-                // TODO Except Guest.
+                // TODO Except Guest?
                 $roles,
                 [Controller\Admin\ThesaurusController::class],
                 [
                     'index', 'browse', 'show', 'show-details', 'sidebar-select', 'search',
-                    'structure',
+                    'structure', 'jstree',
                 ]
             )
             ->allow(
                 ['author', 'reviewer'],
                 [Controller\Admin\ThesaurusController::class],
                 [
-                    'index', 'browse', 'show', 'show-details', 'sidebar-select', 'search', 'add', 'edit', 'delete', 'delete-confirm',
-                    'structure',
+                    'index', 'browse', 'show', 'show-details', 'sidebar-select', 'search',
+                    'add', 'edit', 'delete', 'delete-confirm',
+                    'structure', 'jstree',
                 ]
             )
             ->allow(
                 ['editor'],
                 [Controller\Admin\ThesaurusController::class],
                 [
-                    'index', 'browse', 'show', 'show-details', 'sidebar-select', 'search', 'add', 'edit', 'delete', 'delete-confirm', 'batch-edit', 'batch-delete',
-                    'structure', 'reindex',
+                    'index', 'browse', 'show', 'show-details', 'sidebar-select', 'search',
+                    'add', 'edit', 'delete', 'delete-confirm', 'batch-edit', 'batch-delete',
+                    'structure', 'jstree', 'reindex',
                 ]
             );
     }

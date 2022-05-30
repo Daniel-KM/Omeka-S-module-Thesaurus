@@ -825,6 +825,8 @@ class Thesaurus extends AbstractPlugin
                         // ],
                         // 'li_attr' => [],
                         // 'a_attr' => [],
+                        // To be compatible with Omeka core jstree-plugins.
+                        'data' => [],
                     ];
                 }
             }
@@ -865,6 +867,8 @@ class Thesaurus extends AbstractPlugin
                 // ],
                 // 'li_attr' => [],
                 // 'a_attr' => [],
+                // To be compatible with Omeka core jstree-plugins.
+                'data' => [],
             ];
         }
         unset($element);
