@@ -6,10 +6,10 @@ use Doctrine\ORM\EntityManager;
 use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
 use Laminas\Mvc\Plugin\Identity\Identity;
 use Omeka\Api\Adapter\ItemAdapter;
+use Omeka\Api\Manager as ApiManager;
 use Omeka\Api\Representation\AbstractResourceEntityRepresentation;
 use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Api\Representation\ItemSetRepresentation;
-use Omeka\Mvc\Controller\Plugin\Api;
 
 /**
  * @todo Implement a tree iterator.
@@ -107,7 +107,7 @@ class Thesaurus extends AbstractPlugin
     protected $itemAdapter;
 
     /**
-     * @var Api
+     * @var ApiManager
      */
     protected $api;
 
@@ -119,7 +119,7 @@ class Thesaurus extends AbstractPlugin
     public function __construct(
         EntityManager $entityManager,
         ItemAdapter $itemAdapter,
-        Api $api,
+        ApiManager $api,
         Identity $identity
     ) {
         $this->entityManager = $entityManager;
@@ -154,10 +154,13 @@ class Thesaurus extends AbstractPlugin
                 $classTerm = $class ? $class->term() : null;
                 if (in_array($classTerm, ['skos:Collection', 'skos:OrderedCollection'])) {
                     $this->cacheTerms();
-                    $itemOrItemSetOrId = $this->api->searchOne('items', [
+                    // TODO Api read with item set.
+                    $itemOrItemSetOrId = $this->api->search('items', [
                         'item_set_id' => $itemOrItemSetOrId->id(),
                         'resource_class_id' => $this->terms['class'][self::ROOT_CLASS],
+                        'limit' => 1,
                     ], ['initialize' => false])->getContent();
+                    $itemOrItemSetOrId = count($itemOrItemSetOrId) ? reset($itemOrItemSetOrId) : null;
                 } else {
                     $itemOrItemSetOrId = null;
                 }
@@ -232,9 +235,13 @@ class Thesaurus extends AbstractPlugin
         } elseif (is_array($itemData)) {
             $id = $itemData['id'] ?? $itemData['self']['id'] ?? null;
         }
-        return $id
-            ? $this->api->searchOne('items', ['id' => $id], ['initialize' => false])->getContent()
-            : null;
+        if ($id) {
+            try {
+                return $this->api->read('items', ['id' => $id], ['initialize' => false])->getContent();
+            } catch (\Exception $e) {
+            }
+        }
+        return null;
     }
 
     /**
