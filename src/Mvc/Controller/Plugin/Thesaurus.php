@@ -780,7 +780,72 @@ class Thesaurus extends AbstractPlugin
 
     /**
      * Specific output for the jQuery plugin jstree, used for Omeka navigation.
-     * Output is the flat format, simpler to manage here.
+     *
+     * @see https://www.jstree.com
+     */
+    public function jsTree(): array
+    {
+        if (!$this->isSkos) {
+            return [];
+        }
+
+        $jsRecursiveBranch = null;
+
+        /**
+         * Recursive method to get the descendant tree of an item.
+         *
+         * @see self::recursiveBranch()
+         *
+         * @param array $itemData
+         * @param array $branch Internal param for recursive process.
+         * @param int $level
+         */
+        $jsRecursiveBranch = function (?array $itemData, array $branch = [], $level = 0) use (&$jsRecursiveBranch): array {
+            if (!$itemData) {
+                return [];
+            }
+            if ($level > $this->maxAncestors) {
+                throw new \Omeka\Api\Exception\BadResponseException(sprintf(
+                    'There cannot be more than %d levels of descendants.', // @translate
+                    $this->maxAncestors
+                ));
+            }
+            $children = $this->children($itemData);
+            foreach ($children as $child) {
+                if (!isset($branch[$child['id']])) {
+                    $branch[$child['id']] = [
+                        'id' => $child['id'],
+                        'text' => $child['title'],
+                        'children' => $jsRecursiveBranch($child, [], $level + 1),
+                        // 'icon' => null,
+                        // 'state' => [
+                        //     'opened' => true,
+                        //     'disabled' => false,
+                        //     'selected' => false,
+                        // ],
+                        // 'li_attr' => [],
+                        // 'a_attr' => [],
+                    ];
+                }
+            }
+            return array_values($branch);
+        };
+
+        $result = [];
+        foreach ($this->tops() as $itemData) {
+            $result[$itemData['id']] = [
+                'id' => $itemData['id'],
+                'text' => $itemData['title'],
+                // TODO The other branch should check if the item is not set in another branch previously.
+                'children' => $jsRecursiveBranch($itemData),
+            ];
+        }
+        return array_values($result);
+    }
+
+    /**
+     * Specific output for the jQuery plugin jstree, used for Omeka navigation.
+     * Output is the flat format used by jstree.
      *
      * @see https://www.jstree.com
      */
@@ -1397,6 +1462,9 @@ class Thesaurus extends AbstractPlugin
         return $this;
     }
 
+    /**
+     * @return array|null|ItemRepresentation
+     */
     protected function returnFromData(?array $data)
     {
         if (!$this->returnItem || is_null($data) || !count($data)) {

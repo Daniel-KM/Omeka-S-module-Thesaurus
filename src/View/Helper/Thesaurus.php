@@ -483,6 +483,18 @@ class Thesaurus extends AbstractHelper
      * Specific output for the jQuery plugin jstree, used for Omeka navigation.
      *
      * @see https://www.jstree.com
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::jsTree()
+     */
+    public function jsTree()
+    {
+        return $this->thesaurus->jsTree();
+    }
+
+    /**
+     * Specific output for the jQuery plugin jstree, used for Omeka navigation.
+     * Output is the flat format used by jstree.
+     *
+     * @see https://www.jstree.com
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::jsFlatTree()
      */
     public function jsFlatTree()
