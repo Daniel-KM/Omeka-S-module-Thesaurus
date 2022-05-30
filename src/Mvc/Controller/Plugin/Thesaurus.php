@@ -133,32 +133,39 @@ class Thesaurus extends AbstractPlugin
     /**
      * Manage a thesaurus.
      *
-     * @param AbstractResourceEntityRepresentation $itemOrItemSet
+     * @param AbstractResourceEntityRepresentation|int|null $itemOrItemSetOrId
      *   The item should be a scheme or a concept. If item set, it should be a
      *   skos collection or a skos ordered collection that contains a scheme.
      *   The thesaurus will be init with this concept or scheme. It will be used
      *   by default in other methods until another method modify it.
      */
-    public function __invoke(?AbstractResourceEntityRepresentation $itemOrItemSet = null): self
+    public function __invoke($itemOrItemSetOrId = null): self
     {
-        if ($itemOrItemSet) {
-            if ($itemOrItemSet instanceof ItemSetRepresentation) {
-                $class = $itemOrItemSet->resourceClass();
+        if (is_numeric($itemOrItemSetOrId)) {
+            try {
+                $itemOrItemSetOrId = $this->api->read('resources', ['id' => $itemOrItemSetOrId], ['initialize' => false])->getContent();
+            } catch (\Exception $e) {
+                $itemOrItemSetOrId = null;
+            }
+        }
+        if ($itemOrItemSetOrId) {
+            if ($itemOrItemSetOrId instanceof ItemSetRepresentation) {
+                $class = $itemOrItemSetOrId->resourceClass();
                 $classTerm = $class ? $class->term() : null;
                 if (in_array($classTerm, ['skos:Collection', 'skos:OrderedCollection'])) {
                     $this->cacheTerms();
-                    $itemOrItemSet = $this->api->searchOne('items', [
-                        'item_set_id' => $itemOrItemSet->id(),
+                    $itemOrItemSetOrId = $this->api->searchOne('items', [
+                        'item_set_id' => $itemOrItemSetOrId->id(),
                         'resource_class_id' => $this->terms['class'][self::ROOT_CLASS],
                     ], ['initialize' => false])->getContent();
                 } else {
-                    $itemOrItemSet = null;
+                    $itemOrItemSetOrId = null;
                 }
-            } elseif (!$itemOrItemSet instanceof ItemRepresentation) {
-                $itemOrItemSet = null;
+            } elseif (!$itemOrItemSetOrId instanceof ItemRepresentation) {
+                $itemOrItemSetOrId = null;
             }
         }
-        return $this->setItem($itemOrItemSet);
+        return $this->setItem($itemOrItemSetOrId);
     }
 
     /**

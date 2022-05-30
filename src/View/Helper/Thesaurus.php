@@ -35,16 +35,15 @@ class Thesaurus extends AbstractHelper
     /**
      * Get the thesaurus helper.
      *
-     * @param AbstractResourceEntityRepresentation $itemOrItemSet
+     * @param AbstractResourceEntityRepresentation|int|null $itemOrItemSetOrId
      *   The item should be a scheme or a concept. If item set, it should be a
      *   skos collection or a skos ordered collection that contains a scheme.
      *   The thesaurus will be init with this concept or scheme. It will be used
      *   by default in other methods until another method modify it.
      */
-    public function __invoke(?AbstractResourceEntityRepresentation $itemOrItemSet = null): self
+    public function __invoke($itemOrItemSetOrId = null): self
     {
-        $thesaurusPlugin = $this->thesaurus;
-        $thesaurusPlugin($itemOrItemSet);
+        $this->thesaurus->__invoke($itemOrItemSetOrId);
         return $this;
     }
 
