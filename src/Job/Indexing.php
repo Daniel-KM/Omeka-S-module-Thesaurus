@@ -39,16 +39,6 @@ class Indexing extends AbstractJob
      */
     protected $entityManager;
 
-    /**
-     * @var \Doctrine\ORM\EntityRepository
-     */
-    protected $itemRepository;
-
-    /**
-     * @var \Doctrine\ORM\EntityRepository
-     */
-    protected $termRepository;
-
     public function perform(): void
     {
         $services = $this->getServiceLocator();
@@ -66,9 +56,6 @@ class Indexing extends AbstractJob
         // imported in bulk, so a flush() or a clear() will not be applied on
         // the imported resources but only on the indexed resources.
         $this->entityManager = $this->getNewEntityManager($services->get('Omeka\EntityManager'));
-
-        $this->itemRepository = $this->entityManager->getRepository(\Omeka\Entity\Item::class);
-        $this->termRepository = $this->entityManager->getRepository(\Thesaurus\Entity\Term::class);
 
         $this->api = $services->get('Omeka\ApiManager');
 
@@ -132,7 +119,7 @@ class Indexing extends AbstractJob
         }
 
         // Save all terms in the right order (so position is useless currently).
-        $schemeResource = $this->itemRepository->find($scheme->id());
+        $schemeResource = $this->entityManager->find(\Omeka\Entity\Item::class, $scheme->id());
         $root = null;
         $broader = null;
         $position = 0;
@@ -141,7 +128,7 @@ class Indexing extends AbstractJob
         $previousLevel = 0;
         foreach (array_chunk($flatTree, self::BATCH_SIZE) as $chunk) {
             foreach ($chunk as $concept) {
-                $item = $this->itemRepository->find($concept['self']->id());
+                $item = $this->entityManager->find(\Omeka\Entity\Item::class, $concept['self']->id());
                 $level = $concept['level'];
 
                 $term = new Term;

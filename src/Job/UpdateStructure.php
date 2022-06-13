@@ -275,6 +275,7 @@ DQL;
             return true;
         }
 
+        // TODO Use getReference() when possible and no repository.
         $schemeId = $thesaurus->scheme()->id();
         $scheme = $this->itemRepository->find($schemeId);
         $vocabulary = $this->vocabularyRepository->findOneBy(['namespaceUri' => 'http://www.w3.org/2004/02/skos/core#']);
@@ -327,6 +328,7 @@ DQL;
             return true;
         }
 
+        // TODO Use getReference() and no repository.
         $schemeId = $thesaurus->scheme()->id();
         $scheme = $this->itemRepository->find($schemeId);
         $vocabulary = $this->vocabularyRepository->findOneBy(['namespaceUri' => 'http://www.w3.org/2004/02/skos/core#']);
