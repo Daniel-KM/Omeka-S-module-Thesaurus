@@ -1485,7 +1485,8 @@ class Thesaurus extends AbstractPlugin
             ->select('item')
             ->from(\Omeka\Entity\Item::class, 'item')
             ->where($qb->expr()->in('item', ':ids'))
-            ->setParameter('ids', array_keys($data), \Doctrine\DBAL\Types\Types::INTEGER)
+            //  TODO Check \Doctrine\DBAL\ParameterType::INTEGER or \Doctrine\DBAL\Types\Types::INTEGER or \Doctrine\DBAL\Connection::PARAM_INT_ARRAY.
+            ->setParameter('ids', array_keys($data), \Doctrine\DBAL\Connection::PARAM_INT_ARRAY)
         ;
         $result = $qb->getQuery()->getResult();
         foreach ($result as &$itemData) {
