@@ -26,7 +26,7 @@ class ThesaurusSelect extends Select
      * {@inheritDoc}
      * @see \Laminas\Form\Element\Select::getInputSpecification()
      */
-    public function getInputSpecification()
+    public function getInputSpecification(): array
     {
         $inputSpecification = parent::getInputSpecification();
         $inputSpecification['required'] = !empty($this->attributes['required']);
@@ -111,7 +111,7 @@ class ThesaurusSelect extends Select
      * {@inheritDoc}
      * @see \Laminas\Form\Element\Select::getValueOptions()
      */
-    public function getValueOptions()
+    public function getValueOptions(): array
     {
         $valueOptions = [];
         $thesaurusResource = $this->getThesaurusTerm();
