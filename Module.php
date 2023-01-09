@@ -3,7 +3,7 @@
 namespace Thesaurus;
 
 /*
- * Copyright Daniel Berthereau, 2018-2022
+ * Copyright Daniel Berthereau, 2018-2023
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -46,7 +46,7 @@ use Laminas\Mvc\MvcEvent;
  *
  * Allows to use standard thesaurus (ISO 25964 to describe documents.
  *
- * @copyright Daniel Berthereau, 2018-2019
+ * @copyright Daniel Berthereau, 2018-2023
  * @license http://www.cecill.info/licences/Licence_CeCILL_V2.1-en.txt
  */
 class Module extends AbstractModule
