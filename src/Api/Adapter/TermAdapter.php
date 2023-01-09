@@ -22,6 +22,15 @@ class TermAdapter extends AbstractEntityAdapter
         'position' => 'position',
     ];
 
+    protected $scalarFields = [
+        'id' => 'id',
+        'item' => 'item',
+        'scheme' => 'scheme',
+        'root' => 'root',
+        'broader' => 'broader',
+        'position' => 'position',
+    ];
+
     public function getResourceName()
     {
         return 'terms';
