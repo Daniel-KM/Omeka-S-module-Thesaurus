@@ -84,10 +84,7 @@ class ThesaurusSelect extends Select
     public function getThesaurusTerm(): ?AbstractResourceEntityRepresentation
     {
         if (is_int($this->thesaurusTerm)) {
-            $term = $this->thesaurusPlugin->__invoke()->itemFromData($this->thesaurusTerm);
-            if ($term) {
-                $this->thesaurusTerm = $term;
-            }
+            $this->thesaurusTerm = $this->thesaurusPlugin->__invoke()->itemFromData($this->thesaurusTerm);
         }
         return $this->thesaurusTerm;
     }

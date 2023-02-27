@@ -3,6 +3,7 @@
 namespace Thesaurus\Mvc\Controller\Plugin;
 
 use Doctrine\ORM\EntityManager;
+use Laminas\Log\Logger;
 use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
 use Laminas\Mvc\Plugin\Identity\Identity;
 use Omeka\Api\Adapter\ItemAdapter;
@@ -112,6 +113,11 @@ class Thesaurus extends AbstractPlugin
     protected $api;
 
     /**
+     * @var Logger
+     */
+    protected $logger;
+
+    /**
      * @var ?\Omeka\Entity\User
      */
     protected $user;
@@ -120,11 +126,13 @@ class Thesaurus extends AbstractPlugin
         EntityManager $entityManager,
         ItemAdapter $itemAdapter,
         ApiManager $api,
+        Logger $logger,
         Identity $identity
     ) {
         $this->entityManager = $entityManager;
         $this->itemAdapter = $itemAdapter;
         $this->api = $api;
+        $this->logger = $logger;
         $this->user = $identity();
         $this->isPublic = empty($this->user)
             || $this->user->getRole() === 'guest';
@@ -223,7 +231,7 @@ class Thesaurus extends AbstractPlugin
     /**
      * Get the item representation from item data or id, or get current item.
      *
-     * @param array|int| $itemData
+     * @param array|int|string $itemData
      * @return ItemRepresentation Return the current item when empty
      */
     public function itemFromData($itemData = null): ?ItemRepresentation
@@ -237,8 +245,12 @@ class Thesaurus extends AbstractPlugin
         }
         if ($id) {
             try {
-                return $this->api->read('items', ['id' => $id], ['initialize' => false])->getContent();
+                return $this->api->read('items', ['id' => $id], [], ['initialize' => false, 'finalize' => false])->getContent();
             } catch (\Exception $e) {
+                $this->logger->err(
+                    sprintf('Thesaurus or item #%s does not exist or is not available to current user.', // @translate
+                    $id
+                ));
             }
         }
         return null;
