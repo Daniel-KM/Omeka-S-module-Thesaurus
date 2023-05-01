@@ -1,0 +1,9 @@
+01          Europe
+01-01       France
+01-01-01    Paris
+01-02       United Kingdom
+01-02-01    England
+01-02-01-01 London
+02          Asia
+02-01       Japan
+02-01-01    Tokyo

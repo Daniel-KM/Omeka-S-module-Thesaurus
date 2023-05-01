@@ -26,6 +26,22 @@ class ConvertForm extends Form
             ])
 
             ->add([
+                'name' => 'format',
+                'type' => Element\Radio::class,
+                'options' => [
+                    'label' => 'Input format', // @translate
+                    'value_options' => [
+                        'tab_offset' => 'Tabulation offsets', // @translate
+                        'structure_label' => 'Structure and label (01-02-03 xxx)', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'format',
+                    'value' => 'tab_offset',
+                ],
+            ])
+
+            ->add([
                 'name' => 'output',
                 'type' => Element\Radio::class,
                 'options' => [
@@ -60,6 +76,10 @@ class ConvertForm extends Form
                 ->add([
                     'name' => 'thesaurus',
                     'required' => true,
+                ])
+                ->add([
+                    'name' => 'format',
+                    'required' => false,
                 ])
                 ->add([
                     'name' => 'output',

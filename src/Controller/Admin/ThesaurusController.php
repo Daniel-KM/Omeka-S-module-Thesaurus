@@ -201,6 +201,7 @@ class ThesaurusController extends ItemController
 
         $data = $form->getData();
         $outputType = $data['output'] ?? 'text';
+        $format = $data['format'] ?? 'tab_offset';
 
         // TODO Check the file during validation inside the form.
 
@@ -221,7 +222,7 @@ class ThesaurusController extends ItemController
             );
         } else {
             $file = $fileCheck;
-            $converted = $this->convertThesaurus($file['tmp_name'], $file['type']);
+            $converted = $this->convertThesaurus($file['tmp_name'], $format, $file['type']);
             if (empty($converted)) {
                 $this->messenger()->addError(
                     sprintf('Unable to convert the file.') // @translate
@@ -229,7 +230,7 @@ class ThesaurusController extends ItemController
             } else {
                 if ($outputType === 'thesaurus') {
                     // Message are included.
-                    $this->importThesaurus($file['tmp_name'], $file['name'], $file['type']);
+                    $this->importThesaurus($file['tmp_name'], $file['name'], $format, $file['type']);
                     return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
                 }
                 if ($outputType === 'file') {
@@ -318,13 +319,28 @@ class ThesaurusController extends ItemController
     /**
      * Convert a flat list into a flat thesaurus.
      */
-    protected function convertThesaurus(string $filepath, ?string $mediaType = 'text/plain'): string
+    protected function convertThesaurus(
+        string $filepath,
+        string $format,
+        ?string $mediaType = 'text/plain'
+    ): string {
+        $text = file_get_contents($filepath);
+        $lines = $this->stringToList($text, false);
+        if ($format === 'tab_offset') {
+            return $this->convertThesaurusTabOffset($lines);
+        } elseif ($format === 'structure_label') {
+            return $this->convertThesaurusStructureLabel($lines);
+        }
+        return '';
+    }
+
+    /**
+     * Convert a flat list into a flat thesaurus from format "tab offset".
+     */
+    protected function convertThesaurusTabOffset(array $lines): string
     {
         $output = '';
         $separator = ' :: ';
-
-        $text = file_get_contents($filepath);
-        $lines = $this->stringToList($text, false);
         $levels = [];
         foreach ($lines as $line) {
             $descriptor = ltrim($line);
@@ -340,6 +356,53 @@ class ThesaurusController extends ItemController
             $levels[$level] = $descriptor;
             $output .= $row . "\n";
         }
+        return $output;
+    }
+
+    /**
+     * Convert a flat list into a flat thesaurus from format "structure label".
+     *
+     * The input should be ordered and logical.
+     *
+     * 01          Europe
+     * 01-01       France
+     * 01-01-01    Paris
+     * 01-02       United Kingdom
+     * 01-02-01    England
+     * 01-02-01-01 London
+     * 02          Asia
+     * 02-01       Japan
+     * 02-01-01    Tokyo
+     */
+    protected function convertThesaurusStructureLabel(array $lines): string
+    {
+        $output = '';
+        $separator = ' :: ';
+        $sep = '-';
+
+        // First, prepare a key-value array. The key should be a string.
+        $input = [];
+        foreach ($lines as $line) {
+            [$structure, $descriptor] = array_map('trim', (explode(' ', $line . ' ', 2)));
+            $input[(string) $structure] = $descriptor;
+        }
+        $input = array_filter($input);
+
+        // Second, prepare each row.
+        foreach ($input as $structure => $descriptor) {
+            $row = '';
+            // Get parent structure name (cut last part, that is current one).
+            $structureArray = explode($sep, (string) $structure);
+            array_pop($structureArray);
+            $structureArray = $structureArray ?: [];
+            foreach (array_keys($structureArray) as $key) {
+                $parentStructureName = implode($sep, array_slice($structureArray, 0, $key + 1));
+                $row .= $input[$parentStructureName] ?? '';
+                $row .= $separator;
+            }
+            $row .= $descriptor;
+            $output .= $row . "\n";
+        }
 
         return $output;
     }
@@ -347,8 +410,12 @@ class ThesaurusController extends ItemController
     /**
      * Convert a tree as a thesaurus.
      */
-    protected function importThesaurus(string $filepath, string $filename, ?string $mediaType = 'text/plain'): void
-    {
+    protected function importThesaurus(
+        string $filepath,
+        string $filename,
+        string $format,
+        ?string $mediaType = 'text/plain'
+    ): void {
         $text = file_get_contents($filepath);
         $lines = $this->stringToList($text, false);
         if (!$lines) {
@@ -365,6 +432,7 @@ class ThesaurusController extends ItemController
         $name = mb_strtolower(pathinfo($filename, PATHINFO_FILENAME));
         $params = [
             'name' => $name,
+            'format' => $format,
             'input' => $lines,
         ];
 

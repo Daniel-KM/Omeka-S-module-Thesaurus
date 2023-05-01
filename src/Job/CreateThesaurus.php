@@ -32,11 +32,18 @@ class CreateThesaurus extends AbstractJob
         if (!$name) {
             $this->logger->err('A name is required to create a thesaurus.'); // @translate
         }
+
+        $format = $this->getArg('format');
+        $format = in_array($format, ['tab_offset', 'structure_label']) ? $format : null;
+        if (!$format) {
+            $this->logger->err('The format of the file is undetermined.'); // @translate
+        }
+
         $input = $this->getArg('input');
         if (!$input) {
             $this->logger->err('A list of concepts is required to create a thesaurus.'); // @translate
         }
-        if (!$name || !$input) {
+        if (!$name || !$format || !$input) {
             return;
         }
 
@@ -122,11 +129,67 @@ class CreateThesaurus extends AbstractJob
             ],
         ];
 
-        $levels = [];
+        if ($format === 'tab_offset') {
+            $result = $this->convertThesaurusTabOffset($input, $baseConcept, $skosIds);
+        } elseif ($format === 'structure_label') {
+            $result = $this->convertThesaurusStructureLabel($input, $baseConcept, $skosIds);
+        }
+
+        $topIds = $result['topIds'];
+        $narrowers = $result['narrowers'];
+
+        // Fourth, append narrower concepts to concepts.
+        foreach ($narrowers as $parentId => $narrowerIds) {
+            if (!$narrowerIds) {
+                continue;
+            }
+            $concept = $this->api->read('items', ['id' => $parentId])->getContent();
+            $conceptJson = json_decode(json_encode($concept), true);
+            foreach ($narrowerIds as $narrowerId) {
+                $conceptJson['skos:narrower'][] = [
+                    'type' => 'resource:item',
+                    'property_id' => $skosIds['skos:narrower'],
+                    'value_resource_id' => $narrowerId,
+                ];
+            }
+            $this->api->update('items', $parentId, $conceptJson, [], ['isPartial' => true]);
+        }
+
+        // Fifth, append top concepts to scheme.
+        if ($topIds) {
+            $schemeJson = json_decode(json_encode($scheme), true);
+            foreach ($topIds as $topId) {
+                $schemeJson['skos:hasTopConcept'][] = [
+                    'type' => 'resource:item',
+                    'property_id' => $skosIds['skos:hasTopConcept'],
+                    'value_resource_id' => $topId,
+                ];
+            }
+            $this->api->update('items', $schemeId, $schemeJson, [], ['isPartial' => true]);
+        }
+
+        $message = new Message(
+            'The thesaurus "%1$s" is ready, with %2$d concepts.', // @translate
+            ucfirst($name), count($input)
+        );
+        $this->logger->notice($message);
+    }
+
+    /**
+     * Convert a flat list into a flat thesaurus from format "tab offset".
+     */
+    protected function convertThesaurusTabOffset(
+        array $lines,
+        array $baseConcept,
+        array $skosIds
+    ): array {
+        $schemeId = $baseConcept['skos:inScheme'][0]['value_resource_id'];
+
         $topIds = [];
         $narrowers = [];
+        $levels = [];
 
-        foreach ($input as $line) {
+        foreach ($lines as $line) {
             $descriptor = trim($line);
             $level = strrpos($line, "\t");
             $level = $level === false ? 0 : ++$level;
@@ -172,40 +235,104 @@ class CreateThesaurus extends AbstractJob
             }
         }
 
-        // Fourth, append narrower concepts to concepts.
-        foreach ($narrowers as $parentId => $narrowerIds) {
-            if (!$narrowerIds) {
-                continue;
-            }
-            $concept = $this->api->read('items', ['id' => $parentId])->getContent();
-            $conceptJson = json_decode(json_encode($concept), true);
-            foreach ($narrowerIds as $narrowerId) {
-                $conceptJson['skos:narrower'][] = [
-                    'type' => 'resource:item',
-                    'property_id' => $skosIds['skos:narrower'],
-                    'value_resource_id' => $narrowerId,
+        return [
+            'topIds' => $topIds,
+            'narrowers' => $narrowers,
+        ];
+    }
+
+    /**
+     * Convert a flat list into a flat thesaurus from format "structure label".
+     *
+     * The input should be ordered and logical.
+     *
+     * 01          Europe
+     * 01-01       France
+     * 01-01-01    Paris
+     * 01-02       United Kingdom
+     * 01-02-01    England
+     * 01-02-01-01 London
+     * 02          Asia
+     * 02-01       Japan
+     * 02-01-01    Tokyo
+     */
+    protected function convertThesaurusStructureLabel(
+        array $lines,
+        array $baseConcept,
+        array $skosIds
+    ): array {
+        $schemeId = $baseConcept['skos:inScheme'][0]['value_resource_id'];
+
+        $topIds = [];
+        $narrowers = [];
+        $levels = [];
+
+        $sep = '-';
+
+        // First, prepare a key-value array. The key should be a string.
+        $input = [];
+        foreach ($lines as $line) {
+            [$structure, $descriptor] = array_map('trim', (explode(' ', $line . ' ', 2)));
+            $input[(string) $structure] = $descriptor;
+        }
+        $input = array_filter($input);
+
+        // Second, prepare each row.
+        foreach ($input as $structure => $descriptor) {
+            $level = substr_count((string) $structure, $sep);
+            $parentLevel = $level ? $level - 1 : false;
+
+            $data = $baseConcept + [
+                'skos:prefLabel' => [
+                    [
+                        'type' => 'literal',
+                        'property_id' => $skosIds['skos:prefLabel'],
+                        '@value' => $descriptor,
+                    ],
+                ],
+                'skos:notation' => [
+                    [
+                        'type' => 'literal',
+                        'property_id' => $skosIds['skos:notation'],
+                        '@value' => $structure,
+                    ],
+                ],
+            ];
+
+            if ($level) {
+                $data['skos:broader'] = [
+                    [
+                        'type' => 'resource:item',
+                        'property_id' => $skosIds['skos:broader'],
+                        'value_resource_id' => $levels[$parentLevel],
+                    ],
+                ];
+            } else {
+                $levels = [];
+                $data['skos:topConceptOf'] = [
+                    [
+                        'type' => 'resource:item',
+                        'property_id' => $skosIds['skos:topConceptOf'],
+                        'value_resource_id' => $schemeId,
+                    ],
                 ];
             }
-            $this->api->update('items', $parentId, $conceptJson, [], ['isPartial' => true]);
-        }
 
-        // Fifth, append top concepts to scheme.
-        if ($topIds) {
-            $schemeJson = json_decode(json_encode($scheme), true);
-            foreach ($topIds as $topId) {
-                $schemeJson['skos:hasTopConcept'][] = [
-                    'type' => 'resource:item',
-                    'property_id' => $skosIds['skos:hasTopConcept'],
-                    'value_resource_id' => $topId,
-                ];
+            $concept = $this->api->create('items', $data)->getContent();
+            $conceptId = $concept->id();
+
+            $levels[$level] = $conceptId;
+
+            if ($level === 0) {
+                $topIds[] = $conceptId;
+            } else {
+                $narrowers[$levels[$parentLevel]][] = $conceptId;
             }
-            $this->api->update('items', $schemeId, $schemeJson, [], ['isPartial' => true]);
         }
 
-        $message = new Message(
-            'The thesaurus "%1$s" is ready, with %2$d concepts.', // @translate
-            ucfirst($name), count($input)
-        );
-        $this->logger->notice($message);
+        return [
+            'topIds' => $topIds,
+            'narrowers' => $narrowers,
+        ];
     }
 }

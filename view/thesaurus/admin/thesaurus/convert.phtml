@@ -5,8 +5,8 @@
  */
 
 $plugins = $this->getHelperPluginManager();
-$translate = $plugins->get('translate');
 $assetUrl = $plugins->get('assetUrl');
+$translate = $plugins->get('translate');
 
 $this->headLink()
     ->appendStylesheet($assetUrl('css/thesaurus-admin.css', 'Thesaurus'));
