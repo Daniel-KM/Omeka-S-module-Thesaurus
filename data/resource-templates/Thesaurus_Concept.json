@@ -201,11 +201,13 @@
         "label": "definition"
     },
     "o:data": {
-        "closed_property_list": "1",
+        "require_resource_class": true,
+        "closed_class_list": true,
+        "closed_property_list": true,
         "value_languages": [],
         "default_language": "",
-        "no_language": "0",
-        "autocomplete": "no",
+        "no_language": false,
+        "autocomplete": false,
         "autofillers": []
     }
 }
