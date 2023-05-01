@@ -44,7 +44,7 @@ use Laminas\Mvc\MvcEvent;
 /**
  * Thesaurus
  *
- * Allows to use standard thesaurus (ISO 25964 to describe documents.
+ * Allows to use standard thesaurus (ISO 25964 to describe documents).
  *
  * @copyright Daniel Berthereau, 2018-2023
  * @license http://www.cecill.info/licences/Licence_CeCILL_V2.1-en.txt

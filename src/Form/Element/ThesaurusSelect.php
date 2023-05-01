@@ -8,6 +8,8 @@ use Thesaurus\Mvc\Controller\Plugin\Thesaurus;
 
 class ThesaurusSelect extends Select
 {
+    use TraitOptionalElement;
+
     /**
      * @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus
      */
@@ -17,21 +19,6 @@ class ThesaurusSelect extends Select
      * @var \Omeka\Api\Representation\ItemRepresentation|\Omeka\Api\Representation\ItemSetRepresentation|int
      */
     protected $thesaurusTerm;
-
-    /**
-     * Make the select optional when it is not required.
-     *
-     * @link https://github.com/zendframework/zendframework/issues/2761#issuecomment-14488216
-     *
-     * {@inheritDoc}
-     * @see \Laminas\Form\Element\Select::getInputSpecification()
-     */
-    public function getInputSpecification(): array
-    {
-        $inputSpecification = parent::getInputSpecification();
-        $inputSpecification['required'] = !empty($this->attributes['required']);
-        return $inputSpecification;
-    }
 
     /**
      * @see self::getValueOptions()
@@ -84,7 +71,7 @@ class ThesaurusSelect extends Select
     public function getThesaurusTerm(): ?AbstractResourceEntityRepresentation
     {
         if (is_int($this->thesaurusTerm)) {
-            $this->thesaurusTerm = $this->thesaurusPlugin->__invoke()->itemFromData($this->thesaurusTerm);
+            $this->thesaurusTerm = $this->thesaurusPlugin->__invoke()->itemFromData($this->thesaurusTerm) ?: null;
         }
         return $this->thesaurusTerm;
     }

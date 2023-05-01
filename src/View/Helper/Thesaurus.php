@@ -523,15 +523,40 @@ class Thesaurus extends AbstractHelper
     /**
      * Display part of a thesaurus.
      *
-     * @param string|array|ItemRepresentation $typeOrData Type may be "root" or
-     * "broader" (single), "tops", "narrowers", "relateds", "siblings",
-     * "ascendants", or "descendants" (list), or "tree", "branch", "branchNoTop",
-     * "branchFromItem", or "branchBelowItem" (tree), or "flatTree" or "flatBranch"
-     * (flat tree).
-     * @param array $options Options for the partial. Managed default are
-     * "title", "link", "link_append_concept", "term", "hideIfEmpty", "class",
-     * "expanded", "template", "returnItem". Deprecated option : "partial"
-     * (renamed "template").
+     * @param string|array|ItemRepresentation $typeOrData Type may be:
+     * - For output as single item or data:
+     *   - root
+     *   - broader
+     * - For output as list of items or data:
+     *   - tops
+     *   - narrowers
+     *   - relateds
+     *   - siblings
+     *   - ascendants
+     *   - descendants
+     * - For output as a tree of item or data:
+     *   - tree
+     *   - branch
+     *   - branchNoTop
+     *   - branchFromItem
+     *   - branchBelowItem
+     * - For output as a flat tree of item or data:
+     *   - flatTree
+     *   - flatBranch
+     * If an item or a data or a list of items or data is passed, the type is
+     * automatically defined.
+     * @param array $options Options for the partial. Managed default are:
+     * - title
+     * - link
+     * - link_append_concept
+     * - term
+     * - hideIfEmpty
+     * - class
+     * - expanded
+     * - template
+     * - returnItem (bool): return data (default) or item. It is recommended to
+     *   avoid to return items with a big thesaurus.
+     * - partial (deprecated: renamed "template" above)
      * @return string
      */
     public function display($typeOrData, array $options = [])

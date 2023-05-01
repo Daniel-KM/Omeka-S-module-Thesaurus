@@ -142,10 +142,13 @@ class Thesaurus extends AbstractPlugin
      * Manage a thesaurus.
      *
      * @param AbstractResourceEntityRepresentation|int|null $itemOrItemSetOrId
-     *   The item should be a scheme or a concept. If item set, it should be a
-     *   skos collection or a skos ordered collection that contains a scheme.
+     *   The item should be a scheme or a concept. If it is an item set, it
+     *   should be a skos collection or a skos ordered collection that contains
+     *   a scheme, that wll be the item that will be set.
+     *
      *   The thesaurus will be init with this concept or scheme. It will be used
-     *   by default in other methods until another method modify it.
+     *   by default in other methods, for example to get ascendants or
+     *   descendants.
      */
     public function __invoke($itemOrItemSetOrId = null): self
     {
@@ -248,7 +251,7 @@ class Thesaurus extends AbstractPlugin
                 return $this->api->read('items', ['id' => $id], [], ['initialize' => false, 'finalize' => false])->getContent();
             } catch (\Exception $e) {
                 $this->logger->err(
-                    sprintf('Thesaurus or item #%s does not exist or is not available to current user.', // @translate
+                    sprintf('Thesaurus based on item #%s does not exist or is not available to current user.', // @translate
                     $id
                 ));
             }
@@ -770,7 +773,7 @@ class Thesaurus extends AbstractPlugin
     public function listTree(?array $options = null): array
     {
         $result = $this->flatTree();
-        return $this->list($result, is_null($options) ? [] : $options);
+        return $this->list($result, $options ?? []);
     }
 
     /**
@@ -787,7 +790,7 @@ class Thesaurus extends AbstractPlugin
     public function listBranch(?array $options = null): array
     {
         $result = $this->flatBranch();
-        return $this->list($result, is_null($options) ? [] : $options);
+        return $this->list($result, $options ?? []);
     }
 
     /**
@@ -892,7 +895,7 @@ class Thesaurus extends AbstractPlugin
      *
      * This output is recommended for a select element form (terms).
      *
-     * @todo Add option group: Get tops terms as group for a grouped select.
+     * @todo Add option group: Get tops terms as group for a grouped select. Useless.
      *
      * @param array $options Only valable for term output.
      *   - indent (string): String like "– " to prepend to terms to show level.
@@ -1344,7 +1347,7 @@ class Thesaurus extends AbstractPlugin
             return $this;
         }
 
-        // Get all ids via api.
+        // Get all ids and titles via api.
         // This allows to check visibility and to get the full list of concepts.
         // The validity of top concepts is not checked.
         // TODO Check if it is useful to check visibility here.
@@ -1382,12 +1385,18 @@ class Thesaurus extends AbstractPlugin
         $concepts = array_keys($titles);
 
         // TODO Add the root and siblings.
-        $this->structure = array_fill_keys($concepts, ['id' => null, 'title' => null, 'top' => false, 'parent' => null, 'children' => []]);
+        $this->structure = array_fill_keys($concepts, [
+            'id' => null,
+            'title' => null,
+            'top' => false,
+            'parent' => null,
+            'children' => [],
+        ]);
 
         $qb = $this->entityManager->createQueryBuilder();
         $expr = $qb->expr();
 
-        // Get all parents.
+        // Get all parents. Does not get items without parent (top).
         $qb = $this->entityManager->createQueryBuilder()
             ->select(
                 'item.id',
@@ -1479,6 +1488,14 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
+     * Get an item or a list of items from id, data, or associative list of ids.
+     *
+     * Items are returned only if the deprecated option returnItem is set, so
+     * most of the time, returns data directly.
+     *
+     * This method is the same than calling api with a list of ids, but it is
+     * quicker and without events.
+     *
      * @return array|null|ItemRepresentation
      */
     protected function returnFromData(?array $data)
@@ -1497,7 +1514,6 @@ class Thesaurus extends AbstractPlugin
             ->select('item')
             ->from(\Omeka\Entity\Item::class, 'item')
             ->where($qb->expr()->in('item', ':ids'))
-            //  TODO Check \Doctrine\DBAL\ParameterType::INTEGER or \Doctrine\DBAL\Types\Types::INTEGER or \Doctrine\DBAL\Connection::PARAM_INT_ARRAY.
             ->setParameter('ids', array_keys($data), \Doctrine\DBAL\Connection::PARAM_INT_ARRAY)
         ;
         $result = $qb->getQuery()->getResult();

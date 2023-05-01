@@ -161,10 +161,9 @@ class ThesaurusController extends ItemController
         $form
             ->setAttribute('action', $this->url()->fromRoute('admin/thesaurus', ['action' => 'upload']))
             ->init();
-
-        $view = new ViewModel;
-        $view->setVariable('form', $form);
-        return $view;
+        return new ViewModel([
+            'form' => $form,
+        ]);
     }
 
     public function uploadAction()

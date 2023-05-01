@@ -23,9 +23,11 @@ return [
         'strategies' => [
             'ViewJsonStrategy',
         ],
-        // 'controller_map' => [
-        //     Controller\Admin\ThesaurusController::class => 'omeka/admin/item',
-        // ],
+        /*
+        'controller_map' => [
+            Controller\Admin\ThesaurusController::class => 'omeka/admin/item',
+        ],
+        */
     ],
     'view_helpers' => [
         'invokables' => [
