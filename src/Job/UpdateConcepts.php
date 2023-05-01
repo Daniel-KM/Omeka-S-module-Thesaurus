@@ -53,9 +53,18 @@ class UpdateConcepts extends AbstractJob
             return;
         }
 
-        $fill = $this->getArg('fill');
-        if (!$fill) {
-            $this->logger->err('There is no parameter for filling.'); // @translate
+        $fill = $this->getArg('fill') ?: [];
+        if (empty($fill['descriptor'])
+            && empty($fill['path'])
+        ) {
+            $this->logger->err('A preferred label with the descriptor or the full path is required to fill concepts.'); // @translate
+            return;
+        }
+
+        if (empty($fill['path'])
+            && empty($fill['ascendance'])
+        ) {
+            $this->logger->warn('No defined property for path or ascendance, so nothing to fill.'); // @translate
             return;
         }
 
@@ -95,54 +104,12 @@ class UpdateConcepts extends AbstractJob
             return;
         }
 
-        // TODO Factorize with CreateThesaurus.
-        // Use a quick format to avoid to check option each time.
-        $filling = [
-            'skos:prefLabel' => [],
-            'skos:altLabel' => [],
-            'skos:hiddenLabel' => [],
-        ];
-        /*
-        if (in_array('descriptor_preflabel', $fill)) {
-            $filling['skos:prefLabel']['descriptor'] = 'descriptor';
-        }
-        if (in_array('descriptor_altlabel', $fill)) {
-            $filling['skos:altLabel']['descriptor'] = 'descriptor';
-        }
-        if (in_array('descriptor_hiddenlabel', $fill)) {
-            $filling['skos:hiddenLabel']['descriptor'] = 'descriptor';
-        }
-        */
-        if (in_array('path_preflabel', $fill)) {
-            $filling['skos:prefLabel']['path'] = 'path';
-        }
-        if (in_array('path_altlabel', $fill)) {
-            $filling['skos:altLabel']['path'] = 'path';
-        }
-        if (in_array('path_hiddenlabel', $fill)) {
-            $filling['skos:hiddenLabel']['path'] = 'path';
-        }
-        if (in_array('ascendance_preflabel', $fill)) {
-            $filling['skos:prefLabel']['ascendance'] = 'ascendance';
-        }
-        if (in_array('ascendance_altlabel', $fill)) {
-            $filling['skos:altLabel']['ascendance'] = 'ascendance';
-        }
-        if (in_array('ascendance_hiddenlabel', $fill)) {
-            $filling['skos:hiddenLabel']['ascendance'] = 'ascendance';
-        }
-
-        $separator = $this->getArg('separator') ?? \Thesaurus\Job\CreateThesaurus::SEPARATOR;
+        $separator = $this->getArg('separator') ?? \Thesaurus\Module::SEPARATOR;
 
         $scheme = $thesaurus->scheme();
         $schemeId = $scheme->id();
 
         $flatTree = $thesaurus->flatTree();
-
-        $this->logger->notice(new Message(
-            'Updating %d descriptors.', // @translate
-            count($flatTree)
-        ));
 
         // Scalar fields cannot be returned < v4.1.
         $skosIds = [];
@@ -151,6 +118,37 @@ class UpdateConcepts extends AbstractJob
         foreach ($properties as $property) {
             $skosIds[$property->term()] = $property->id();
         }
+
+        // Check properties in options one time.
+        if (!empty($fill['descriptor']) && empty($skosIds[$fill['descriptor']])) {
+            $this->logger->notice(new Message(
+                'The property "%1$s" for descriptor is not managed.', // @translate
+                $fill['descriptor']
+            ));
+            return;
+        }
+        if (!empty($fill['path']) && empty($skosIds[$fill['path']])) {
+            $this->logger->notice(new Message(
+                'The property "%1$s" for path is not managed.', // @translate
+                $fill['path']
+            ));
+            return;
+        }
+        if (!empty($fill['ascendance']) && empty($skosIds[$fill['ascendance']])) {
+            $this->logger->notice(new Message(
+                'The property "%1$s" for ascendance is not managed.', // @translate
+                $fill['ascendance']
+            ));
+            return;
+        }
+
+        $this->logger->notice(new Message(
+            'Updating %d descriptors.', // @translate
+            count($flatTree)
+        ));
+
+        // Don't update descriptor, but keep it.
+        unset($fill['descriptor']);
 
         $totalProcessed = 0;
         foreach (array_chunk($flatTree, self::BATCH_SIZE, true) as $chunk) {
@@ -180,41 +178,40 @@ class UpdateConcepts extends AbstractJob
                     $data = json_decode(json_encode($item), true);
                     // The ascendance is from closest to top concept, so reverse it
                     $ascendanceTitles = array_reverse(array_column($ascendance, 'title', 'id'));
-                    foreach ($filling as $term => $contents) {
-                        $val = null;
-                        if (isset($contents['path'])) {
-                            $update = true;
-                            $val = [
-                                'type' => 'literal',
-                                'property_id' => $skosIds[$term],
-                                '@value' => implode($separator, $ascendanceTitles) . $separator . $itemData['self']['title'],
-                            ];
-                            if ($mode === 'remove') {
-                                unset($data[$term]);
-                            } elseif ($mode === 'replace') {
-                                $data[$term] = [$val];
-                            } elseif ($mode === 'prepend') {
-                                array_unshift($data[$term], $val);
-                            } elseif ($mode === 'append') {
-                                $data[$term][] = $val;
-                            }
+                    if (!empty($fill['path'])) {
+                        $term = $fill['path'];
+                        $update = true;
+                        $val = [
+                            'type' => 'literal',
+                            'property_id' => $skosIds[$term],
+                            '@value' => implode($separator, $ascendanceTitles) . $separator . $itemData['self']['title'],
+                        ];
+                        if ($mode === 'remove') {
+                            unset($data[$term]);
+                        } elseif ($mode === 'replace') {
+                            $data[$term] = [$val];
+                        } elseif ($mode === 'prepend') {
+                            array_unshift($data[$term], $val);
+                        } elseif ($mode === 'append') {
+                            $data[$term][] = $val;
                         }
-                        if (isset($contents['ascendance'])) {
-                            $update = true;
-                            $val = [
-                                'type' => 'literal',
-                                'property_id' => $skosIds[$term],
-                                '@value' => implode($separator, $ascendanceTitles),
-                            ];
-                            if ($mode === 'remove') {
-                                unset($data[$term]);
-                            } elseif ($mode === 'replace') {
-                                $data[$term] = [$val];
-                            } elseif ($mode === 'prepend') {
-                                array_unshift($data[$term], $val);
-                            } elseif ($mode === 'append') {
-                                $data[$term][] = $val;
-                            }
+                    }
+                    if (!empty($fill['ascendance'])) {
+                        $term = $fill['ascendance'];
+                        $update = true;
+                        $val = [
+                            'type' => 'literal',
+                            'property_id' => $skosIds[$term],
+                            '@value' => implode($separator, $ascendanceTitles),
+                        ];
+                        if ($mode === 'remove') {
+                            unset($data[$term]);
+                        } elseif ($mode === 'replace') {
+                            $data[$term] = [$val];
+                        } elseif ($mode === 'prepend') {
+                            array_unshift($data[$term], $val);
+                        } elseif ($mode === 'append') {
+                            $data[$term][] = $val;
                         }
                     }
                 }

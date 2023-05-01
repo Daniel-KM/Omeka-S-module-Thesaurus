@@ -15,13 +15,6 @@ class CreateThesaurus extends AbstractJob
     const TRIM_PUNCTUATION = " \n\r\t\v\x00.,-?!:;";
 
     /**
-     * Default separator for the ascendance.
-     *
-     * @var string
-     */
-    const SEPARATOR = ' :: ';
-
-    /**
      * @var \Laminas\Log\Logger
      */
     protected $logger;
@@ -69,54 +62,16 @@ class CreateThesaurus extends AbstractJob
             return;
         }
 
-        // Default is to fill only descriptor as preferred label.
-        // A preferred label is required.
-        $fill = $this->getArg('fill') ?: [
-            'descriptor_preflabel',
-        ];
-        if (!in_array('descriptor_preflabel', $fill)
-            && !in_array('path_preflabel', $fill)
+        // The descriptor is required.
+        $fill = $this->getArg('fill') ?: [];
+        if (empty($fill['descriptor'])
+            && empty($fill['path'])
         ) {
             $this->logger->err('A preferred label with the descriptor or the full path is required to fill concepts.'); // @translate
             return;
         }
 
-        // TODO Factorize with UpdateConcepts.
-        // Use a quick format to avoid to check option each time.
-        $filling = [
-            'skos:prefLabel' => [],
-            'skos:altLabel' => [],
-            'skos:hiddenLabel' => [],
-        ];
-        if (in_array('descriptor_preflabel', $fill)) {
-            $filling['skos:prefLabel']['descriptor'] = 'descriptor';
-        }
-        if (in_array('descriptor_altlabel', $fill)) {
-            $filling['skos:altLabel']['descriptor'] = 'descriptor';
-        }
-        if (in_array('descriptor_hiddenlabel', $fill)) {
-            $filling['skos:hiddenLabel']['descriptor'] = 'descriptor';
-        }
-        if (in_array('path_preflabel', $fill)) {
-            $filling['skos:prefLabel']['path'] = 'path';
-        }
-        if (in_array('path_altlabel', $fill)) {
-            $filling['skos:altLabel']['path'] = 'path';
-        }
-        if (in_array('path_hiddenlabel', $fill)) {
-            $filling['skos:hiddenLabel']['path'] = 'path';
-        }
-        if (in_array('ascendance_preflabel', $fill)) {
-            $filling['skos:prefLabel']['ascendance'] = 'ascendance';
-        }
-        if (in_array('ascendance_altlabel', $fill)) {
-            $filling['skos:altLabel']['ascendance'] = 'ascendance';
-        }
-        if (in_array('ascendance_hiddenlabel', $fill)) {
-            $filling['skos:hiddenLabel']['ascendance'] = 'ascendance';
-        }
-
-        $separator = $this->getArg('separator') ?? self::SEPARATOR;
+        $separator = $this->getArg('separator') ?? \Thesaurus\Module::SEPARATOR;
 
         $clean = $this->getArg('clean') ?? [
             'trim_punctuation',
@@ -144,6 +99,29 @@ class CreateThesaurus extends AbstractJob
         $properties = $this->api->search('properties', ['vocabulary_prefix' => 'skos'])->getContent();
         foreach ($properties as $property) {
             $skosIds[$property->term()] = $property->id();
+        }
+
+        // Check properties in options one time.
+        if (!empty($fill['descriptor']) && empty($skosIds[$fill['descriptor']])) {
+            $this->logger->notice(new Message(
+                'The property "%1$s" for descriptor is not managed.', // @translate
+                $fill['descriptor']
+            ));
+            return;
+        }
+        if (!empty($fill['path']) && empty($skosIds[$fill['path']])) {
+            $this->logger->notice(new Message(
+                'The property "%1$s" for path is not managed.', // @translate
+                $fill['path']
+            ));
+            return;
+        }
+        if (!empty($fill['ascendance']) && empty($skosIds[$fill['ascendance']])) {
+            $this->logger->notice(new Message(
+                'The property "%1$s" for ascendance is not managed.', // @translate
+                $fill['ascendance']
+            ));
+            return;
         }
 
         // First create the item set.
@@ -219,9 +197,9 @@ class CreateThesaurus extends AbstractJob
         ];
 
         if ($format === 'tab_offset') {
-            $result = $this->convertThesaurusTabOffset($input, $baseConcept, $skosIds, $filling, $separator, $clean);
+            $result = $this->convertThesaurusTabOffset($input, $baseConcept, $skosIds, $fill, $separator, $clean);
         } elseif ($format === 'structure_label') {
-            $result = $this->convertThesaurusStructureLabel($input, $baseConcept, $skosIds, $filling, $separator, $clean);
+            $result = $this->convertThesaurusStructureLabel($input, $baseConcept, $skosIds, $fill, $separator, $clean);
         }
 
         // Even if the job is stopped, fill the other data.
@@ -298,7 +276,7 @@ class CreateThesaurus extends AbstractJob
         array $lines,
         array $baseConcept,
         array $skosIds,
-        array $filling,
+        array $fill,
         string $separator,
         array $clean
     ): array {
@@ -352,29 +330,27 @@ class CreateThesaurus extends AbstractJob
 
             $data = $baseConcept;
 
-            foreach ($filling as $term => $contents) {
-                if (isset($contents['descriptor'])) {
-                    $data[$term][] = [
+            if (!empty($fill['descriptor']) && !empty($skosIds[$fill['descriptor']])) {
+                $data[$fill['descriptor']][] = [
+                    'type' => 'literal',
+                    'property_id' => $skosIds[$fill['descriptor']],
+                    '@value' => $descriptor,
+                ];
+            }
+            if ($level && count($ascendance)) {
+                if (!empty($fill['path'])) {
+                    $data[$fill['path']][] = [
                         'type' => 'literal',
-                        'property_id' => $skosIds[$term],
-                        '@value' => $descriptor,
+                        'property_id' => $skosIds[$fill['path']],
+                        '@value' => implode($separator, array_slice($ascendance, 0, $level)) . $separator . $descriptor,
                     ];
                 }
-                if ($level && count($ascendance)) {
-                    if (isset($contents['path'])) {
-                        $data[$term][] = [
-                            'type' => 'literal',
-                            'property_id' => $skosIds[$term],
-                            '@value' => implode($separator, array_slice($ascendance, 0, $level)) . $separator . $descriptor,
-                        ];
-                    }
-                    if (isset($contents['ascendance'])) {
-                        $data[$term][] = [
-                            'type' => 'literal',
-                            'property_id' => $skosIds[$term],
-                            '@value' => implode($separator, array_slice($ascendance, 0, $level)),
-                        ];
-                    }
+                if (!empty($fill['ascendance'])) {
+                    $data[$fill['ascendance']][] = [
+                        'type' => 'literal',
+                        'property_id' => $skosIds[$fill['ascendance']],
+                        '@value' => implode($separator, array_slice($ascendance, 0, $level)),
+                    ];
                 }
             }
 
@@ -440,7 +416,7 @@ class CreateThesaurus extends AbstractJob
         array $lines,
         array $baseConcept,
         array $skosIds,
-        array $filling,
+        array $fill,
         string $separator,
         array $clean
     ): array {
@@ -509,29 +485,27 @@ class CreateThesaurus extends AbstractJob
 
             $data = $baseConcept;
 
-            foreach ($filling as $term => $contents) {
-                if (isset($contents['descriptor'])) {
-                    $data[$term][] = [
+            if (!empty($fill['descriptor']) && !empty($skosIds[$fill['descriptor']])) {
+                $data[$fill['descriptor']][] = [
+                    'type' => 'literal',
+                    'property_id' => $skosIds[$fill['descriptor']],
+                    '@value' => $descriptor,
+                ];
+            }
+            if ($level && count($ascendance)) {
+                if (!empty($fill['path'])) {
+                    $data[$fill['path']][] = [
                         'type' => 'literal',
-                        'property_id' => $skosIds[$term],
-                        '@value' => $descriptor,
+                        'property_id' => $skosIds[$fill['path']],
+                        '@value' => implode($separator, array_slice($ascendance, 0, $level)) . $separator . $descriptor,
                     ];
                 }
-                if ($level && count($ascendance)) {
-                    if (isset($contents['path'])) {
-                        $data[$term][] = [
-                            'type' => 'literal',
-                            'property_id' => $skosIds[$term],
-                            '@value' => implode($separator, array_slice($ascendance, 0, $level)) . $separator . $descriptor,
-                        ];
-                    }
-                    if (isset($contents['ascendance'])) {
-                        $data[$term][] = [
-                            'type' => 'literal',
-                            'property_id' => $skosIds[$term],
-                            '@value' => implode($separator, array_slice($ascendance, 0, $level)),
-                        ];
-                    }
+                if (!empty($fill['ascendance'])) {
+                    $data[$fill['ascendance']][] = [
+                        'type' => 'literal',
+                        'property_id' => $skosIds[$fill['ascendance']],
+                        '@value' => implode($separator, array_slice($ascendance, 0, $level)),
+                    ];
                 }
             }
 

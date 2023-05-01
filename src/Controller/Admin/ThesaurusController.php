@@ -168,12 +168,19 @@ class ThesaurusController extends ItemController
             $form->setData($post);
             if ($form->isValid()) {
                 $data = $form->getData();
+                $settings = $this->settings();
                 $dispatcher = $this->jobDispatcher();
                 $args = [
                     'scheme' => (int) $item->id(),
-                    'fill' => $data['fill'] ?? [],
+                    // A preferred label is required.
+                    'fill' => [
+                        // Pass the descriptor to job for check, but not used.
+                        'descriptor' => $settings->get('thesaurus_property_descriptor', 'skos:prefLabel'),
+                        'path' => $settings->get('thesaurus_property_path', ''),
+                        'ascendance' => $settings->get('thesaurus_property_ascendance', ''),
+                    ],
+                    'separator' => $settings->get('thesaurus_separator', \Thesaurus\Module::SEPARATOR),
                     'mode' => $data['mode'] ?? 'replace',
-                    'separator' => $data['separator'] ?? \Thesaurus\Job\CreateThesaurus::SEPARATOR,
                 ];
                 $job = $dispatcher->dispatch(\Thesaurus\Job\UpdateConcepts::class, $args);
                 $message = new \Omeka\Stdlib\Message(
@@ -193,11 +200,6 @@ class ThesaurusController extends ItemController
                 $this->messenger()->addFormErrors($form);
             }
         }
-
-        $message = new \Omeka\Stdlib\Message(
-            'Warning: Do not select the property used for descriptor alone, else the descriptor will be lost or mixed.', // @translate
-        );
-        $this->messenger()->addWarning($message);
 
         return new ViewModel([
             'item' => $item,
@@ -329,16 +331,19 @@ class ThesaurusController extends ItemController
             return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert'], true);
         }
 
+        $settings = $this->settings();
+
         $data = $form->getData();
         $outputType = $data['output'] ?? 'text';
         $options = [
             'format' => $data['format'] ?? 'tab_offset',
-            // Default is to fill only descriptor as preferred label.
             // A preferred label is required.
-            'fill' => $data['fill'] ?? [
-                'descriptor_preflabel',
+            'fill' => [
+                'descriptor' => $settings->get('thesaurus_property_descriptor', 'skos:prefLabel'),
+                'path' => $settings->get('thesaurus_property_path', ''),
+                'ascendance' => $settings->get('thesaurus_property_ascendance', ''),
             ],
-            'separator' => $data['separator'] ?? \Thesaurus\Job\CreateThesaurus::SEPARATOR,
+            'separator' => $settings->get('thesaurus_separator', \Thesaurus\Module::SEPARATOR),
             'clean' => $data['clean'] ?? [
                 'trim_punctuation',
             ],
@@ -483,7 +488,7 @@ class ThesaurusController extends ItemController
     protected function convertThesaurusTabOffset(array $lines, array $options): string
     {
         $output = '';
-        $separator = $options['separator'] ?? \Thesaurus\Job\CreateThesaurus::SEPARATOR;
+        $separator = $options['separator'] ?? \Thesaurus\Module::SEPARATOR;
 
         $levels = [];
 
@@ -530,7 +535,7 @@ class ThesaurusController extends ItemController
     protected function convertThesaurusStructureLabel(array $lines, array $options): string
     {
         $output = '';
-        $separator = $options['separator'] ?? \Thesaurus\Job\CreateThesaurus::SEPARATOR;
+        $separator = $options['separator'] ?? \Thesaurus\Module::SEPARATOR;
 
         $sep = '-';
 

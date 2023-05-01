@@ -46,6 +46,7 @@ return [
         'invokables' => [
             Form\ConfirmAllForm::class => Form\ConfirmAllForm::class,
             Form\ConvertForm::class => Form\ConvertForm::class,
+            Form\SettingsFieldset::class => Form\SettingsFieldset::class,
             Form\ThesaurusFieldset::class => Form\ThesaurusFieldset::class,
             Form\UpdateConceptsForm::class => Form\UpdateConceptsForm::class,
         ],
@@ -164,6 +165,12 @@ return [
             'thesaurus_skos_concept_class_id' => null,
             'thesaurus_skos_scheme_template_id' => null,
             'thesaurus_skos_concept_template_id' => null,
+        ],
+        'settings' => [
+            'thesaurus_property_descriptor' => 'skos:prefLabel',
+            'thesaurus_property_path' => '',
+            'thesaurus_property_ascendance' => '',
+            'thesaurus_separator' => \Thesaurus\Module::SEPARATOR,
         ],
         'block_settings' => [
             'thesaurus' => [

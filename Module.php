@@ -53,6 +53,8 @@ class Module extends AbstractModule
 {
     const NAMESPACE = __NAMESPACE__;
 
+    const SEPARATOR = ' :: ';
+
     protected function postInstall(): void
     {
         $this->storeSchemeAndConceptIds();
@@ -140,6 +142,12 @@ class Module extends AbstractModule
             \Omeka\Api\Adapter\MediaAdapter::class,
             'api.search.query',
             [$this, 'handleApiSearchQuery']
+        );
+
+        $sharedEventManager->attach(
+            \Omeka\Form\SettingForm::class,
+            'form.add_elements',
+            [$this, 'handleMainSettings']
         );
 
         // See module Next: an issue may occur when there are multiple properties.
