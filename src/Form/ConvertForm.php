@@ -33,6 +33,7 @@ class ConvertForm extends Form
                     'value_options' => [
                         'text' => 'As text to copy paste', // @translate
                         'file' => 'As file', // @translate
+                        'thesaurus' => 'As a new thesaurus (check as text first)', // @translate
                     ],
                 ],
                 'attributes' => [

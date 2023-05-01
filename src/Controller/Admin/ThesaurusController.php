@@ -189,6 +189,7 @@ class ThesaurusController extends ItemController
 
         /** @var \Thesaurus\Form\ConvertForm $form */
         $post = $this->params()->fromPost() + $files;
+
         $form = $this->getForm(ConvertForm::class);
         $form->setData($post);
         if (!$form->isValid()) {
@@ -199,7 +200,7 @@ class ThesaurusController extends ItemController
         }
 
         $data = $form->getData();
-        $outputType = ($data['output'] ?? 'text') === 'file' ? 'file' : 'text';
+        $outputType = $data['output'] ?? 'text';
 
         // TODO Check the file during validation inside the form.
 
@@ -226,6 +227,11 @@ class ThesaurusController extends ItemController
                     sprintf('Unable to convert the file.') // @translate
                 );
             } else {
+                if ($outputType === 'thesaurus') {
+                    // Message are included.
+                    $this->importThesaurus($file['tmp_name'], $file['name'], $file['type']);
+                    return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
+                }
                 if ($outputType === 'file') {
                     $this->messenger()->addSuccess(
                         'The file is successfully converted.' // @translate
@@ -321,21 +327,71 @@ class ThesaurusController extends ItemController
         $lines = $this->stringToList($text, false);
         $levels = [];
         foreach ($lines as $line) {
-            $term = ltrim($line);
+            $descriptor = ltrim($line);
             $level = strrpos($line, "\t");
             $level = $level === false ? 0 : ++$level;
-            $levels[$level] = $term;
+            $levels[$level] = $descriptor;
             $row = '';
             for ($i = 0; $i < $level; ++$i) {
                 $row .= $levels[$i] ?? '';
                 $row .= $separator;
             }
-            $row .= $term;
-            $levels[$level] = $term;
+            $row .= $descriptor;
+            $levels[$level] = $descriptor;
             $output .= $row . "\n";
         }
 
         return $output;
+    }
+
+    /**
+     * Convert a tree as a thesaurus.
+     */
+    protected function importThesaurus(string $filepath, string $filename, ?string $mediaType = 'text/plain'): void
+    {
+        $text = file_get_contents($filepath);
+        $lines = $this->stringToList($text, false);
+        if (!$lines) {
+            $message = new Message(
+                'The file is empty.' // @translate
+            );
+            $this->messenger()->addError($message);
+            return;
+        }
+
+        /** @var \Omeka\Mvc\Controller\Plugin\JobDispatcher $dispatcher */
+        $dispatcher = $this->jobDispatcher();
+
+        $name = mb_strtolower(pathinfo($filename, PATHINFO_FILENAME));
+        $params = [
+            'name' => $name,
+            'input' => $lines,
+        ];
+
+        $small = count($lines) <= 100;
+        if ($small) {
+            $dispatcher->dispatch(\Thesaurus\Job\CreateThesaurus::class, $params, $this->api()->read('vocabularies', 1)->getContent()->getServiceLocator()->get('Omeka\Job\DispatchStrategy\Synchronous'));
+            $message = new Message(
+                'The thesaurus "%s" is created.', // @translate
+                ucfirst($name)
+            );
+            $this->messenger()->addSuccess($message);
+            return;
+        }
+
+        $job = $dispatcher->dispatch(\Thesaurus\Job\CreateThesaurus::class, $params);
+        $urlHelper = $this->viewHelpers()->get('url');
+        $message = new Message(
+            'Creation of thesaurus "%1$s" with %2$d concepts started in job %3$s#%4$d%5$s (%6$slogs%5$s)', // @translate
+            ucfirst($name),
+            count($lines),
+            sprintf('<a href="%1$s">', $urlHelper('admin/id', ['controller' => 'job', 'id' => $job->getId()])),
+            $job->getId(),
+            '</a>',
+            sprintf('<a href="%1$s">', class_exists('Log\Stdlib\PsrMessage') ? $urlHelper('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]) :  $urlHelper('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()]))
+        );
+        $message->setEscapeHtml(false);
+        $this->messenger()->addSuccess($message);
     }
 
     /**
