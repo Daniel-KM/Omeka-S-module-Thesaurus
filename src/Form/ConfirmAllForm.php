@@ -22,7 +22,8 @@ class ConfirmAllForm extends ConfirmForm
                     'label' => 'Limit deletion', // @translate
                     'value_options' => [
                         'scheme' => 'Scheme only', // @translate
-                        'full' => 'Full thesaurus (scheme and all concepts)', // @translate
+                        'concepts' => 'Scheme and all concepts', // @translate
+                        'full' => 'Scheme, all concepts and item set', // @translate
                     ],
                 ],
                 'attributes' => [

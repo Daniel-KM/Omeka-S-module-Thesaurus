@@ -66,6 +66,11 @@ class Thesaurus extends AbstractPlugin
     protected $itemId;
 
     /**
+     * @var ItemSetRepresentation|null|false
+     */
+    protected $itemSet;
+
+    /**
      * @var ItemRepresentation
      */
     protected $scheme;
@@ -217,6 +222,33 @@ class Thesaurus extends AbstractPlugin
     public function getItem(): ?ItemRepresentation
     {
         return $this->item;
+    }
+
+    /**
+     * Return the item set associated to this thesaurus.
+     */
+    public function getItemSet(): ?ItemSetRepresentation
+    {
+        if (!$this->isSkos()) {
+            return null;
+        }
+
+        if (!is_null($this->itemSet)) {
+            return $this->itemSet ?: null;
+        }
+
+        $this->itemSet = false;
+
+        $scheme = $this->scheme();
+        foreach ($scheme->itemSets() as $itemSet) {
+            $class = $itemSet->resourceClass();
+            if ($class && in_array($class->term(), ['skos:Collection', 'skos:OrderedCollection'])) {
+                $this->itemSet = $itemSet;
+                break;
+            }
+        }
+
+        return $this->itemSet ?: null;
     }
 
     /**
@@ -1287,6 +1319,8 @@ class Thesaurus extends AbstractPlugin
             $this->structure = [];
             $this->tops = [];
             $this->itemId = null;
+            $this->itemSet = null;
+            $this->itemSetId = null;
             $this->scheme = null;
             $this->isSkos = false;
             $this->isScheme = false;
@@ -1303,6 +1337,8 @@ class Thesaurus extends AbstractPlugin
 
         // This is a new item.
         $this->itemId = $this->item->id();
+        $this->itemSet = null;
+        $this->itemSetId = null;
         $this->isScheme = null;
         $this->isConcept = null;
         $this->isCollection = null;

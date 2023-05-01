@@ -74,19 +74,28 @@ class ThesaurusController extends ItemController
                         $message = new Message('The item #%d does not belong to a thesaurus.', $id); // @translate
                         $this->messenger()->addError($message);
                     } else {
-                        $mode = ($post['mode'] ?? 'scheme') === 'full' ? 'full' : 'scheme';
-                        if ($mode === 'full') {
+                        $data = $form->getData();
+                        $mode = $data['mode'] ?? 'scheme';
+                        if ($mode === 'scheme') {
+                            $response = $this->api($form)->delete('items', $id);
+                            if ($response) {
+                                $this->messenger()->addSuccess('Thesaurus scheme successfully deleted'); // @translate
+                            }
+                        } else {
+                            if ($mode === 'full') {
+                                $itemSet = $thesaurus->getItemSet();
+                                if ($itemSet) {
+                                    $api->delete('item_sets', $itemSet->id());
+                                }
+                            }
                             $ids = $thesaurus->flatTree();
                             $ids = array_keys($ids);
                             $ids[] = $id;
                             $response = $api->batchDelete('items', $ids);
                             if ($response) {
-                                $this->messenger()->addSuccess('Full thesaurus successfully deleted'); // @translate
-                            }
-                        } else {
-                           $response = $this->api($form)->delete('items', $id);
-                            if ($response) {
-                                $this->messenger()->addSuccess('Thesaurus scheme successfully deleted'); // @translate
+                                $mode === 'concepts'
+                                    ? $this->messenger()->addSuccess('Full thesaurus successfully deleted') // @translate
+                                    : $this->messenger()->addSuccess('Full thesaurus and item set successfully deleted'); // @translate
                             }
                         }
                     }
@@ -239,7 +248,7 @@ class ThesaurusController extends ItemController
             $this->messenger()->addError(
                 sprintf('Unallowed request.') // @translate
             );
-            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'browse'], true);
         }
 
         $files = $request->getFiles()->toArray();
@@ -247,7 +256,7 @@ class ThesaurusController extends ItemController
             $this->messenger()->addError(
                 sprintf('Missing file.') // @translate
             );
-            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert'], true);
         }
 
         /** @var \Thesaurus\Form\ConvertForm $form */
@@ -259,7 +268,7 @@ class ThesaurusController extends ItemController
             $this->messenger()->addError(
                 sprintf('Wrong request for file.') // @translate
             );
-            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert'], true);
         }
 
         $data = $form->getData();
@@ -300,7 +309,7 @@ class ThesaurusController extends ItemController
                 if ($outputType === 'thesaurus') {
                     // Message are included.
                     $this->importThesaurus($file['tmp_name'], $file['name'], $options, $file['type']);
-                    return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
+                    return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'browse'], true);
                 }
                 if ($outputType === 'file') {
                     $this->messenger()->addSuccess(
@@ -314,7 +323,7 @@ class ThesaurusController extends ItemController
                 $this->messenger()->addSuccess(
                     'The file is successfully converted. You can now copy-paste below data into a custom vocab.' // @translate
                 );
-                // return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'flat'], ['query' => ['file' => pathinfo($file['name'], PATHINFO_FILENAME)]]);
+                // return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'flat'], ['query' => ['file' => pathinfo($file['name'], PATHINFO_FILENAME)]], true);
                 $params = $this->params()->fromRoute();
                 $params['action'] = 'flat';
                 $params['result'] = $converted;

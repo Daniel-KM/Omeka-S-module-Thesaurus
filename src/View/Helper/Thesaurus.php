@@ -6,6 +6,7 @@ use Laminas\Form\FormElementManager;
 use Laminas\View\Helper\AbstractHelper;
 use Omeka\Api\Representation\AbstractResourceEntityRepresentation;
 use Omeka\Api\Representation\ItemRepresentation;
+use Omeka\Api\Representation\ItemSetRepresentation;
 use Thesaurus\Mvc\Controller\Plugin\Thesaurus as ThesaurusPlugin;
 
 /**
@@ -85,6 +86,16 @@ class Thesaurus extends AbstractHelper
     public function getItem(): ?ItemRepresentation
     {
         return $this->thesaurus->getItem();
+    }
+
+    /**
+     * Return the item set associated to this thesaurus.
+     *
+     * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::getItemSet()
+     */
+    public function getItemSet(): ?ItemSetRepresentation
+    {
+        return $this->thesaurus->getItemSet();
     }
 
     /**
