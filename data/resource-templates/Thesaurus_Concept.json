@@ -34,6 +34,18 @@
             "data_type_label": "Text",
             "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
             "vocabulary_label": "Simple Knowledge Organization System",
+            "local_name": "hiddenLabel",
+            "label": "hidden label"
+        },
+        {
+            "o:alternate_label": null,
+            "o:alternate_comment": null,
+            "o:is_required": false,
+            "o:is_private": false,
+            "data_type_name": "literal",
+            "data_type_label": "Text",
+            "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
+            "vocabulary_label": "Simple Knowledge Organization System",
             "local_name": "notation",
             "label": "notation"
         },
