@@ -85,6 +85,19 @@ class ConvertForm extends Form
             ])
 
             ->add([
+                'name' => 'separator',
+                'type' => Element\Text::class,
+                'options' => [
+                    'label' => 'Ascendance separator (with spaces)', // @translate
+                    'info' => 'Usually " :: ", " -- ", " / " or " > ". Set a leading and a trailing space if needed.', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'separator',
+                    'value' => ' :: ',
+                ],
+            ])
+
+            ->add([
                 'name' => 'clean',
                 'type' => Element\MultiCheckbox::class,
                 'options' => [

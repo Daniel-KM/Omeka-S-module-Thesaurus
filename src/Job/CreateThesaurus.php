@@ -15,6 +15,13 @@ class CreateThesaurus extends AbstractJob
     const TRIM_PUNCTUATION = " \n\r\t\v\x00.,-?!:";
 
     /**
+     * Default separator for the ascendance.
+     *
+     * @var string
+     */
+    const SEPARATOR = ' :: ';
+
+    /**
      * @var \Laminas\Log\Logger
      */
     protected $logger;
@@ -106,6 +113,8 @@ class CreateThesaurus extends AbstractJob
         if (in_array('ascendance_hiddenlabel', $fill)) {
             $filling['skos:hiddenLabel']['ascendance'] = 'ascendance';
         }
+
+        $separator = $this->getArg('separator') ?? self::SEPARATOR;
 
         $clean = $this->getArg('clean') ?? [
             'replace_html_entities',
@@ -209,9 +218,9 @@ class CreateThesaurus extends AbstractJob
         ];
 
         if ($format === 'tab_offset') {
-            $result = $this->convertThesaurusTabOffset($input, $baseConcept, $skosIds, $filling, $clean);
+            $result = $this->convertThesaurusTabOffset($input, $baseConcept, $skosIds, $filling, $separator, $clean);
         } elseif ($format === 'structure_label') {
-            $result = $this->convertThesaurusStructureLabel($input, $baseConcept, $skosIds, $filling, $clean);
+            $result = $this->convertThesaurusStructureLabel($input, $baseConcept, $skosIds, $filling, $separator, $clean);
         }
 
         // Even if the job is stopped, fill the other data.
@@ -289,12 +298,11 @@ class CreateThesaurus extends AbstractJob
         array $baseConcept,
         array $skosIds,
         array $filling,
+        string $separator,
         array $clean
     ): array {
         $schemeId = $baseConcept['skos:inScheme'][0]['value_resource_id'];
         $ownerId = $baseConcept['o:owner']['o:id'];
-
-        $separator = ' :: ';
 
         $topIds = [];
         $narrowers = [];
@@ -434,12 +442,11 @@ class CreateThesaurus extends AbstractJob
         array $baseConcept,
         array $skosIds,
         array $filling,
+        string $separator,
         array $clean
     ): array {
         $schemeId = $baseConcept['skos:inScheme'][0]['value_resource_id'];
         $ownerId = $baseConcept['o:owner']['o:id'];
-
-        $separator = ' :: ';
 
         $topIds = [];
         $narrowers = [];

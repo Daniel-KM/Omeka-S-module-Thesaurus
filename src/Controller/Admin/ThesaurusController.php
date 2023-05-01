@@ -280,6 +280,7 @@ class ThesaurusController extends ItemController
             'fill' => $data['fill'] ?? [
                 'descriptor_preflabel',
             ],
+            'separator' => $data['separator'] ?? \Thesaurus\Job\CreateThesaurus::SEPARATOR,
             'clean' => $data['clean'] ?? [
                 'replace_html_entities',
                 'trim_punctuation',
@@ -424,7 +425,8 @@ class ThesaurusController extends ItemController
     protected function convertThesaurusTabOffset(array $lines, array $options): string
     {
         $output = '';
-        $separator = ' :: ';
+        $separator = $options['separator'] ?? \Thesaurus\Job\CreateThesaurus::SEPARATOR;
+
         $levels = [];
 
         $replaceHtmlEntities = in_array('replace_html_entities', $options['clean']);
@@ -472,7 +474,8 @@ class ThesaurusController extends ItemController
     protected function convertThesaurusStructureLabel(array $lines, array $options): string
     {
         $output = '';
-        $separator = ' :: ';
+        $separator = $options['separator'] ?? \Thesaurus\Job\CreateThesaurus::SEPARATOR;
+
         $sep = '-';
 
         $replaceHtmlEntities = in_array('replace_html_entities', $options['clean']);
