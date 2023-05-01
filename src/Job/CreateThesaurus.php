@@ -8,6 +8,13 @@ use Omeka\Stdlib\Message;
 class CreateThesaurus extends AbstractJob
 {
     /**
+     * Remove trailing punctuation.
+     *
+     * @var string
+     */
+    const TRIM_PUNCTUATION = " \n\r\t\v\x00.,-?!:";
+
+    /**
      * @var \Laminas\Log\Logger
      */
     protected $logger;
@@ -54,7 +61,10 @@ class CreateThesaurus extends AbstractJob
             return;
         }
 
-        $clean = $this->getArg('clean') ?: ['trim_punctuation'];
+        $clean = $this->getArg('clean') ?: [
+            'replace_html_entities',
+            'trim_punctuation',
+        ];
 
         $this->api = $services->get('Omeka\ApiManager');
 
@@ -239,6 +249,7 @@ class CreateThesaurus extends AbstractJob
         $narrowers = [];
         $levels = [];
 
+        $replaceHtmlEntities = in_array('replace_html_entities', $clean);
         $trimPunctuation = in_array('trim_punctuation', $clean);
 
         $totalProcessed = 0;
@@ -265,8 +276,12 @@ class CreateThesaurus extends AbstractJob
             }
 
             $descriptor = trim($line);
+            // Replace entities first to avoid to break html entities.
+            if ($replaceHtmlEntities) {
+                $descriptor = mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
+            }
             if ($trimPunctuation) {
-                $descriptor = trim($descriptor, " \n\r\t\v\x00.,-?!:;");
+                $descriptor = trim($descriptor, self::TRIM_PUNCTUATION);
             }
             $level = strrpos($line, "\t");
             $level = $level === false ? 0 : ++$level;
@@ -350,15 +365,20 @@ class CreateThesaurus extends AbstractJob
 
         $sep = '-';
 
+        $replaceHtmlEntities = in_array('replace_html_entities', $clean);
         $trimPunctuation = in_array('trim_punctuation', $clean);
 
         // First, prepare a key-value array. The key should be a string.
         $input = [];
         foreach ($lines as $line) {
             [$structure, $descriptor] = array_map('trim', (explode(' ', $line . ' ', 2)));
+            if ($replaceHtmlEntities) {
+                $structure = mb_convert_encoding($structure, 'UTF-8', 'HTML-ENTITIES');
+                $descriptor = mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
+            }
             if ($trimPunctuation) {
-                $structure = trim($structure, " \n\r\t\v\x00.,-?!:;");
-                $descriptor = trim($descriptor, " \n\r\t\v\x00.,-?!:;");
+                $structure = trim($structure, self::TRIM_PUNCTUATION);
+                $descriptor = trim($descriptor, self::TRIM_PUNCTUATION);
             }
             $input[(string) $structure] = $descriptor;
         }
