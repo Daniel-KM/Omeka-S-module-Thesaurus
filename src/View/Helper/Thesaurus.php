@@ -465,6 +465,8 @@ class Thesaurus extends AbstractHelper
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::listTree()
      * @param array $options May be:
+     *   - ascendance (bool): Prepend the ascendants.
+     *   - separator (string): Ascendance separator (with spaces).
      *   - indent (string): String like "– " to prepend to terms to show level.
      *   - prepend_id (bool): Prepend the id of the terms.
      *   - append_id (bool): Append the id of the terms.
@@ -482,6 +484,8 @@ class Thesaurus extends AbstractHelper
      *
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::listBranch()
      * @param array $options May be:
+     *   - ascendance (bool): Prepend the ascendants.
+     *   - separator (string): Ascendance separator (with spaces).
      *   - indent (string): String like "– " to prepend to terms to show level.
      *   - prepend_id (bool): Prepend the id of the terms.
      *   - append_id (bool): Append the id of the terms.

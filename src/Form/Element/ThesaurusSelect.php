@@ -86,6 +86,8 @@ class ThesaurusSelect extends Select
      *   - prepend_value_options
      * - standard Thesaurus options:
      *   - output_type: "listTree" (default) or "listBranch".
+     *   - ascendance (bool): Prepend the ascendants.
+     *   - separator (string): Ascendance separator (with spaces).
      *   - indent (string): String like "– " to prepend to terms to show level.
      *   - prepend_id (bool): Prepend the id of the terms.
      *   - append_id (bool): Append the id of the terms.

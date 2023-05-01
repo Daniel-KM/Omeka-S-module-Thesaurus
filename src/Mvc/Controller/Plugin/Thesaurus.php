@@ -130,12 +130,18 @@ class Thesaurus extends AbstractPlugin
      */
     protected $user;
 
+    /**
+     * @var string
+     */
+    protected $separator;
+
     public function __construct(
         EntityManager $entityManager,
         ItemAdapter $itemAdapter,
         ApiManager $api,
         Logger $logger,
-        Identity $identity
+        Identity $identity,
+        string $separator
     ) {
         $this->entityManager = $entityManager;
         $this->itemAdapter = $itemAdapter;
@@ -144,6 +150,7 @@ class Thesaurus extends AbstractPlugin
         $this->user = $identity();
         $this->isPublic = empty($this->user)
             || $this->user->getRole() === 'guest';
+        $this->separator = $separator;
     }
 
     /**
@@ -806,6 +813,8 @@ class Thesaurus extends AbstractPlugin
      *
      * @uses self::list()
      * @param array $options May be:
+     *   - ascendance (bool): Prepend the ascendants.
+     *   - separator (string): Ascendance separator (with spaces).
      *   - indent (string): String like "– " to prepend to terms to show level.
      *   - prepend_id (bool): Prepend the id of the terms.
      *   - append_id (bool): Append the id of the terms.
@@ -824,6 +833,8 @@ class Thesaurus extends AbstractPlugin
      *
      * @uses self::list()
      * @param array $options May be:
+     *   - ascendance (bool): Prepend the ascendants.
+     *   - separator (string): Ascendance separator (with spaces).
      *   - indent (string): String like "– " to prepend to terms to show level.
      *   - prepend_id (bool): Prepend the id of the terms.
      *   - append_id (bool): Append the id of the terms.
@@ -940,6 +951,8 @@ class Thesaurus extends AbstractPlugin
      * @todo Add option group: Get tops terms as group for a grouped select. Useless.
      *
      * @param array $options Only valable for term output.
+     *   - ascendance (bool): Prepend the ascendants.
+     *   - separator (string): Ascendance separator (with spaces).
      *   - indent (string): String like "– " to prepend to terms to show level.
      *   - prepend_id (bool): Prepend the id of the terms.
      *   - append_id (bool): Append the id of the terms.
@@ -952,11 +965,26 @@ class Thesaurus extends AbstractPlugin
         }
 
         $options += [
+            'ascendance' => false,
+            'separator' => $this->separator,
             'indent' => '',
             'prepend_id' => false,
             'append_id' => false,
             'max_length' => 0,
         ];
+
+        if ($options['ascendance']) {
+            $separator = $options['separator'];
+            $list = array_map(function ($term) use ($separator) {
+                if ($term['level'] && isset($this->structure[$term['self']['id']])) {
+                    $ascendance = array_reverse($this->ancestors($this->structure[$term['self']['id']]));
+                    $ascendanceTitles = array_column($ascendance, 'title', 'id');
+                    $term['self']['title'] = implode($separator, $ascendanceTitles) . $separator . $term['self']['title'];
+                }
+                return $term;
+            }, $list);
+        }
+
         if (mb_strlen($options['indent'])) {
             $indent = $options['indent'];
             $list = array_map(function ($term) use ($indent) {
