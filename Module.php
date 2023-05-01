@@ -56,6 +56,18 @@ class Module extends AbstractModule
     protected function postInstall(): void
     {
         $this->storeSchemeAndConceptIds();
+
+        if ($this->isModuleActive('CustomVocab')) {
+            return;
+        }
+
+        $services = $this->getServiceLocator();
+        $messenger = $services->get('ControllerPluginManager')->get('messenger');
+
+        $message = new \Omeka\Stdlib\Message(
+            'It is recommended to install module CustomVocab to take full advantage of this module.' // @translate
+        );
+        $messenger->addWarning($message);
     }
 
     public function onBootstrap(MvcEvent $event): void
