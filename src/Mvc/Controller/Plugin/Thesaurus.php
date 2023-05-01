@@ -2,7 +2,10 @@
 
 namespace Thesaurus\Mvc\Controller\Plugin;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Query\Parameter;
 use Laminas\Log\Logger;
 use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
 use Laminas\Mvc\Plugin\Identity\Identity;
@@ -1350,7 +1353,6 @@ class Thesaurus extends AbstractPlugin
         // Get all ids and titles via api.
         // This allows to check visibility and to get the full list of concepts.
         // The validity of top concepts is not checked.
-        // TODO Check if it is useful to check visibility here.
         $titles = $this->api
             ->search(
                 'items',
@@ -1404,81 +1406,114 @@ class Thesaurus extends AbstractPlugin
                 'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource)) AS ids'
             )
             ->from(\Omeka\Entity\Item::class, 'item')
+
+            // This join is useless now, since the list is filtered below by the
+            // list of concept ids.
+            /*
             ->leftJoin(\Omeka\Entity\Value::class, 'value', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('value.property', ':propertyInScheme'))
             ->andWhere($expr->eq('item.resourceClass', ':concept'))
             ->andWhere($expr->eq('value.valueResource', ':scheme'))
-            ->leftJoin(\Omeka\Entity\Value::class, 'value_list', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('value_list.property', ':propertyBroader'))
-            ->andWhere($expr->eq('value_list.resource', 'item.id'))
+            */
+
+            // Use an InnerJoin: no top is needed here.
+            // Furthermore, do not use where.
+            ->innerJoin(
+                \Omeka\Entity\Value::class,
+                'value_list',
+                \Doctrine\ORM\Query\Expr\Join::WITH,
+                $expr->andX(
+                    $expr->eq('value_list.resource', 'item.id'),
+                    $expr->eq('value_list.property', ':propertyBroader')
+                )
+            )
+
+            // To speed preparation of big thesaurus, limit items to ids inside
+            // thesaurus. It allows to check advanced visibility too.
+            // Do not use "in" in join to speed process.
+            ->andWhere($expr->in('item.id', ':concepts'))
+            ->andWhere($expr->in('value_list.valueResource', ':concepts'))
             ->groupBy('item.id')
             ->addOrderBy('item.id', 'ASC')
-            ->setParameters([
-                'propertyInScheme' => $this->terms['property']['skos:inScheme'],
-                'propertyBroader' => $this->terms['property']['skos:broader'],
-                'concept' => $this->terms['class']['skos:Concept'],
-                'scheme' => $this->scheme->id(),
-            ]);
+            // Use array collections is quicker and allows to pass types.
+            ->setParameters(new ArrayCollection([
+                // new Parameter('propertyInScheme', $this->terms['property']['skos:inScheme'], ParameterType::INTEGER),
+                new Parameter('propertyBroader', $this->terms['property']['skos:broader'], ParameterType::INTEGER),
+                // new Parameter('concept', $this->terms['class']['skos:Concept'], ParameterType::INTEGER),
+                // new Parameter('scheme', $this->scheme->id(), ParameterType::INTEGER),
+                new Parameter('concepts', $concepts, \Doctrine\DBAL\Connection::PARAM_INT_ARRAY),
+            ]));
+
+        // It is useless to check if the ids are public for visitors: the list
+        // is now limited to the list of ids that is get via the api.
+        /*
         if ($this->isPublic) {
             $qb
                 ->innerJoin(\Omeka\Entity\Resource::class, 'resource', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('resource.id', 'item.id'))
                 ->andWhere('resource.isPublic = 1');
         }
+        */
+
         $parents = array_column($qb->getQuery()->getScalarResult(), 'ids', 'id');
-        $parents = array_map(function ($v) {
-            return (int) strtok($v, ',');
-        }, $parents);
+        // There is only one parent for each concept.
+        // Hack to quick process.
+        // $parents = array_map('intval', $parents);
+        foreach ($parents as &$parent) {
+            $parent += 0;
+        }
+        unset($parent);
 
         // Get all children.
+        // See previous commits for full old query.
         $qb = $this->entityManager->createQueryBuilder()
             ->select(
                 'item.id',
                 'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource) ORDER BY value_list.id) AS ids'
             )
             ->from(\Omeka\Entity\Item::class, 'item')
-            ->leftJoin(\Omeka\Entity\Value::class, 'value', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('value.property', ':propertyInScheme'))
-            ->andWhere($expr->eq('item.resourceClass', ':concept'))
-            ->andWhere($expr->eq('value.valueResource', ':inScheme'))
-            ->leftJoin(\Omeka\Entity\Value::class, 'value_list', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('value_list.property', ':propertyNarrower'))
-            ->andWhere($expr->eq('value_list.resource', 'item.id'))
+            ->innerJoin(
+                \Omeka\Entity\Value::class,
+                'value_list',
+                \Doctrine\ORM\Query\Expr\Join::WITH,
+                $expr->andX(
+                    $expr->eq('value_list.resource', 'item.id'),
+                    $expr->eq('value_list.property', ':propertyNarrower')
+                )
+            )
+            ->andWhere($expr->in('item.id', ':concepts'))
+            ->andWhere($expr->in('value_list.valueResource', ':concepts'))
             ->groupBy('item.id')
             ->addOrderBy('item.id', 'ASC')
-            ->setParameters([
-                'propertyInScheme' => $this->terms['property']['skos:inScheme'],
-                'propertyNarrower' => $this->terms['property']['skos:narrower'],
-                'concept' => $this->terms['class']['skos:Concept'],
-                'inScheme' => $this->scheme->id(),
-            ]);
-        if ($this->isPublic) {
-            $qb
-                ->innerJoin(\Omeka\Entity\Resource::class, 'resource', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('resource.id', 'item.id'))
-                ->andWhere('resource.isPublic = 1');
-        }
-        $children = array_column($qb->getQuery()->getScalarResult(), 'ids', 'id');
-        $children = array_map(function ($v) {
-            return array_values(array_intersect(
-                array_map('intval', explode(',', $v)),
-                array_keys($this->structure)
-            ));
-        }, $children);
+            ->setParameters(new ArrayCollection([
+                new Parameter('propertyNarrower', $this->terms['property']['skos:narrower'], ParameterType::INTEGER),
+                new Parameter('concepts', $concepts, \Doctrine\DBAL\Connection::PARAM_INT_ARRAY),
+            ]));
 
-        // Fill the full structure, checking for public parent/children too.
+        $children = array_column($qb->getQuery()->getScalarResult(), 'ids', 'id');
+        foreach ($children as &$child) {
+            $v = [];
+            // Hack to cast int quickly: $child = array_map('intval', explode(',', $child));
+            foreach (explode(',', $child) as $c) {
+                $v[] = $c + 0;
+            }
+            $child = $v;
+        }
+        unset($child);
+
+        // Fill the full structure.
+        // The check for public parent/children is done above.
         foreach ($this->structure as $id => &$value) {
             $value['id'] = $id;
             $value['title'] = $titles[$id];
-            if (array_key_exists($id, $parents)) {
-                if (isset($this->structure[$parents[$id]])) {
-                    $value['parent'] = $parents[$id];
-                }
-                // Else the parent is private.
-                // Don't set it as top to keep structure.
-            } else {
+            if (!array_key_exists($id, $parents)) {
                 $value['top'] = true;
-            }
-            if (array_key_exists($id, $children)) {
-                $value['children'] = $children[$id];
-            }
-            if ($value['top']) {
                 $this->tops[$id] = $value;
             }
+        }
+        foreach ($parents as $id => $parent) {
+            $this->structure[$id]['parent'] = $parent;
+        }
+        foreach ($children as $id => $childs) {
+            $this->structure[$id]['children'] = $childs;
         }
 
         // Set the value isSkos, because it is used directly in many places.

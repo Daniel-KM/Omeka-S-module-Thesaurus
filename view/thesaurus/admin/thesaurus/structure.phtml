@@ -6,15 +6,13 @@
  * @var \Laminas\Form\Form $form
  */
 
+// The thesaurus is loaded dynamically via js. Else it is possible to use $this->thesaurus($item)->display().
+
 $plugins = $this->getHelperPluginManager();
-$translate = $plugins->get('translate');
-$escapeAttr = $plugins->get('escapeHtmlAttr');
 $url = $plugins->get('url');
 $assetUrl = $plugins->get('assetUrl');
-$thesaurus = $plugins->get('thesaurus');
-
-/** @var \Thesaurus\View\Helper\Thesaurus $thesaurus */
-$thesaurus = $thesaurus($item);
+$translate = $plugins->get('translate');
+$escapeAttr = $plugins->get('escapeHtmlAttr');
 
 $isAllowed = $item->userIsAllowed('batch-edit');
 if ($isAllowed && $form): $form->prepare(); else: $form = null; endif;
