@@ -51,6 +51,11 @@ class CreateThesaurus extends AbstractJob
 
         $this->api = $services->get('Omeka\ApiManager');
 
+        $this->logger->info(new Message(
+            'Processing %d descriptors in two steps.', // @translate
+            count($input)
+        ));
+
         // Prepare resource classes and templates.
         $skosVocabulary = $this->api->read('vocabularies', ['prefix' => 'skos'])->getContent();
         $schemeClass = $this->api->read('resource_classes', ['vocabulary' => $skosVocabulary->id(), 'localName' => 'ConceptScheme'])->getContent();
@@ -116,6 +121,10 @@ class CreateThesaurus extends AbstractJob
 
         // Third, create each item one by one to set tree.
 
+        $this->logger->notice(new Message(
+            'Step 1/2: creation of descriptors.' // @translate
+        ));
+
         $baseConcept = [
             'o:resource_class' => ['o:id' => $conceptClass->id()],
             'o:resource_template' => ['o:id' => $conceptTemplate->id()],
@@ -139,12 +148,22 @@ class CreateThesaurus extends AbstractJob
 
         $topIds = $result['topIds'];
         $narrowers = $result['narrowers'];
+        $narrowers = array_filter($narrowers);
+
+        $this->logger->notice(new Message(
+            'Step 2/2: creation of relations between descriptors.' // @translate
+        ));
 
         // Fourth, append narrower concepts to concepts.
+        $totalProcessed = 0;
         foreach ($narrowers as $parentId => $narrowerIds) {
-            if (!$narrowerIds) {
-                continue;
+            if ($totalProcessed && ($totalProcessed % 100) === 0) {
+                $this->logger->info(new Message(
+                    '%1$d/%2$d descriptors completed.', // @translate
+                    $totalProcessed, count($narrowers)
+                ));
             }
+
             $concept = $this->api->read('items', ['id' => $parentId])->getContent();
             $conceptJson = json_decode(json_encode($concept), true);
             foreach ($narrowerIds as $narrowerId) {
@@ -155,6 +174,8 @@ class CreateThesaurus extends AbstractJob
                 ];
             }
             $this->api->update('items', $parentId, $conceptJson, [], ['isPartial' => true]);
+
+            ++$totalProcessed;
         }
 
         // Fifth, append top concepts to scheme.
@@ -171,7 +192,7 @@ class CreateThesaurus extends AbstractJob
         }
 
         $message = new Message(
-            'The thesaurus "%1$s" is ready, with %2$d concepts.', // @translate
+            'The thesaurus "%1$s" is ready, with %2$d descriptors.', // @translate
             ucfirst($name), count($input)
         );
         $this->logger->notice($message);
@@ -194,7 +215,26 @@ class CreateThesaurus extends AbstractJob
 
         $trimPunctuation = in_array('trim_punctuation', $clean);
 
+        $totalProcessed = 0;
         foreach ($lines as $line) {
+            if ($this->shouldStop()) {
+                $this->logger->warn(new Message(
+                    'The job  was stopped. %1$d/%2$d descriptors processed.', // @translate
+                    $totalProcessed, count($lines)
+                ));
+                return [
+                    'topIds' => $topIds,
+                    'narrowers' => $narrowers,
+                ];
+            }
+
+            if ($totalProcessed && ($totalProcessed % 100) === 0) {
+                $this->logger->info(new Message(
+                    '%1$d/%2$d descriptors processed.', // @translate
+                    $totalProcessed, count($lines)
+                ));
+            }
+
             $descriptor = trim($line);
             if ($trimPunctuation) {
                 $descriptor = trim($descriptor, " \n\r\t\v\x00.,-?!:;");
@@ -241,6 +281,8 @@ class CreateThesaurus extends AbstractJob
             } else {
                 $narrowers[$levels[$parentLevel]][] = $conceptId;
             }
+
+            ++$totalProcessed;
         }
 
         return [
@@ -278,16 +320,48 @@ class CreateThesaurus extends AbstractJob
 
         $sep = '-';
 
+        $trimPunctuation = in_array('trim_punctuation', $clean);
+
         // First, prepare a key-value array. The key should be a string.
         $input = [];
         foreach ($lines as $line) {
             [$structure, $descriptor] = array_map('trim', (explode(' ', $line . ' ', 2)));
+            if ($trimPunctuation) {
+                $structure = trim($structure, " \n\r\t\v\x00.,-?!:;");
+                $descriptor = trim($descriptor, " \n\r\t\v\x00.,-?!:;");
+            }
             $input[(string) $structure] = $descriptor;
         }
         $input = array_filter($input);
 
+        if (count($input) !== count($lines)) {
+            $this->logger->notice(new Message(
+                'After first step, %1$d descriptors can be processed.', // @translate
+                count($input)
+            ));
+        }
+
         // Second, prepare each row.
+        $totalProcessed = 0;
         foreach ($input as $structure => $descriptor) {
+            if ($this->shouldStop()) {
+                $this->logger->warn(new Message(
+                    'The job  was stopped. %1$d/%2$d descriptors processed.', // @translate
+                    $totalProcessed, count($input)
+                ));
+                return [
+                    'topIds' => $topIds,
+                    'narrowers' => $narrowers,
+                ];
+            }
+
+            if ($totalProcessed && ($totalProcessed % 100) === 0) {
+                $this->logger->info(new Message(
+                    '%1$d/%2$d descriptors processed.', // @translate
+                    $totalProcessed, count($input)
+                ));
+            }
+
             $level = substr_count((string) $structure, $sep);
             $parentLevel = $level ? $level - 1 : false;
 
@@ -337,6 +411,8 @@ class CreateThesaurus extends AbstractJob
             } else {
                 $narrowers[$levels[$parentLevel]][] = $conceptId;
             }
+
+            ++$totalProcessed;
         }
 
         return [
