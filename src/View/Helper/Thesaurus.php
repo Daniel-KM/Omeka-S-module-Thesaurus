@@ -349,9 +349,9 @@ class Thesaurus extends AbstractHelper
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::ascendants()
      * @return ItemRepresentation[]|array
      */
-    public function ascendants(): array
+    public function ascendants(bool $fromTop = false): array
     {
-        return $this->thesaurus->ascendants();
+        return $this->thesaurus->ascendants($fromTop);
     }
 
     /**
@@ -360,9 +360,9 @@ class Thesaurus extends AbstractHelper
      * @uses \Thesaurus\Mvc\Controller\Plugin\Thesaurus::ascendantsOrSelf()
      * @return ItemRepresentation[]|array
      */
-    public function ascendantsOrSelf(): array
+    public function ascendantsOrSelf(bool $fromTop = false): array
     {
-        return $this->thesaurus->ascendantsOrSelf();
+        return $this->thesaurus->ascendantsOrSelf($fromTop);
     }
 
     /**

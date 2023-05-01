@@ -185,9 +185,12 @@ class TermRepresentation extends AbstractEntityRepresentation
      *
      * @return TermRepresentation[]
      */
-    public function ascendants()
+    public function ascendants(bool $fromTop = false): array
     {
-        return $this->ancestors($this);
+        $result = $this->ancestors($this);
+        return $fromTop
+            ? array_reverse($result, true)
+            : $result;
     }
 
     /**
@@ -195,9 +198,11 @@ class TermRepresentation extends AbstractEntityRepresentation
      *
      * @return TermRepresentation[]
      */
-    public function ascendantsOrSelf()
+    public function ascendantsOrSelf(bool $fromTop = false): array
     {
-        return [$this->id() => $this] + $this->ascendants();
+        return $fromTop
+            ? $this->ascendants(true) + [$this->id() => $this]
+            : ([$this->id() => $this] + $this->ascendants());
     }
 
     /**

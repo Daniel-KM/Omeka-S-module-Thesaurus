@@ -599,11 +599,15 @@ class Thesaurus extends AbstractPlugin
      *
      * @return ItemRepresentation[]|array
      */
-    public function ascendants(): array
+    public function ascendants(bool $fromTop = false): array
     {
-        return $this->isSkos && $this->isConcept()
-            ? $this->returnFromData($this->ancestors($this->structure[$this->itemId] ?? null))
-            : [];
+        if (!$this->isSkos || !$this->isConcept()) {
+            return [];
+        }
+        $result = $this->returnFromData($this->ancestors($this->structure[$this->itemId] ?? null));
+        return $fromTop
+            ? array_reverse($result, true)
+            : $result;
     }
 
     /**
@@ -611,13 +615,14 @@ class Thesaurus extends AbstractPlugin
      *
      * @return ItemRepresentation[]|array
      */
-    public function ascendantsOrSelf(): array
+    public function ascendantsOrSelf(bool $fromTop = false): array
     {
         if (!$this->isSkos || $this->isScheme()) {
             return [];
         }
-        return $this->selfItem()
-            + $this->ascendants();
+        return $fromTop
+            ? $this->ascendants(true) + $this->selfItem()
+            : ($this->selfItem() + $this->ascendants());
     }
 
     /**

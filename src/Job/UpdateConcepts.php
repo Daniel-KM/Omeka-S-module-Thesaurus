@@ -173,11 +173,11 @@ class UpdateConcepts extends AbstractJob
             foreach ($chunk as $conceptId => $itemData) {
                 $update = false;
                 $item = $thesaurus->itemFromData($itemData);
-                $ascendance = $thesaurus->setItem($item)->ascendants();
+                $ascendance = $thesaurus->setItem($item)->ascendants(true);
                 if (count($ascendance)) {
                     $data = json_decode(json_encode($item), true);
                     // The ascendance is from closest to top concept, so reverse it
-                    $ascendanceTitles = array_reverse(array_column($ascendance, 'title', 'id'));
+                    $ascendanceTitles = array_column($ascendance, 'title', 'id');
                     if (!empty($fill['path'])) {
                         $term = $fill['path'];
                         $update = true;
