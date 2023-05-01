@@ -58,8 +58,8 @@ class CreateThesaurus extends AbstractJob
 
         $this->api = $services->get('Omeka\ApiManager');
 
-        $this->logger->info(new Message(
-            'Processing %d descriptors in two steps.', // @translate
+        $this->logger->notice(new Message(
+            'Processing %d descriptors in three steps.', // @translate
             count($input)
         ));
 
@@ -132,7 +132,8 @@ class CreateThesaurus extends AbstractJob
         // Third, create each item one by one to set tree.
 
         $this->logger->notice(new Message(
-            'Step 1/2: creation of descriptors.' // @translate
+            'Step 1/3: creation of %d descriptors.', // @translate
+            count($input)
         ));
 
         $baseConcept = [
@@ -162,7 +163,7 @@ class CreateThesaurus extends AbstractJob
         $narrowers = array_filter($narrowers);
 
         $this->logger->notice(new Message(
-            'Step 2/2: creation of relations between descriptors.' // @translate
+            'Step 2/3: creation of relations between descriptors.' // @translate
         ));
 
         // Fourth, append narrower concepts to concepts.
@@ -204,6 +205,16 @@ class CreateThesaurus extends AbstractJob
             }
             $this->api->update('items', $schemeId, $schemeJson, [], ['isPartial' => true]);
         }
+
+        $this->logger->notice(new Message(
+            'Step 3/3: indexation of new thesaurus.' // @translate
+        ));
+
+        $args = $this->job->getArgs();
+        $args['scheme'] = $schemeId;
+        $this->job->setArgs($args);
+        $indexing = new \Thesaurus\Job\Indexing($this->job, $services);
+        $indexing->perform();
 
         $message = new Message(
             'The thesaurus "%1$s" is ready, with %2$d descriptors.', // @translate
