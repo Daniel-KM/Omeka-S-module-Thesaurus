@@ -84,6 +84,7 @@ class ThesaurusController extends ItemController
         $item = $this->api()->read('items', $this->params('id'))->getContent();
 
         /** @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus */
+        /* // Don't check thesaurus if not indexed, it can be memory intensive.
         $thesaurus = $this->thesaurus($item);
         if (!$thesaurus->isSkos()) {
             $message = 'The item #%d does not belong to a thesaurus.'; // @translate
@@ -94,10 +95,12 @@ class ThesaurusController extends ItemController
             $this->messenger()->addError($message);
             return $this->redirect()->toRoute('admin/thesaurus/default');
         }
+        */
 
         $dispatcher = $this->jobDispatcher();
         $args = [
-            'scheme' => (int) $thesaurus->scheme()->id(),
+            // 'scheme' => (int) $thesaurus->scheme()->id(),
+            'scheme' => (int) $item->id(),
         ];
         $job = $dispatcher->dispatch(\Thesaurus\Job\Indexing::class, $args);
         $message = new \Omeka\Stdlib\Message(
