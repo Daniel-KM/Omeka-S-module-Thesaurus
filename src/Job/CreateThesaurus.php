@@ -79,11 +79,6 @@ class CreateThesaurus extends AbstractJob
 
         $this->api = $services->get('Omeka\ApiManager');
 
-        $this->logger->notice(new Message(
-            'Processing %d descriptors in three steps.', // @translate
-            count($input)
-        ));
-
         // Prepare resource classes and templates.
         $ownerId = $this->job->getOwner()->getId();
         $skosVocabulary = $this->api->read('vocabularies', ['prefix' => 'skos'])->getContent();
@@ -103,26 +98,31 @@ class CreateThesaurus extends AbstractJob
 
         // Check properties in options one time.
         if (!empty($fill['descriptor']) && empty($skosIds[$fill['descriptor']])) {
-            $this->logger->notice(new Message(
+            $this->logger->err(new Message(
                 'The property "%1$s" for descriptor is not managed.', // @translate
                 $fill['descriptor']
             ));
             return;
         }
         if (!empty($fill['path']) && empty($skosIds[$fill['path']])) {
-            $this->logger->notice(new Message(
+            $this->logger->err(new Message(
                 'The property "%1$s" for path is not managed.', // @translate
                 $fill['path']
             ));
             return;
         }
         if (!empty($fill['ascendance']) && empty($skosIds[$fill['ascendance']])) {
-            $this->logger->notice(new Message(
+            $this->logger->err(new Message(
                 'The property "%1$s" for ascendance is not managed.', // @translate
                 $fill['ascendance']
             ));
             return;
         }
+
+        $this->logger->notice(new Message(
+            'Processing %d descriptors in three steps.', // @translate
+            count($input)
+        ));
 
         // First create the item set.
         $data = [

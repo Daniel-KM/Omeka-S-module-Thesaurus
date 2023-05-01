@@ -121,23 +121,48 @@ class UpdateConcepts extends AbstractJob
 
         // Check properties in options one time.
         if (!empty($fill['descriptor']) && empty($skosIds[$fill['descriptor']])) {
-            $this->logger->notice(new Message(
+            $this->logger->err(new Message(
                 'The property "%1$s" for descriptor is not managed.', // @translate
                 $fill['descriptor']
             ));
             return;
         }
         if (!empty($fill['path']) && empty($skosIds[$fill['path']])) {
-            $this->logger->notice(new Message(
+            $this->logger->err(new Message(
                 'The property "%1$s" for path is not managed.', // @translate
                 $fill['path']
             ));
             return;
         }
         if (!empty($fill['ascendance']) && empty($skosIds[$fill['ascendance']])) {
-            $this->logger->notice(new Message(
+            $this->logger->err(new Message(
                 'The property "%1$s" for ascendance is not managed.', // @translate
                 $fill['ascendance']
+            ));
+            return;
+        }
+
+        /** @var \Omeka\Api\Representation\ResourceTemplateRepresentation $conceptTemplate */
+        $conceptTemplate = $this->api->read('resource_templates', ['label' => 'Thesaurus Concept'])->getContent();
+        $titleProperty = $conceptTemplate->titleProperty();
+        if (!$titleProperty) {
+            $this->logger->err(new Message(
+                'The property to use as a title is not set in the template Thesaurus Concept.', // @translate
+                $fill['ascendance']
+            ));
+            return;
+        }
+        if ($titleProperty->term() !== 'skos:prefLabel') {
+            $this->logger->err(new Message(
+                'To update data, the property used as a title in the template "Thesaurus Concept" must be "skos:prefLabel", not "%s".', // @translate
+                $titleProperty->term()
+            ));
+            return;
+        }
+        if ($fill['descriptor'] !== 'skos:prefLabel') {
+            $this->logger->err(new Message(
+                'To update data, the descriptor must be the preferred label, not "%s".', // @translate
+                $fill['descriptor']
             ));
             return;
         }
