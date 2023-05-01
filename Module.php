@@ -144,6 +144,13 @@ class Module extends AbstractModule
             [$this, 'handleApiSearchQuery']
         );
 
+        // Add css/js to some admin pages.
+        $sharedEventManager->attach(
+            'Omeka\Controller\Admin\Item',
+            'view.layout',
+            [$this, 'addAdminResourceHeaders']
+        );
+
         // Include ascendance on save.
         $sharedEventManager->attach(
             \Omeka\Api\Adapter\ItemAdapter::class,
@@ -329,6 +336,82 @@ class Module extends AbstractModule
         if ($where) {
             $qb->andWhere($where);
         }
+    }
+
+    public function addAdminResourceHeaders(Event $event): void
+    {
+        /** @var \Laminas\View\Renderer\PhpRenderer $view */
+        $view = $event->getTarget();
+
+        $plugins = $view->getHelperPluginManager();
+        $params = $plugins->get('params');
+        $action = $params->fromRoute('action');
+        if (!in_array($action, ['add', 'edit'])) {
+            return;
+        }
+
+        if (!$this->isModuleActive('CustomVocab')) {
+            return;
+        }
+
+        // Get the list of item sets of thesaurus, then the list of custom vocab
+        // with items sets, then intersect them.
+        // A single query is quicker.
+
+        // Get custom vocab with thesaurus.
+        /** @var \Doctrine\DBAL\Connection $connection */
+        $connection = $this->getServiceLocator()->get('Omeka\Connection');
+        /*
+        $sql = <<<'SQL'
+SELECT DISTINCT `custom_vocab`.`id`, `custom_vocab`.`item_set_id`
+FROM `custom_vocab`
+INNER JOIN `item_set` ON `item_set`.`id` = `custom_vocab`.`item_set_id`
+WHERE `custom_vocab`.`item_set_id` IS NOT NULL
+AND `custom_vocab`.`item_set_id` IN (
+    SELECT DISTINCT `item_item_set`.`item_set_id`
+    FROM `resource`
+    INNER JOIN `term` ON `term`.`scheme_id` = `resource`.`id`
+    INNER JOIN `item_item_set` ON `item_item_set`.`item_id` = `term`.`scheme_id`
+    INNER JOIN `resource_class` ON `resource_class`.`id` = `resource`.`resource_class_id`
+    INNER JOIN `vocabulary` ON `vocabulary`.`id` = `resource_class`.`vocabulary_id`
+    WHERE `vocabulary`.`prefix` = "skos"
+)
+;
+SQL;
+        */
+
+        $subQb = $connection->createQueryBuilder();
+        $expr = $subQb->expr();
+
+        $subQb
+            ->select('DISTINCT item_item_set.item_set_id')
+            ->from('resource', 'resource')
+            ->innerJoin('resource', 'term', 'term', 'term.scheme_id = resource.id')
+            ->innerJoin('term', 'item_item_set', 'item_item_set', 'item_item_set.item_id = term.scheme_id')
+            ->innerJoin('resource', 'resource_class', 'resource_class', 'resource_class.id = resource.resource_class_id')
+            ->innerJoin('resource_class', 'vocabulary', 'vocabulary', 'vocabulary.id = resource_class.vocabulary_id')
+            ->where('vocabulary.prefix = "skos"')
+        ;
+
+        $qb = $connection->createQueryBuilder();
+        $qb
+            ->select('DISTINCT custom_vocab.id')
+            ->from('custom_vocab', 'custom_vocab')
+            ->innerJoin('custom_vocab', 'item_set', 'item_set', 'item_set.id = custom_vocab.item_set_id')
+            ->where($expr->isNotNull('custom_vocab.item_set_id'))
+            ->andWhere($expr->in('custom_vocab.item_set_id', $subQb->getSQL()))
+        ;
+        $cvThesaurus = array_map('intval', $connection->executeQuery($qb)->fetchFirstColumn());
+        if (!$cvThesaurus) {
+            return;
+        }
+
+        $script = sprintf('const customVocabThesaurus = %s;', json_encode($cvThesaurus));
+
+        $assetUrl = $plugins->get('assetUrl');
+        $plugins->get('headScript')
+            ->appendScript($script)
+            ->appendFile($assetUrl('js/thesaurus-resource-form.js', 'Thesaurus'), 'text/javascript', ['defer' => 'defer']);
     }
 
     /**
