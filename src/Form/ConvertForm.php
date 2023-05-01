@@ -59,6 +59,23 @@ class ConvertForm extends Form
             ])
 
             ->add([
+                'name' => 'clean',
+                'type' => Element\MultiCheckbox::class,
+                'options' => [
+                    'label' => 'Clean input', // @translate
+                    'value_options' => [
+                        'trim_punctuation' => 'Remove trailing punctuation', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'clean',
+                    'value' => [
+                        'trim_punctuation',
+                    ],
+                ],
+            ])
+
+            ->add([
                 'name' => 'submit-upload',
                 'type' => Element\Button::class,
                 'options' => [
@@ -79,6 +96,10 @@ class ConvertForm extends Form
                 ])
                 ->add([
                     'name' => 'format',
+                    'required' => false,
+                ])
+                ->add([
+                    'name' => 'clean',
                     'required' => false,
                 ])
                 ->add([

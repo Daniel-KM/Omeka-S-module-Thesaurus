@@ -201,7 +201,10 @@ class ThesaurusController extends ItemController
 
         $data = $form->getData();
         $outputType = $data['output'] ?? 'text';
-        $format = $data['format'] ?? 'tab_offset';
+        $options = [
+            'format' => $data['format'] ?? 'tab_offset',
+            'clean' => $data['clean'] ?? ['trim_punctuation'],
+        ];
 
         // TODO Check the file during validation inside the form.
 
@@ -222,7 +225,7 @@ class ThesaurusController extends ItemController
             );
         } else {
             $file = $fileCheck;
-            $converted = $this->convertThesaurus($file['tmp_name'], $format, $file['type']);
+            $converted = $this->convertThesaurus($file['tmp_name'], $options, $file['type']);
             if (empty($converted)) {
                 $this->messenger()->addError(
                     sprintf('Unable to convert the file.') // @translate
@@ -230,7 +233,7 @@ class ThesaurusController extends ItemController
             } else {
                 if ($outputType === 'thesaurus') {
                     // Message are included.
-                    $this->importThesaurus($file['tmp_name'], $file['name'], $format, $file['type']);
+                    $this->importThesaurus($file['tmp_name'], $file['name'], $options, $file['type']);
                     return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
                 }
                 if ($outputType === 'file') {
@@ -321,15 +324,16 @@ class ThesaurusController extends ItemController
      */
     protected function convertThesaurus(
         string $filepath,
-        string $format,
+        array $options,
         ?string $mediaType = 'text/plain'
     ): string {
         $text = file_get_contents($filepath);
         $lines = $this->stringToList($text, false);
+        $format = $options['format'] ?? '';
         if ($format === 'tab_offset') {
-            return $this->convertThesaurusTabOffset($lines);
+            return $this->convertThesaurusTabOffset($lines, $options);
         } elseif ($format === 'structure_label') {
-            return $this->convertThesaurusStructureLabel($lines);
+            return $this->convertThesaurusStructureLabel($lines, $options);
         }
         return '';
     }
@@ -337,13 +341,19 @@ class ThesaurusController extends ItemController
     /**
      * Convert a flat list into a flat thesaurus from format "tab offset".
      */
-    protected function convertThesaurusTabOffset(array $lines): string
+    protected function convertThesaurusTabOffset(array $lines, array $options): string
     {
         $output = '';
         $separator = ' :: ';
         $levels = [];
+
+        $trimPunctuation = in_array('trim_punctuation', $options['clean']);
+
         foreach ($lines as $line) {
-            $descriptor = ltrim($line);
+            $descriptor = trim($line);
+            if ($trimPunctuation) {
+                $descriptor = trim($descriptor, " \n\r\t\v\x00.,-?!:;");
+            }
             $level = strrpos($line, "\t");
             $level = $level === false ? 0 : ++$level;
             $levels[$level] = $descriptor;
@@ -374,16 +384,22 @@ class ThesaurusController extends ItemController
      * 02-01       Japan
      * 02-01-01    Tokyo
      */
-    protected function convertThesaurusStructureLabel(array $lines): string
+    protected function convertThesaurusStructureLabel(array $lines, array $options): string
     {
         $output = '';
         $separator = ' :: ';
         $sep = '-';
 
+        $trimPunctuation = in_array('trim_punctuation', $options['clean']);
+
         // First, prepare a key-value array. The key should be a string.
         $input = [];
         foreach ($lines as $line) {
             [$structure, $descriptor] = array_map('trim', (explode(' ', $line . ' ', 2)));
+            if ($trimPunctuation) {
+                $structure = trim($structure, " \n\r\t\v\x00.,-?!:;");
+                $descriptor = trim($descriptor, " \n\r\t\v\x00.,-?!:;");
+            }
             $input[(string) $structure] = $descriptor;
         }
         $input = array_filter($input);
@@ -413,7 +429,7 @@ class ThesaurusController extends ItemController
     protected function importThesaurus(
         string $filepath,
         string $filename,
-        string $format,
+        array $options,
         ?string $mediaType = 'text/plain'
     ): void {
         $text = file_get_contents($filepath);
@@ -432,9 +448,8 @@ class ThesaurusController extends ItemController
         $name = mb_strtolower(pathinfo($filename, PATHINFO_FILENAME));
         $params = [
             'name' => $name,
-            'format' => $format,
             'input' => $lines,
-        ];
+        ] + $options;
 
         $small = count($lines) <= 100;
         if ($small) {

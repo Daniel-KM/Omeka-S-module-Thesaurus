@@ -47,6 +47,8 @@ class CreateThesaurus extends AbstractJob
             return;
         }
 
+        $clean = $this->getArg('clean') ?: ['trim_punctuation'];
+
         $this->api = $services->get('Omeka\ApiManager');
 
         // Prepare resource classes and templates.
@@ -130,9 +132,9 @@ class CreateThesaurus extends AbstractJob
         ];
 
         if ($format === 'tab_offset') {
-            $result = $this->convertThesaurusTabOffset($input, $baseConcept, $skosIds);
+            $result = $this->convertThesaurusTabOffset($input, $baseConcept, $skosIds, $clean);
         } elseif ($format === 'structure_label') {
-            $result = $this->convertThesaurusStructureLabel($input, $baseConcept, $skosIds);
+            $result = $this->convertThesaurusStructureLabel($input, $baseConcept, $skosIds, $clean);
         }
 
         $topIds = $result['topIds'];
@@ -181,7 +183,8 @@ class CreateThesaurus extends AbstractJob
     protected function convertThesaurusTabOffset(
         array $lines,
         array $baseConcept,
-        array $skosIds
+        array $skosIds,
+        array $clean
     ): array {
         $schemeId = $baseConcept['skos:inScheme'][0]['value_resource_id'];
 
@@ -189,8 +192,13 @@ class CreateThesaurus extends AbstractJob
         $narrowers = [];
         $levels = [];
 
+        $trimPunctuation = in_array('trim_punctuation', $clean);
+
         foreach ($lines as $line) {
             $descriptor = trim($line);
+            if ($trimPunctuation) {
+                $descriptor = trim($descriptor, " \n\r\t\v\x00.,-?!:;");
+            }
             $level = strrpos($line, "\t");
             $level = $level === false ? 0 : ++$level;
             $parentLevel = $level ? $level - 1 : false;
@@ -259,7 +267,8 @@ class CreateThesaurus extends AbstractJob
     protected function convertThesaurusStructureLabel(
         array $lines,
         array $baseConcept,
-        array $skosIds
+        array $skosIds,
+        array $clean
     ): array {
         $schemeId = $baseConcept['skos:inScheme'][0]['value_resource_id'];
 
