@@ -144,6 +144,18 @@ class Module extends AbstractModule
             [$this, 'handleApiSearchQuery']
         );
 
+        // Include ascendance on save.
+        $sharedEventManager->attach(
+            \Omeka\Api\Adapter\ItemAdapter::class,
+            'api.create.pre',
+            [$this, 'updateAscendance']
+        );
+        $sharedEventManager->attach(
+            \Omeka\Api\Adapter\ItemAdapter::class,
+            'api.update.pre',
+            [$this, 'updateAscendance']
+        );
+
         $sharedEventManager->attach(
             \Omeka\Form\SettingForm::class,
             'form.add_elements',
@@ -319,6 +331,190 @@ class Module extends AbstractModule
         }
     }
 
+    /**
+     * Update ascendance of current item.
+     */
+    public function updateAscendance(Event $event): void
+    {
+        /** @var \Omeka\Api\Request $request */
+        $request = $event->getParam('request');
+
+        $entityName = $request->getResource();
+        if (!$entityName) {
+            return;
+        }
+
+        $static = $this->getThesaurusSettings();
+        if (!$static) {
+            return;
+        }
+
+        /**
+         * @var int $conceptTemplateId
+         * @var ?string $propertyDescriptor
+         * @var int $propertyDescriptorId
+         * @var ?string $propertyPath
+         * @var int $propertyPathId
+         * @var ?string $propertyAscendance
+         * @var int $propertyAscendanceId
+         * @var string $separator
+         */
+        extract($static);
+
+        if (!$propertyPathId && !$propertyAscendanceId) {
+            return;
+        }
+
+        $content = $request->getContent();
+
+        if (empty($content['o:resource_template']['o:id'])
+            || (int) $content['o:resource_template']['o:id'] !== $conceptTemplateId
+        ) {
+            return;
+        }
+
+        // To be managed by the thesaurus, the item should exists already.
+        // If not, create the ascendance via the broader resource.
+        // In fact, use the broader resource, that exists in all cases!
+
+        $broader = $content['skos:broader'] ?? [];
+        if ($broader) {
+            $broader = reset($broader);
+            if (empty($broader['value_resource_id'])) {
+                $ascendanceTitles = [];
+            } else {
+                /** @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus */
+                $thesaurus = $this->getServiceLocator()->get('ControllerPluginManager')->get('thesaurus');
+                $thesaurus = $thesaurus($broader['value_resource_id']);
+                if (!$thesaurus->isSkos() || !$thesaurus->isConcept()) {
+                    return;
+                }
+                $ascendance = $thesaurus->ascendantsOrSelf(true);
+                $ascendanceTitles = array_column($ascendance, 'title', 'id');
+            }
+        } else {
+            $ascendanceTitles = [];
+        }
+
+        // This is a concept, so update path or ascendance.
+        // Just add the ascendance in data, they will be saved automatically.
+
+        if ($propertyPathId) {
+            if ($ascendanceTitles) {
+                $descriptor = $content[$propertyDescriptor][0]['@value'] ?? null;
+                if ($descriptor) {
+                    $content[$propertyPath] = [[
+                        'type' => 'literal',
+                        'property_id' => $propertyPathId,
+                        '@value' => implode($separator, $ascendanceTitles) . $separator . $descriptor,
+                    ]];
+                }
+            } else {
+                unset($content[$propertyPath]);
+            }
+        }
+
+        if ($propertyAscendanceId) {
+            if ($ascendanceTitles) {
+                $content[$propertyAscendance] = [[
+                    'type' => 'literal',
+                    'property_id' => $propertyAscendanceId,
+                    '@value' => implode($separator, $ascendanceTitles),
+                ]];
+            } else {
+                unset($content[$propertyAscendance]);
+            }
+        }
+
+        $request->setContent($content);
+    }
+
+    protected function getThesaurusSettings(): array
+    {
+        static $static;
+
+        if (!is_null($static)) {
+            return $static;
+        }
+
+        $static = [
+            'conceptTemplateId' => 0,
+            'propertyDescriptor' => null,
+            'propertyDescriptorId' => 0,
+            'propertyPath' => null,
+            'propertyPathId' => 0,
+            'propertyAscendance' => null,
+            'propertyAscendanceId' => 0,
+            'separator' => null,
+        ];
+
+        /**
+         * @var \Laminas\ServiceManager\ServiceLocatorInterface $services
+         * @var \Omeka\Api\Manager $api
+         * @var \Laminas\Log\Logger $logger
+         * @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus
+         */
+        $services = $this->getServiceLocator();
+        $api = $services->get('Omeka\ApiManager');
+        $logger = $services->get('Omeka\Logger');
+        $settings = $services->get('Omeka\Settings');
+
+        try {
+            $static['conceptTemplateId'] = $api->read('resource_templates', ['label' => 'Thesaurus Concept'], [], ['responseContent' => 'resource'])->getContent()->getId();
+        } catch (\Exception $e) {
+            $logger->err('Unable to find resource template "Thesaurus Concept".'); // @translate
+            $static = [];
+            return $static;
+        }
+
+        try {
+            $skosVocabularyId = $api->read('vocabularies', ['prefix' => 'skos'], [], ['responseContent' => 'resource'])->getContent()->getId();
+        } catch (\Exception $e) {
+            $logger->err('Unable to find vocabulary Skos.'); // @translate
+            $static = [];
+            return $static;
+        }
+
+        // Descriptor is required.
+        $static['propertyDescriptor'] = $settings->get('thesaurus_property_descriptor') ?: 'skos:prefLabel';
+        try {
+            $static['propertyDescriptorId'] = $api->read('properties', ['vocabulary' => $skosVocabularyId, 'localName' => substr($static['propertyDescriptor'], strpos($static['propertyDescriptor'], ':') + 1)], [], ['responseContent' => 'resource'])->getContent()->getId();
+        } catch (\Exception $e) {
+            $logger->err('Unable to find property "%s" for descriptor.', $static['propertyDescriptor']); // @translate
+            $static = [];
+            return $static;
+        }
+
+        $static['propertyPath'] = $settings->get('thesaurus_property_path') ?: null;
+        if ($static['propertyPath']) {
+            try {
+                $static['propertyPathId'] = $api->read('properties', ['vocabulary' => $skosVocabularyId, 'localName' => substr($static['propertyPath'], strpos($static['propertyPath'], ':') + 1)], [], ['responseContent' => 'resource'])->getContent()->getId();
+            } catch (\Exception $e) {
+                $logger->err('Unable to find property "%s" for path.', $static['propertyPath']); // @translate
+                $static = [];
+                return $static;
+            }
+        }
+
+        $static['propertyAscendance'] = $settings->get('thesaurus_property_ascendance') ?: null;
+        if ($static['propertyAscendance']) {
+            try {
+                $static['propertyAscendanceId'] = $api->read('properties', ['vocabulary' => $skosVocabularyId, 'localName' => substr($static['propertyAscendance'], strpos($static['propertyAscendance'], ':') + 1)], [], ['responseContent' => 'resource'])->getContent()->getId();
+            } catch (\Exception $e) {
+                $logger->err('Unable to find property "%s" for ascendance.', $static['propertyAscendance']); // @translate
+                $static = [];
+                return $static;
+            }
+        }
+
+        $static['separator'] = $settings->get('thesaurus_separator', self::SEPARATOR);
+
+        return $static;
+    }
+
+    /**
+     * @todo Remove or use these settings that store data about thesaurus.
+     */
     protected function storeSchemeAndConceptIds(): self
     {
         $services = $this->getServiceLocator();

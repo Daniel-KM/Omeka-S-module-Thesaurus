@@ -176,7 +176,6 @@ class UpdateConcepts extends AbstractJob
                 $ascendance = $thesaurus->setItem($item)->ascendants(true);
                 if (count($ascendance)) {
                     $data = json_decode(json_encode($item), true);
-                    // The ascendance is from closest to top concept, so reverse it
                     $ascendanceTitles = array_column($ascendance, 'title', 'id');
                     if (!empty($fill['path'])) {
                         $term = $fill['path'];
