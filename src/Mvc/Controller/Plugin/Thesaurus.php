@@ -973,9 +973,11 @@ class Thesaurus extends AbstractPlugin
             'max_length' => 0,
         ];
 
+        // Check is done with a loop, quicker than array_map().
+
         if ($options['ascendance']) {
             $separator = $options['separator'];
-            $list = array_map(function ($term) use ($separator) {
+            foreach ($list as &$term) {
                 if ($term['level'] && isset($this->structure[$term['self']['id']])) {
                     $ascendance = $this->ancestors($this->structure[$term['self']['id']]);
                     if (count($ascendance)) {
@@ -983,43 +985,45 @@ class Thesaurus extends AbstractPlugin
                         $term['self']['title'] = implode($separator, $ascendanceTitles) . $separator . $term['self']['title'];
                     }
                 }
-                return $term;
-            }, $list);
+            }
+            unset($term);
         }
 
         if (mb_strlen($options['indent'])) {
             $indent = $options['indent'];
-            $list = array_map(function ($term) use ($indent) {
+            foreach ($list as &$term) {
                 if ($term['level']) {
                     $term['self']['title'] = str_repeat($indent, $term['level']) . ' ' . $term['self']['title'];
                 }
-                return $term;
-            }, $list);
+            }
+            unset($term);
         }
 
         if ($options['prepend_id']) {
-            $list = array_map(function ($term) {
+            foreach ($list as &$term) {
                 $term['self']['title'] = $term['self']['id'] . ': ' . $term['self']['title'];
-                return $term;
-            }, $list);
+            }
+            unset($term);
         }
 
         if ($options['append_id']) {
-            $list = array_map(function ($term) {
+            foreach ($list as &$term) {
                 $term['self']['title'] = $term['self']['title'] . ' (' . $term['self']['id'] . ')';
-                return $term;
-            }, $list);
+            }
+            unset($term);
         }
 
         if ($options['max_length']) {
-            $maxLength = $options['max_length'];
-            $list = array_map(function ($term) use ($maxLength) {
-                return mb_substr($term['self']['title'], 0, $maxLength);
-            }, $list);
+            $maxLength = (int) $options['max_length'];
+            foreach ($list as &$term) {
+                $term = mb_substr($term['self']['title'], 0, $maxLength);
+            }
+            unset($term);
         } else {
-            $list = array_map(function ($term) {
-                return $term['self']['title'];
-            }, $list);
+            foreach ($list as &$term) {
+                $term = $term['self']['title'];
+            }
+            unset($term);
         }
 
         return $list;
