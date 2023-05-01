@@ -44,13 +44,14 @@ $sortHeadings = [
 
 <div class="browse-controls">
     <?= $this->pagination() ?>
-    <?= $hyperlink($translate('Advanced search'), $url(null, ['action' => 'search'], ['query' => $this->params()->fromQuery()], true), ['class' => 'advanced-search']) ?>
+    <?= $hyperlink($translate('Advanced search'), $url('admin/thesaurus/default', ['action' => 'search'], ['query' => $this->params()->fromQuery()], true), ['class' => 'advanced-search']) ?>
     <?= $this->sortSelector($sortHeadings) ?>
 </div>
 
 <div id="page-actions">
     <?php if ($this->userIsAllowed('Omeka\Api\Adapter\ItemAdapter', 'create')): ?>
-    <?= $hyperlink($translate('Add new item'), $url(null, ['action' => 'add'], true), ['class' => 'button']) ?>
+    <?= $hyperlink($translate('Convert'), $url('admin/thesaurus/default', ['action' => 'convert'], true), ['class' => 'button', 'title' => $translate('Convert a file into a thesaurus')]) ?>
+    <?= $hyperlink($translate('Add new item'), $url('admin/thesaurus/default', ['action' => 'add'], true), ['class' => 'button']) ?>
     <?php endif; ?>
 </div>
 

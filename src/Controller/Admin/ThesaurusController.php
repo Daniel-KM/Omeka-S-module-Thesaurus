@@ -162,7 +162,7 @@ class ThesaurusController extends ItemController
         /** @var \Thesaurus\Form\ConvertForm $form */
         $form = $this->getForm(ConvertForm::class);
         $form
-            ->setAttribute('action', $this->url()->fromRoute('admin/thesaurus', ['action' => 'upload']))
+            ->setAttribute('action', $this->url()->fromRoute('admin/thesaurus/default', ['action' => 'upload']))
             ->init();
         return new ViewModel([
             'form' => $form,
@@ -176,7 +176,7 @@ class ThesaurusController extends ItemController
             $this->messenger()->addError(
                 sprintf('Unallowed request.') // @translate
             );
-            return $this->redirect()->toRoute('admin/thesaurus', ['action' => 'convert']);
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
         }
 
         $files = $request->getFiles()->toArray();
@@ -184,19 +184,21 @@ class ThesaurusController extends ItemController
             $this->messenger()->addError(
                 sprintf('Missing file.') // @translate
             );
-            return $this->redirect()->toRoute('admin/thesaurus', ['action' => 'convert']);
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
         }
 
-        $post = $this->params()->fromPost();
+        /** @var \Thesaurus\Form\ConvertForm $form */
+        $post = $this->params()->fromPost() + $files;
         $form = $this->getForm(ConvertForm::class);
         $form->setData($post);
-        // TODO Important: Check csrf, even other checks are enough.
-        // if (!$form->isValid()) {
-        //     $this->messenger()->addError(
-        //         sprintf('Wrong request for file.') // @translate
-        //     );
-        //     return $this->redirect()->toRoute('admin/spreadsheet-sync');
-        // }
+        if (!$form->isValid()) {
+            $this->messenger()->addError(
+                sprintf('Wrong request for file.') // @translate
+            );
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
+        }
+
+        $data = $form->getData();
 
         // TODO Check the file during validation inside the form.
 
@@ -233,7 +235,7 @@ class ThesaurusController extends ItemController
             }
         }
 
-        return $this->redirect()->toRoute('admin/thesaurus', ['action' => 'convert']);
+        return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
     }
 
     /**
@@ -284,19 +286,14 @@ class ThesaurusController extends ItemController
 
     /**
      * Convert a flat list into a flat thesaurus.
-     *
-     * @param string $filename
-     * @param string $mediaType
-     * @return string
      */
-    protected function convertThesaurus($filename, $mediaType = 'text/plain')
+    protected function convertThesaurus(string $filepath, ?string $mediaType = 'text/plain'): string
     {
         $output = '';
         $separator = ' :: ';
 
-        $text = file_get_contents($filename);
-        $lines = $this->stringToList($text);
-
+        $text = file_get_contents($filepath);
+        $lines = $this->stringToList($text, false);
         $levels = [];
         foreach ($lines as $line) {
             $term = ltrim($line);
@@ -310,8 +307,9 @@ class ThesaurusController extends ItemController
             }
             $row .= $term;
             $levels[$level] = $term;
-            $output .= $row . PHP_EOL;
+            $output .= $row . "\n";
         }
+
         return $output;
     }
 
@@ -394,25 +392,21 @@ class ThesaurusController extends ItemController
 
     /**
      * Get each line of a string separately.
-     *
-     * @param string $string
-     * @return array
      */
-    public function stringToList($string)
+    protected function stringToList($string, bool $trim = false): array
     {
-        return array_filter(array_map('trim', explode("\n", $this->fixEndOfLine($string))), 'strlen');
+        return $trim
+            ? array_filter(array_map('trim', explode("\n", $this->fixEndOfLine($string))), 'strlen')
+            : array_filter(explode("\n", $this->fixEndOfLine($string)), 'strlen');
     }
 
     /**
      * Clean the text area from end of lines.
      *
      * This method fixes Windows and Apple copy/paste from a textarea input.
-     *
-     * @param string $string
-     * @return string
      */
-    protected function fixEndOfLine($string)
+    protected function fixEndOfLine($string): string
     {
-        return str_replace(["\r\n", "\n\r", "\r"], ["\n", "\n", "\n"], $string);
+        return str_replace(["\r\n", "\n\r", "\r"], ["\n", "\n", "\n"], (string) $string);
     }
 }

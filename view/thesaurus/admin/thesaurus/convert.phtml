@@ -4,7 +4,9 @@
  * @var \Thesaurus\Form\ConvertForm $form
  */
 
-$translate = $this->plugin('translate');
+$plugins = $this->getHelperPluginManager();
+$translate = $plugins->get('translate');
+$assetUrl = $plugins->get('assetUrl');
 
 $this->headLink()
     ->appendStylesheet($assetUrl('css/thesaurus-admin.css', 'Thesaurus'));
