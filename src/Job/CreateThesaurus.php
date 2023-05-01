@@ -13,6 +13,11 @@ class CreateThesaurus extends AbstractJob
     protected $logger;
 
     /**
+     * @var \Doctrine\ORM\EntityManager
+     */
+    protected $entityManager;
+
+    /**
      * @var \Omeka\Api\Manager
      */
     protected $api;
@@ -27,6 +32,8 @@ class CreateThesaurus extends AbstractJob
 
         $this->logger = $services->get('Omeka\Logger');
         $this->logger->addProcessor($referenceIdProcessor);
+
+        $this->entityManager = $services->get('Omeka\EntityManager');
 
         $name = $this->getArg('name');
         if (!$name) {
@@ -57,6 +64,7 @@ class CreateThesaurus extends AbstractJob
         ));
 
         // Prepare resource classes and templates.
+        $ownerId = $this->job->getOwner()->getId();
         $skosVocabulary = $this->api->read('vocabularies', ['prefix' => 'skos'])->getContent();
         $schemeClass = $this->api->read('resource_classes', ['vocabulary' => $skosVocabulary->id(), 'localName' => 'ConceptScheme'])->getContent();
         $conceptClass = $this->api->read('resource_classes', ['vocabulary' => $skosVocabulary->id(), 'localName' => 'Concept'])->getContent();
@@ -74,6 +82,7 @@ class CreateThesaurus extends AbstractJob
 
         // First create the item set.
         $data = [
+            'o:owner' => ['o:id' => $ownerId],
             'o:resource_class' => ['o:id' => $collectionClass->id()],
             'dcterms:title' => [
                 [
@@ -95,6 +104,7 @@ class CreateThesaurus extends AbstractJob
 
         // Second, create the scheme.
         $data = [
+            'o:owner' => ['o:id' => $ownerId],
             'o:resource_class' => ['o:id' => $schemeClass->id()],
             'o:resource_template' => ['o:id' => $schemeTemplate->id()],
             'o:item_set' => [
@@ -126,6 +136,7 @@ class CreateThesaurus extends AbstractJob
         ));
 
         $baseConcept = [
+            'o:owner' => ['o:id' => $ownerId],
             'o:resource_class' => ['o:id' => $conceptClass->id()],
             'o:resource_template' => ['o:id' => $conceptTemplate->id()],
             'o:item_set' => [
@@ -162,6 +173,9 @@ class CreateThesaurus extends AbstractJob
                     '%1$d/%2$d descriptors completed.', // @translate
                     $totalProcessed, count($narrowers)
                 ));
+
+                $this->entityManager->clear();
+                $this->entityManager->getRepository(\Omeka\Entity\User::class)->find($ownerId);
             }
 
             $concept = $this->api->read('items', ['id' => $parentId])->getContent();
@@ -208,6 +222,7 @@ class CreateThesaurus extends AbstractJob
         array $clean
     ): array {
         $schemeId = $baseConcept['skos:inScheme'][0]['value_resource_id'];
+        $ownerId = $baseConcept['o:owner']['o:id'];
 
         $topIds = [];
         $narrowers = [];
@@ -233,6 +248,9 @@ class CreateThesaurus extends AbstractJob
                     '%1$d/%2$d descriptors processed.', // @translate
                     $totalProcessed, count($lines)
                 ));
+
+                $this->entityManager->clear();
+                $this->entityManager->getRepository(\Omeka\Entity\User::class)->find($ownerId);
             }
 
             $descriptor = trim($line);
@@ -313,6 +331,7 @@ class CreateThesaurus extends AbstractJob
         array $clean
     ): array {
         $schemeId = $baseConcept['skos:inScheme'][0]['value_resource_id'];
+        $ownerId = $baseConcept['o:owner']['o:id'];
 
         $topIds = [];
         $narrowers = [];
@@ -360,6 +379,9 @@ class CreateThesaurus extends AbstractJob
                     '%1$d/%2$d descriptors processed.', // @translate
                     $totalProcessed, count($input)
                 ));
+
+                $this->entityManager->clear();
+                $this->entityManager->getRepository(\Omeka\Entity\User::class)->find($ownerId);
             }
 
             $level = substr_count((string) $structure, $sep);
