@@ -105,7 +105,10 @@ class UpdateStructure extends AbstractJob
         }
 
         $scheme = $thesaurus->scheme();
+
+        // Keep scheme data to avoid issue with doctrine after restructuration.
         $schemeId = $scheme->id();
+        $schemeTitle = $scheme->displayTitle();
 
         // This is a flat tree.
         $structure = $this->getArg('structure') ?: [];
@@ -119,28 +122,27 @@ class UpdateStructure extends AbstractJob
 
         $message = new Message(
             'Starting restructuration of thesaurus "%1$s" (#%2$d).', // @translate
-            $scheme->displayTitle(), $schemeId
+            $schemeTitle, $schemeId
         );
         $this->logger->notice($message);
 
         $result = $this->restructureThesaurus($thesaurus, $structure);
 
         if ($result) {
-            $dispatcher = $services->get(\Omeka\Job\Dispatcher::class);
-            $synchronous = $services->get('Omeka\Job\DispatchStrategy\Synchronous');
-            $args = [
-                'scheme' => $scheme->id(),
-            ];
-            $dispatcher->dispatch(\Thesaurus\Job\Indexing::class, $args, $synchronous);
+            // Args are same (just need scheme).
+            // Do not dispatch to avoid issue with doctrine: authenticated owner
+            // should be refreshed.
+            $indexing = new \Thesaurus\Job\Indexing($this->job, $services);
+            $indexing->perform();
             $message = new Message(
                 'Concepts were restructured and reindexed for thesaurus "%1$s" (#%2$d).', // @translate
-                $scheme->displayTitle(), $schemeId
+                $schemeTitle, $schemeId
             );
             $this->logger->notice($message);
         } else {
             $message = new Message(
                 'An error occurred. Ended restructuration of thesaurus "%1$s" (#%2$d).', // @translate
-                $scheme->displayTitle(), $schemeId
+                $schemeTitle, $schemeId
             );
             $this->logger->warn($message);
         }

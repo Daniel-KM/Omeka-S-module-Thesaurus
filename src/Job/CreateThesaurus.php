@@ -256,6 +256,7 @@ class CreateThesaurus extends AbstractJob
             'Step 3/3: indexation of new thesaurus.' // @translate
         ));
 
+        // The scheme is needed for job Indexing.
         $args = $this->job->getArgs();
         $args['scheme'] = $schemeId;
         $this->job->setArgs($args);

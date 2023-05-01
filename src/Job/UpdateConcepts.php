@@ -256,6 +256,7 @@ class UpdateConcepts extends AbstractJob
             }
         }
 
+        // Args are same (just need scheme).
         $indexing = new \Thesaurus\Job\Indexing($this->job, $services);
         $indexing->perform();
 
