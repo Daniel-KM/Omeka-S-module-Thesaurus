@@ -282,7 +282,6 @@ class ThesaurusController extends ItemController
             ],
             'separator' => $data['separator'] ?? \Thesaurus\Job\CreateThesaurus::SEPARATOR,
             'clean' => $data['clean'] ?? [
-                'replace_html_entities',
                 'trim_punctuation',
             ],
         ];
@@ -409,6 +408,7 @@ class ThesaurusController extends ItemController
         ?string $mediaType = 'text/plain'
     ): string {
         $text = file_get_contents($filepath);
+        $text = mb_convert_encoding($text, 'HTML-ENTITIES', 'UTF-8');
         $lines = $this->stringToList($text, false);
         $format = $options['format'] ?? '';
         if ($format === 'tab_offset') {
@@ -429,18 +429,16 @@ class ThesaurusController extends ItemController
 
         $levels = [];
 
-        $replaceHtmlEntities = in_array('replace_html_entities', $options['clean']);
         $trimPunctuation = in_array('trim_punctuation', $options['clean']);
 
         foreach ($lines as $line) {
             $descriptor = trim($line);
             // Replace entities first to avoid to break html entities.
-            if ($replaceHtmlEntities) {
-                $descriptor = mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
-            }
+            $descriptor = mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
             if ($trimPunctuation) {
                 $descriptor = trim($descriptor, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
             }
+            $line = rtrim($line);
             $level = strrpos($line, "\t");
             $level = $level === false ? 0 : ++$level;
             $levels[$level] = $descriptor;
@@ -478,7 +476,6 @@ class ThesaurusController extends ItemController
 
         $sep = '-';
 
-        $replaceHtmlEntities = in_array('replace_html_entities', $options['clean']);
         $trimPunctuation = in_array('trim_punctuation', $options['clean']);
 
         // First, prepare a key-value array. The key should be a string.
@@ -486,10 +483,8 @@ class ThesaurusController extends ItemController
         foreach ($lines as $line) {
             [$structure, $descriptor] = array_map('trim', (explode(' ', $line . ' ', 2)));
             // Replace entities first to avoid to break html entities.
-            if ($replaceHtmlEntities) {
-                $structure = mb_convert_encoding($structure, 'UTF-8', 'HTML-ENTITIES');
-                $descriptor = mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
-            }
+            $structure = mb_convert_encoding($structure, 'UTF-8', 'HTML-ENTITIES');
+            $descriptor = mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
             if ($trimPunctuation) {
                 $structure = trim($structure, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
                 $descriptor = trim($descriptor, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
@@ -527,6 +522,8 @@ class ThesaurusController extends ItemController
         ?string $mediaType = 'text/plain'
     ): void {
         $text = file_get_contents($filepath);
+        $text = mb_convert_encoding($text, 'HTML-ENTITIES', 'UTF-8');
+
         $lines = $this->stringToList($text, false);
         if (!$lines) {
             $message = new Message(

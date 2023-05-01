@@ -103,14 +103,12 @@ class ConvertForm extends Form
                 'options' => [
                     'label' => 'Clean input', // @translate
                     'value_options' => [
-                        'replace_html_entities' => 'Replace html entities with unicode', // @translate
                         'trim_punctuation' => 'Remove trailing punctuation', // @translate
                     ],
                 ],
                 'attributes' => [
                     'id' => 'clean',
                     'value' => [
-                        'replace_html_entities',
                         'trim_punctuation',
                     ],
                 ],

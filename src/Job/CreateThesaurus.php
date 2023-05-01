@@ -12,7 +12,7 @@ class CreateThesaurus extends AbstractJob
      *
      * @var string
      */
-    const TRIM_PUNCTUATION = " \n\r\t\v\x00.,-?!:";
+    const TRIM_PUNCTUATION = " \n\r\t\v\x00.,-?!:;";
 
     /**
      * Default separator for the ascendance.
@@ -117,7 +117,6 @@ class CreateThesaurus extends AbstractJob
         $separator = $this->getArg('separator') ?? self::SEPARATOR;
 
         $clean = $this->getArg('clean') ?? [
-            'replace_html_entities',
             'trim_punctuation',
         ];
 
@@ -307,7 +306,6 @@ class CreateThesaurus extends AbstractJob
         $topIds = [];
         $narrowers = [];
 
-        $replaceHtmlEntities = in_array('replace_html_entities', $clean);
         $trimPunctuation = in_array('trim_punctuation', $clean);
 
         $levels = [];
@@ -337,13 +335,12 @@ class CreateThesaurus extends AbstractJob
 
             $descriptor = trim($line);
             // Replace entities first to avoid to break html entities.
-            if ($replaceHtmlEntities) {
-                $descriptor = mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
-            }
+            $descriptor = mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
             if ($trimPunctuation) {
                 $descriptor = trim($descriptor, self::TRIM_PUNCTUATION);
             }
 
+            $line = rtrim($line);
             $level = strrpos($line, "\t");
             $level = $level === false ? 0 : ++$level;
             $parentLevel = $level ? $level - 1 : false;
@@ -451,7 +448,6 @@ class CreateThesaurus extends AbstractJob
         $topIds = [];
         $narrowers = [];
 
-        $replaceHtmlEntities = in_array('replace_html_entities', $clean);
         $trimPunctuation = in_array('trim_punctuation', $clean);
 
         $sep = '-';
@@ -460,10 +456,8 @@ class CreateThesaurus extends AbstractJob
         $input = [];
         foreach ($lines as $line) {
             [$structure, $descriptor] = array_map('trim', (explode(' ', $line . ' ', 2)));
-            if ($replaceHtmlEntities) {
-                $structure = mb_convert_encoding($structure, 'UTF-8', 'HTML-ENTITIES');
-                $descriptor = mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
-            }
+            $structure = mb_convert_encoding($structure, 'UTF-8', 'HTML-ENTITIES');
+            $descriptor = mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
             if ($trimPunctuation) {
                 $structure = trim($structure, self::TRIM_PUNCTUATION);
                 $descriptor = trim($descriptor, self::TRIM_PUNCTUATION);
