@@ -1,0 +1,23 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Thesaurus\Form\UpdateConceptsForm $form
+ */
+
+$plugins = $this->getHelperPluginManager();
+$translate = $plugins->get('translate');
+$assetUrl = $plugins->get('assetUrl');
+
+$this->headLink()
+    ->appendStylesheet($assetUrl('css/thesaurus-admin.css', 'Thesaurus'));
+
+$this->htmlElement('body')->appendAttribute('class', 'thesaurus tree update-concepts');
+
+$form->prepare();
+?>
+
+<?= $this->pageTitle($translate('Update concepts'), 1, $translate('Thesaurus')) ?>
+
+<p>
+    <?= $this->form($form) ?>
+</p>

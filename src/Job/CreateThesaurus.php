@@ -64,6 +64,7 @@ class CreateThesaurus extends AbstractJob
         if (!$input) {
             $this->logger->err('A list of concepts is required to create a thesaurus.'); // @translate
         }
+
         if (!$name || !$format || !$input) {
             return;
         }
@@ -80,6 +81,7 @@ class CreateThesaurus extends AbstractJob
             return;
         }
 
+        // TODO Factorize with UpdateConcepts.
         // Use a quick format to avoid to check option each time.
         $filling = [
             'skos:prefLabel' => [],

@@ -12,6 +12,7 @@ use Omeka\Mvc\Exception\RuntimeException;
 use Omeka\Stdlib\Message;
 use Thesaurus\Form\ConfirmAllForm;
 use Thesaurus\Form\ConvertForm;
+use Thesaurus\Form\UpdateConceptsForm;
 
 /**
  * Note: Use item templates as default.
@@ -150,6 +151,61 @@ class ThesaurusController extends ItemController
         );
     }
 
+    public function updateConceptsAction()
+    {
+        /** @var \Omeka\Api\Representation\ItemRepresentation $item */
+        $item = $this->api()->read('items', $this->params('id'))->getContent();
+
+        if (!$item->userIsAllowed('batch-edit')) {
+            $message = 'User is not allowed to batch edit thesaurus.'; // @translate
+            $this->messenger()->addError($message);
+            return $this->redirect()->toRoute('admin/thesaurus/id', ['action' => 'show'], true);
+        }
+
+        $form = $this->getForm(UpdateConceptsForm::class);
+        if ($this->getRequest()->isPost()) {
+            $post = $this->params()->fromPost();
+            $form->setData($post);
+            if ($form->isValid()) {
+                $data = $form->getData();
+                $dispatcher = $this->jobDispatcher();
+                $args = [
+                    'scheme' => (int) $item->id(),
+                    'fill' => $data['fill'] ?? [],
+                    'mode' => $data['mode'] ?? 'replace',
+                    'separator' => $data['separator'] ?? \Thesaurus\Job\CreateThesaurus::SEPARATOR,
+                ];
+                $job = $dispatcher->dispatch(\Thesaurus\Job\UpdateConcepts::class, $args);
+                $message = new \Omeka\Stdlib\Message(
+                    'Updating concepts in background (%1$sjob #%2$d%3$s, %4$slogs%3$s).', // @translate
+                    sprintf(
+                        '<a href="%s">',
+                        htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))
+                        ),
+                    $job->getId(),
+                    '</a>',
+                    sprintf('<a href="%1$s">', class_exists('Log\Entity\Log') ? $this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]) :  $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()]))
+                );
+                $message->setEscapeHtml(false);
+                $this->messenger()->addSuccess($message);
+                return $this->redirect()->toRoute('admin/thesaurus/id', ['action' => 'show'], true);
+            } else {
+                $this->messenger()->addFormErrors($form);
+            }
+        }
+
+        $message = new \Omeka\Stdlib\Message(
+            'Warning: Do not select the property used for descriptor alone, else the descriptor will be lost or mixed.', // @translate
+        );
+        $this->messenger()->addWarning($message);
+
+        return new ViewModel([
+            'item' => $item,
+            'resource' => $item,
+            'form' => $form,
+        ]);
+    }
+
     public function reindexAction()
     {
         /** @var \Omeka\Api\Representation\ItemRepresentation $item */
@@ -194,6 +250,7 @@ class ThesaurusController extends ItemController
     {
         /** @var \Omeka\Api\Representation\ItemRepresentation $item */
         $item = $this->api()->read('items', $this->params('id'))->getContent();
+
         if ($item->userIsAllowed('batch-edit')) {
             $form = $this->getForm(\Laminas\Form\Form::class)
                 ->setAttribute('id', 'thesaurus-tree-form');
@@ -222,6 +279,7 @@ class ThesaurusController extends ItemController
         } else {
             $form = null;
         }
+
         return new ViewModel([
             'item' => $item,
             'resource' => $item,

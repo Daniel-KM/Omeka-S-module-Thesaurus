@@ -47,12 +47,18 @@ $this->htmlElement('body')->appendAttribute('class', 'thesaurus tree ' . ($form 
     <button type="submit"><?= $translate('Save') ?></button>
 </div>
 
-<?php elseif ($item->userIsAllowed('batch-edit')): ?>
+<?php elseif ($item->userIsAllowed('batch-edit')): // show ?>
 
 <div id="page-actions">
-    <?= $hyperlink($translate('Edit structure'), $url('admin/thesaurus/id', ['action' => 'structure', 'id' => $item->id()], true), [
-        'class' => 'button',
-    ]) ?>
+    <?= $hyperlink($translate('Update and reindex'), $url('admin/thesaurus/id', ['action' => 'update-concepts', 'id' => $item->id()], true), [ 'class' => 'button']) ?>
+    <?= $hyperlink($translate('Edit structure'), $url('admin/thesaurus/id', ['action' => 'structure', 'id' => $item->id()], true), ['class' => 'button']) ?>
+    <?= $hyperlink($translate('Edit item'), $item->adminUrl('edit'), ['class' => 'button']) ?>
+</div>
+
+<?php elseif ($item->userIsAllowed('edit')): // show ?>
+
+<div id="page-actions">
+    <?= $hyperlink($translate('Edit item'), $item->adminUrl('edit'), ['class' => 'button']) ?>
 </div>
 
 <?php endif; ?>

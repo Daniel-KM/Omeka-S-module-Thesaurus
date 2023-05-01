@@ -47,6 +47,7 @@ return [
             Form\ConfirmAllForm::class => Form\ConfirmAllForm::class,
             Form\ConvertForm::class => Form\ConvertForm::class,
             Form\ThesaurusFieldset::class => Form\ThesaurusFieldset::class,
+            Form\UpdateConceptsForm::class => Form\UpdateConceptsForm::class,
         ],
         'factories' => [
             Form\Element\ThesaurusSelect::class => Service\Form\Element\ThesaurusSelectFactory::class,
