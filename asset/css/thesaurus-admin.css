@@ -4,4 +4,17 @@
     .thesaurus .no-resources:before {
         content: '';
     }
+
+    body.thesaurus .sidebar-actions,
+    body.thesaurus .toolbar-actions {
+        text-align: right;
+    }
+
+    body.thesaurus.show .jstree-node a i.jstree-icon.jstree-themeicon::before {
+        content: '';
+    }
+
+    body.thesaurus.show .jstree-open > .jstree-anchor .jstree-displaylink {
+      right: 60px;
+    }
 }

@@ -122,4 +122,12 @@ $(document).ready( function() {
             }).appendTo('#thesaurus-tree-form');
         }, this));
 
+    $('#tree-open-all').on('click', function () {
+        tree.jstree(true).open_all();
+    });
+
+    $('#tree-close-all').on('click', function () {
+        tree.jstree(true).close_all();
+    });
+
 });

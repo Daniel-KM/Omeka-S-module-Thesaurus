@@ -57,6 +57,11 @@ $this->htmlElement('body')->appendAttribute('class', 'thesaurus tree ' . ($form 
 
 <?php endif; ?>
 
+<div class="toolbar-actions">
+    <button id="tree-open-all" type="button" class="button"><?= $translate('Open all') ?></button>
+    <button id="tree-close-all" type="button" class="button"><?= $translate('Close all') ?></button>
+</div>
+
 <div id="jstree"
     data-link-form-url="<?= $form ? $escapeAttr($url('admin/thesaurus/id', ['action' => 'tree'], true)) : '' ?>"
     data-jstree-url="<?= $escapeAttr($url('admin/thesaurus/id', ['action' => 'jstree'], true)) ?>">
