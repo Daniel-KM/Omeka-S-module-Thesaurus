@@ -977,16 +977,34 @@ class Thesaurus extends AbstractPlugin
 
         if ($options['ascendance']) {
             $separator = $options['separator'];
-            foreach ($list as &$term) {
-                if ($term['level'] && isset($this->structure[$term['self']['id']])) {
-                    $ascendance = $this->ancestors($this->structure[$term['self']['id']]);
-                    if (count($ascendance)) {
-                        $ascendanceTitles = array_reverse(array_column($ascendance, 'title', 'id'));
-                        $term['self']['title'] = implode($separator, $ascendanceTitles) . $separator . $term['self']['title'];
-                    }
+
+            // If the separator is included in a term (except top level), it
+            // means that the template uses the full path (alternative label in
+            // the recommended template), so don't add it.
+            $hasSeparator = false;
+            foreach ($list as $data) {
+                if (mb_strpos($data['self']['title'], $separator) !== false) {
+                    $hasSeparator = true;
+                    break;
                 }
             }
-            unset($term);
+            if ($hasSeparator) {
+                $this->logger->warn(new \Omeka\Stdlib\Message(
+                    'At least one descriptor ("%1$s") contains the separator "%2$s". You must change it, unless if it is related to the template title property.', // @translate
+                    $data['self']['title'], $separator
+                ));
+            } else {
+                foreach ($list as &$term) {
+                    if ($term['level'] && isset($this->structure[$term['self']['id']])) {
+                        $ascendance = $this->ancestors($this->structure[$term['self']['id']]);
+                        if (count($ascendance)) {
+                            $ascendanceTitles = array_reverse(array_column($ascendance, 'title', 'id'));
+                            $term['self']['title'] = implode($separator, $ascendanceTitles) . $separator . $term['self']['title'];
+                        }
+                    }
+                }
+                unset($term);
+            }
         }
 
         if (mb_strlen($options['indent'])) {

@@ -78,7 +78,7 @@ class SettingsFieldset extends Fieldset
                 'options' => [
                     'element_group' => 'thesaurus',
                     'label' => 'Ascendance separator (with spaces)', // @translate
-                    'info' => 'Usually " :: ", " -- ", " / " or " > ". Set a leading and a trailing space if needed.', // @translate
+                    'info' => 'Usually " :: ", " -- ", " / " or " > ". Set a leading and a trailing space if needed. It must not be used in descriptors.', // @translate
                 ],
                 'attributes' => [
                     'id' => 'thesaurus_separator',
