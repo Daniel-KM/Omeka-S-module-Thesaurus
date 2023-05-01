@@ -251,7 +251,7 @@ class Thesaurus extends AbstractPlugin
         }
         if ($id) {
             try {
-                return $this->api->read('items', ['id' => $id], [], ['initialize' => false, 'finalize' => false])->getContent();
+                return $this->api->read('items', ['id' => $id])->getContent();
             } catch (\Exception $e) {
                 $this->logger->err(
                     sprintf('Thesaurus based on item #%s does not exist or is not available to current user.', // @translate
