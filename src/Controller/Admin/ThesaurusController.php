@@ -254,12 +254,17 @@ class ThesaurusController extends ItemController
             'scheme' => $item->id(),
             'structure' => $tree,
         ];
+
         // Use a foreground job: it's only some seconds.
-        // TODO If background job, check if the thesaurus is not restructurating or indexing before to display its structure, else errors may occur.
-        // $job = $dispatcher->dispatch(\Thesaurus\Job\UpdateStructure::class, $args);
-        // $message = 'Saving structure in background (%1$sjob #%2$d%3$s, %4$slogs%3$s). It can take a while.'; // @translate
-        $job = $dispatcher->dispatch(\Thesaurus\Job\UpdateStructure::class, $args, $item->getServiceLocator()->get('Omeka\Job\DispatchStrategy\Synchronous'));
-        $message = 'Structure saved and reindexed (%1$sjob #%2$d%3$s, %4$slogs%3$s).'; // @translate
+        if (count($structure) < 100) {
+            $job = $dispatcher->dispatch(\Thesaurus\Job\UpdateStructure::class, $args, $item->getServiceLocator()->get('Omeka\Job\DispatchStrategy\Synchronous'));
+            $message = 'Structure saved and reindexed (%1$sjob #%2$d%3$s, %4$slogs%3$s).'; // @translate
+        } else {
+            // TODO If background job, check if the thesaurus is not restructurating or indexing before to display its structure, else errors may occur.
+            $job = $dispatcher->dispatch(\Thesaurus\Job\UpdateStructure::class, $args);
+            $message = 'Indexing structure in background. Do not display structure while indexing, else errors may occur (%1$sjob #%2$d%3$s, %4$slogs%3$s).'; // @translate
+        }
+
         $message = new Message(
             $message,
             sprintf('<a href="%s">',
