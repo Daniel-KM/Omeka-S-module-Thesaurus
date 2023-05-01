@@ -61,7 +61,53 @@ class CreateThesaurus extends AbstractJob
             return;
         }
 
-        $clean = $this->getArg('clean') ?: [
+        // Default is to fill only descriptor as preferred label.
+        // A preferred label is required.
+        $fill = $this->getArg('fill') ?: [
+            'descriptor_preflabel',
+        ];
+        if (!in_array('descriptor_preflabel', $fill)
+            && !in_array('path_preflabel', $fill)
+        ) {
+            $this->logger->err('A preferred label with the descriptor or the full path is required to fill concepts.'); // @translate
+            return;
+        }
+
+        // Use a quick format to avoid to check option each time.
+        $filling = [
+            'skos:prefLabel' => [],
+            'skos:altLabel' => [],
+            'skos:hiddenLabel' => [],
+        ];
+        if (in_array('descriptor_preflabel', $fill)) {
+            $filling['skos:prefLabel']['descriptor'] = 'descriptor';
+        }
+        if (in_array('descriptor_altlabel', $fill)) {
+            $filling['skos:altLabel']['descriptor'] = 'descriptor';
+        }
+        if (in_array('descriptor_hiddenlabel', $fill)) {
+            $filling['skos:hiddenLabel']['descriptor'] = 'descriptor';
+        }
+        if (in_array('path_preflabel', $fill)) {
+            $filling['skos:prefLabel']['path'] = 'path';
+        }
+        if (in_array('path_altlabel', $fill)) {
+            $filling['skos:altLabel']['path'] = 'path';
+        }
+        if (in_array('path_hiddenlabel', $fill)) {
+            $filling['skos:hiddenLabel']['path'] = 'path';
+        }
+        if (in_array('ascendance_preflabel', $fill)) {
+            $filling['skos:prefLabel']['ascendance'] = 'ascendance';
+        }
+        if (in_array('ascendance_altlabel', $fill)) {
+            $filling['skos:altLabel']['ascendance'] = 'ascendance';
+        }
+        if (in_array('ascendance_hiddenlabel', $fill)) {
+            $filling['skos:hiddenLabel']['ascendance'] = 'ascendance';
+        }
+
+        $clean = $this->getArg('clean') ?? [
             'replace_html_entities',
             'trim_punctuation',
         ];
@@ -163,10 +209,12 @@ class CreateThesaurus extends AbstractJob
         ];
 
         if ($format === 'tab_offset') {
-            $result = $this->convertThesaurusTabOffset($input, $baseConcept, $skosIds, $clean);
+            $result = $this->convertThesaurusTabOffset($input, $baseConcept, $skosIds, $filling, $clean);
         } elseif ($format === 'structure_label') {
-            $result = $this->convertThesaurusStructureLabel($input, $baseConcept, $skosIds, $clean);
+            $result = $this->convertThesaurusStructureLabel($input, $baseConcept, $skosIds, $filling, $clean);
         }
+
+        // Even if the job is stopped, fill the other data.
 
         $topIds = $result['topIds'];
         $narrowers = $result['narrowers'];
@@ -240,18 +288,22 @@ class CreateThesaurus extends AbstractJob
         array $lines,
         array $baseConcept,
         array $skosIds,
+        array $filling,
         array $clean
     ): array {
         $schemeId = $baseConcept['skos:inScheme'][0]['value_resource_id'];
         $ownerId = $baseConcept['o:owner']['o:id'];
 
+        $separator = ' :: ';
+
         $topIds = [];
         $narrowers = [];
-        $levels = [];
 
         $replaceHtmlEntities = in_array('replace_html_entities', $clean);
         $trimPunctuation = in_array('trim_punctuation', $clean);
 
+        $levels = [];
+        $ascendance = [];
         $totalProcessed = 0;
         foreach ($lines as $line) {
             if ($this->shouldStop()) {
@@ -283,18 +335,41 @@ class CreateThesaurus extends AbstractJob
             if ($trimPunctuation) {
                 $descriptor = trim($descriptor, self::TRIM_PUNCTUATION);
             }
+
             $level = strrpos($line, "\t");
             $level = $level === false ? 0 : ++$level;
             $parentLevel = $level ? $level - 1 : false;
-            $data = $baseConcept + [
-                'skos:prefLabel' => [
-                    [
+            if (!$level) {
+                $ascendance = [];
+            }
+
+            $data = $baseConcept;
+
+            foreach ($filling as $term => $contents) {
+                if (isset($contents['descriptor'])) {
+                    $data[$term][] = [
                         'type' => 'literal',
-                        'property_id' => $skosIds['skos:prefLabel'],
+                        'property_id' => $skosIds[$term],
                         '@value' => $descriptor,
-                    ],
-                ],
-            ];
+                    ];
+                }
+                if ($level && count($ascendance)) {
+                    if (isset($contents['path'])) {
+                        $data[$term][] = [
+                            'type' => 'literal',
+                            'property_id' => $skosIds[$term],
+                            '@value' => implode($separator, array_slice($ascendance, 0, $level)) . $separator . $descriptor,
+                        ];
+                    }
+                    if (isset($contents['ascendance'])) {
+                        $data[$term][] = [
+                            'type' => 'literal',
+                            'property_id' => $skosIds[$term],
+                            '@value' => implode($separator, array_slice($ascendance, 0, $level)),
+                        ];
+                    }
+                }
+            }
 
             if ($level) {
                 $data['skos:broader'] = [
@@ -306,6 +381,7 @@ class CreateThesaurus extends AbstractJob
                 ];
             } else {
                 $levels = [];
+                $ascendance = [];
                 $data['skos:topConceptOf'] = [
                     [
                         'type' => 'resource:item',
@@ -319,6 +395,7 @@ class CreateThesaurus extends AbstractJob
             $conceptId = $concept->id();
 
             $levels[$level] = $conceptId;
+            $ascendance[$level] = $descriptor;
 
             if ($level === 0) {
                 $topIds[] = $conceptId;
@@ -349,24 +426,28 @@ class CreateThesaurus extends AbstractJob
      * 02          Asia
      * 02-01       Japan
      * 02-01-01    Tokyo
+     *
+     * @todo Factorize with convertThesaurusTabOffset.
      */
     protected function convertThesaurusStructureLabel(
         array $lines,
         array $baseConcept,
         array $skosIds,
+        array $filling,
         array $clean
     ): array {
         $schemeId = $baseConcept['skos:inScheme'][0]['value_resource_id'];
         $ownerId = $baseConcept['o:owner']['o:id'];
 
+        $separator = ' :: ';
+
         $topIds = [];
         $narrowers = [];
-        $levels = [];
-
-        $sep = '-';
 
         $replaceHtmlEntities = in_array('replace_html_entities', $clean);
         $trimPunctuation = in_array('trim_punctuation', $clean);
+
+        $sep = '-';
 
         // First, prepare a key-value array. The key should be a string.
         $input = [];
@@ -392,6 +473,8 @@ class CreateThesaurus extends AbstractJob
         }
 
         // Second, prepare each row.
+        $levels = [];
+        $ascendance = [];
         $totalProcessed = 0;
         foreach ($input as $structure => $descriptor) {
             if ($this->shouldStop()) {
@@ -417,22 +500,42 @@ class CreateThesaurus extends AbstractJob
 
             $level = substr_count((string) $structure, $sep);
             $parentLevel = $level ? $level - 1 : false;
+            if (!$level) {
+                $ascendance = [];
+            }
 
-            $data = $baseConcept + [
-                'skos:prefLabel' => [
-                    [
+            $data = $baseConcept;
+
+            foreach ($filling as $term => $contents) {
+                if (isset($contents['descriptor'])) {
+                    $data[$term][] = [
                         'type' => 'literal',
-                        'property_id' => $skosIds['skos:prefLabel'],
+                        'property_id' => $skosIds[$term],
                         '@value' => $descriptor,
-                    ],
-                ],
-                'skos:notation' => [
-                    [
-                        'type' => 'literal',
-                        'property_id' => $skosIds['skos:notation'],
-                        '@value' => $structure,
-                    ],
-                ],
+                    ];
+                }
+                if ($level && count($ascendance)) {
+                    if (isset($contents['path'])) {
+                        $data[$term][] = [
+                            'type' => 'literal',
+                            'property_id' => $skosIds[$term],
+                            '@value' => implode($separator, array_slice($ascendance, 0, $level)) . $separator . $descriptor,
+                        ];
+                    }
+                    if (isset($contents['ascendance'])) {
+                        $data[$term][] = [
+                            'type' => 'literal',
+                            'property_id' => $skosIds[$term],
+                            '@value' => implode($separator, array_slice($ascendance, 0, $level)),
+                        ];
+                    }
+                }
+            }
+
+            $data['skos:notation'][] = [
+                'type' => 'literal',
+                'property_id' => $skosIds['skos:notation'],
+                '@value' => $structure,
             ];
 
             if ($level) {
@@ -445,6 +548,7 @@ class CreateThesaurus extends AbstractJob
                 ];
             } else {
                 $levels = [];
+                $ascendance = [];
                 $data['skos:topConceptOf'] = [
                     [
                         'type' => 'resource:item',
@@ -458,6 +562,7 @@ class CreateThesaurus extends AbstractJob
             $conceptId = $concept->id();
 
             $levels[$level] = $conceptId;
+            $ascendance[$level] = $descriptor;
 
             if ($level === 0) {
                 $topIds[] = $conceptId;

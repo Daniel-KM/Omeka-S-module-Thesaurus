@@ -275,6 +275,11 @@ class ThesaurusController extends ItemController
         $outputType = $data['output'] ?? 'text';
         $options = [
             'format' => $data['format'] ?? 'tab_offset',
+            // Default is to fill only descriptor as preferred label.
+            // A preferred label is required.
+            'fill' => $data['fill'] ?? [
+                'descriptor_preflabel',
+            ],
             'clean' => $data['clean'] ?? [
                 'replace_html_entities',
                 'trim_punctuation',
@@ -283,7 +288,7 @@ class ThesaurusController extends ItemController
 
         // TODO Check the file during validation inside the form.
 
-        $file = $files['thesaurus'];
+        $file = $files['file'];
         $fileCheck = $this->checkFile($file);
         if (!empty($file['error'])) {
             $this->messenger()->addError(

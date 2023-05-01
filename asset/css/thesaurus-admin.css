@@ -13,8 +13,11 @@
     body.thesaurus.show .jstree-node a i.jstree-icon.jstree-themeicon::before {
         content: '';
     }
-
     body.thesaurus.show .jstree-open > .jstree-anchor .jstree-displaylink {
       right: 60px;
+    }
+
+    body.thesaurus.convert form .field .inputs label {
+        display: block;
     }
 }
