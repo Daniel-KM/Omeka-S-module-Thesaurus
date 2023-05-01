@@ -88,6 +88,7 @@ class ThesaurusSelect extends Select
      *   - output_type: "listTree" (default) or "listBranch".
      *   - indent (string): String like "– " to prepend to terms to show level.
      *   - prepend_id (bool): Prepend the id of the terms.
+     *   - append_id (bool): Append the id of the terms.
      *   - max_length (int): Max size of the terms.
      * - thesaurus: item (scheme or concept) or item set (skos collection), or
      *   as numeric item id.

@@ -808,6 +808,7 @@ class Thesaurus extends AbstractPlugin
      * @param array $options May be:
      *   - indent (string): String like "– " to prepend to terms to show level.
      *   - prepend_id (bool): Prepend the id of the terms.
+     *   - append_id (bool): Append the id of the terms.
      *   - max_length (int): Max size of the terms.
      */
     public function listTree(?array $options = null): array
@@ -825,6 +826,7 @@ class Thesaurus extends AbstractPlugin
      * @param array $options May be:
      *   - indent (string): String like "– " to prepend to terms to show level.
      *   - prepend_id (bool): Prepend the id of the terms.
+     *   - append_id (bool): Append the id of the terms.
      *   - max_length (int): Max size of the terms.
      */
     public function listBranch(?array $options = null): array
@@ -940,6 +942,7 @@ class Thesaurus extends AbstractPlugin
      * @param array $options Only valable for term output.
      *   - indent (string): String like "– " to prepend to terms to show level.
      *   - prepend_id (bool): Prepend the id of the terms.
+     *   - append_id (bool): Append the id of the terms.
      *   - max_length (int): Max size of the terms.
      */
     protected function list(array $list, array $options): array
@@ -947,9 +950,11 @@ class Thesaurus extends AbstractPlugin
         if ($this->returnItem) {
             return array_combine(array_keys($list), array_column($list, 'self'));
         }
+
         $options += [
             'indent' => '',
             'prepend_id' => false,
+            'append_id' => false,
             'max_length' => 0,
         ];
         if (mb_strlen($options['indent'])) {
@@ -961,12 +966,21 @@ class Thesaurus extends AbstractPlugin
                 return $term;
             }, $list);
         }
+
         if ($options['prepend_id']) {
             $list = array_map(function ($term) {
                 $term['self']['title'] = $term['self']['id'] . ': ' . $term['self']['title'];
                 return $term;
             }, $list);
         }
+
+        if ($options['append_id']) {
+            $list = array_map(function ($term) {
+                $term['self']['title'] = $term['self']['title'] . ' (' . $term['self']['id'] . ')';
+                return $term;
+            }, $list);
+        }
+
         if ($options['max_length']) {
             $maxLength = $options['max_length'];
             $list = array_map(function ($term) use ($maxLength) {
@@ -977,6 +991,7 @@ class Thesaurus extends AbstractPlugin
                 return $term['self']['title'];
             }, $list);
         }
+
         return $list;
     }
 

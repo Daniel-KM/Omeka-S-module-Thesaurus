@@ -467,6 +467,7 @@ class Thesaurus extends AbstractHelper
      * @param array $options May be:
      *   - indent (string): String like "– " to prepend to terms to show level.
      *   - prepend_id (bool): Prepend the id of the terms.
+     *   - append_id (bool): Append the id of the terms.
      *   - max_length (int): Max size of the terms.
      */
     public function listTree(?array $options = null): array
@@ -483,6 +484,7 @@ class Thesaurus extends AbstractHelper
      * @param array $options May be:
      *   - indent (string): String like "– " to prepend to terms to show level.
      *   - prepend_id (bool): Prepend the id of the terms.
+     *   - append_id (bool): Append the id of the terms.
      *   - max_length (int): Max size of the terms.
      */
     public function listBranch(?array $options = null): array
