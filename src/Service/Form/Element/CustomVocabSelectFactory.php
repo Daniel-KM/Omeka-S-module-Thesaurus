@@ -12,8 +12,10 @@ class CustomVocabSelectFactory implements FactoryInterface
     {
         $select = new CustomVocabSelect(null, $options ?? []);
         $plugins = $services->get('ControllerPluginManager');
+        $settings = $services->get('Omeka\Settings');
         return $select
             ->setApiManager($services->get('Omeka\ApiManager'))
-            ->setThesaurus($plugins->get('thesaurus'));
+            ->setThesaurus($plugins->get('thesaurus'))
+            ->setDefaultDisplay($settings->get('thesaurus_select_display', 'ascendance'));
     }
 }

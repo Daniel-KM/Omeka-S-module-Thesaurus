@@ -16,6 +16,11 @@ class CustomVocabSelect extends \CustomVocab\Form\Element\CustomVocabSelect
      */
     protected $thesaurus;
 
+    /**
+     * @var string
+     */
+    protected $display;
+
     public function getValueOptions() : array
     {
         $customVocabId = $this->getOption('custom_vocab_id');
@@ -53,6 +58,12 @@ class CustomVocabSelect extends \CustomVocab\Form\Element\CustomVocabSelect
         return $this;
     }
 
+    public function setDefaultDisplay(string $display): self
+    {
+        $this->display = $display;
+        return $this;
+    }
+
     protected function listValuesThesaurus(CustomVocabRepresentation $customVocab): ?array
     {
         // Check if the item set id is a skos item set.
@@ -66,9 +77,16 @@ class CustomVocabSelect extends \CustomVocab\Form\Element\CustomVocabSelect
             return null;
         }
 
-        $options = $this->getOptions() + [
-            'indent' => '– ',
-        ];
+        $options = $this->getOptions();
+        if ($this->display === 'indent') {
+            $options += [
+                'indent' => '– ',
+            ];
+        } else {
+            $options += [
+                'ascendance' => true,
+            ];
+        }
 
         // To append the id is useless, since the list is ordered and indented.
         /*

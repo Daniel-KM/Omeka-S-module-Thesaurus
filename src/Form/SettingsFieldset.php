@@ -84,6 +84,22 @@ class SettingsFieldset extends Fieldset
                     'id' => 'thesaurus_separator',
                 ],
             ])
+
+            ->add([
+                'name' => 'thesaurus_select_display',
+                'type' => Element\Radio::class,
+                'options' => [
+                    'element_group' => 'thesaurus',
+                    'label' => 'Display of html "select" options', // @translate
+                    'value_options' => [
+                        'ascendance' => 'Full path', // @translate
+                        'indent' => 'Indented', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'thesaurus_select_display',
+                ],
+            ])
         ;
     }
 }

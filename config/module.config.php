@@ -175,6 +175,7 @@ return [
             'thesaurus_property_path' => '',
             'thesaurus_property_ascendance' => '',
             'thesaurus_separator' => \Thesaurus\Module::SEPARATOR,
+            'thesaurus_select_display' => 'ascendance',
         ],
         'block_settings' => [
             'thesaurus' => [
