@@ -6,6 +6,8 @@
         "o:comment": "An RDF vocabulary for describing the basic structure and content of concept schemes such as thesauri, classification schemes, subject heading lists, taxonomies, 'folksonomies', other types of controlled vocabulary, and also concept schemes embedded in glossaries and terminologies."
     },
     "strategy": "file",
-    "file": "skos_2009-08-18.ttl",
-    "format": "turtle"
+    "options": {
+        "file": "skos_2009-08-18.ttl",
+        "format": "turtle"
+    }
 }
