@@ -1,0 +1,29 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var array $result
+ */
+
+$plugins = $this->getHelperPluginManager();
+$url = $plugins->get('url');
+$escape = $plugins->get('escapeHtml');
+$translate = $plugins->get('translate');
+$hyperlink = $plugins->get('hyperlink');
+
+$this->htmlElement('body')->appendAttribute('class', 'thesaurus tree convert');
+?>
+
+<?= $this->pageTitle($translate('Flat'), 1, $translate('Thesaurus')) ?>
+
+<div id="page-actions">
+    <?php if ($this->userIsAllowed('Omeka\Api\Adapter\ItemAdapter', 'create')): ?>
+    <?= $hyperlink($translate('Convert'), $url('admin/thesaurus/default', ['action' => 'convert'], true), ['class' => 'button', 'title' => $translate('Convert a file into a thesaurus')]) ?>
+    <?= $hyperlink($translate('Add new item'), $url('admin/thesaurus/default', ['action' => 'add'], true), ['class' => 'button']) ?>
+    <?php endif; ?>
+</div>
+
+<ul>
+    <?php foreach ($result as $row): ?>
+    <li><?= $escape($row) ?></li>
+    <?php endforeach; ?>
+</ul>

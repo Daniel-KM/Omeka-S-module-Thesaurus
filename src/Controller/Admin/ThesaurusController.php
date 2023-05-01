@@ -199,6 +199,7 @@ class ThesaurusController extends ItemController
         }
 
         $data = $form->getData();
+        $outputType = ($data['output'] ?? 'text') === 'file' ? 'file' : 'text';
 
         // TODO Check the file during validation inside the form.
 
@@ -225,17 +226,41 @@ class ThesaurusController extends ItemController
                     sprintf('Unable to convert the file.') // @translate
                 );
             } else {
+                if ($outputType === 'file') {
+                    $this->messenger()->addSuccess(
+                        'The file is successfully converted.' // @translate
+                    );
+                    $filename = pathinfo($file['name'], PATHINFO_FILENAME)
+                        . '.output'
+                        . (strlen($file['extension']) ? '.' . $file['extension'] : '');
+                    return $this->outputStringAsFile($converted, $filename);
+                }
                 $this->messenger()->addSuccess(
-                    'The file is successfully converted.' // @translate
+                    'The file is successfully converted. You can now copy-paste below data into a custom vocab.' // @translate
                 );
-                $filename = pathinfo($file['name'], PATHINFO_FILENAME)
-                    . '.output'
-                    . (strlen($file['extension']) ? '.' . $file['extension'] : '');
-                return $this->outputStringAsFile($converted, $filename);
+                // return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'flat'], ['query' => ['file' => pathinfo($file['name'], PATHINFO_FILENAME)]]);
+                $params = $this->params()->fromRoute();
+                $params['action'] = 'flat';
+                $params['result'] = $converted;
+                return $this->forward()->dispatch(__CLASS__, $params);
             }
         }
 
         return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
+    }
+
+    public function flatAction()
+    {
+        $result = $this->params('result');
+        if (!$result) {
+            $this->messenger()->addWarning(
+                'Convert first a file to get the flat thesaurus.' // @translate
+            );
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
+        }
+        return new ViewModel([
+            'result' => $this->stringToList($result, true),
+        ]);
     }
 
     /**

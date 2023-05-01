@@ -26,6 +26,22 @@ class ConvertForm extends Form
             ])
 
             ->add([
+                'name' => 'output',
+                'type' => Element\Radio::class,
+                'options' => [
+                    'label' => 'Output', // @translate
+                    'value_options' => [
+                        'text' => 'As text to copy paste', // @translate
+                        'file' => 'As file', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'output',
+                    'value' => 'text',
+                ],
+            ])
+
+            ->add([
                 'name' => 'submit-upload',
                 'type' => Element\Button::class,
                 'options' => [
@@ -43,6 +59,10 @@ class ConvertForm extends Form
                 ->add([
                     'name' => 'thesaurus',
                     'required' => true,
+                ])
+                ->add([
+                    'name' => 'output',
+                    'required' => false,
                 ]);
     }
 }
