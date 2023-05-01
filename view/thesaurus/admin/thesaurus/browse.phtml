@@ -111,14 +111,14 @@ $sortHeadings = [
                     <?php if ($item->userIsAllowed('delete')): ?>
                     <li><?= $hyperlink('', '#', [
                         'data-sidebar-selector' => '#sidebar',
-                        'data-sidebar-content-url' => $item->url('delete-confirm'),
+                        'data-sidebar-content-url' => $url('admin/thesaurus/id', ['action' => 'delete-confirm', 'id' => $item->id()], true),
                         'class' => 'o-icon-delete sidebar-content',
                         'title' => $translate('Delete'),
                     ]) ?></li>
                     <?php endif; ?>
                     <li><?= $hyperlink('', '#', [
                         'data-sidebar-selector' => '#sidebar',
-                        'data-sidebar-content-url' => $item->url('show-details'),
+                        'data-sidebar-content-url' => $url('admin/thesaurus/id', ['action' => 'show-details', 'id' => $item->id()], true),
                         'class' => 'o-icon-more sidebar-content',
                         'title' => $translate('Details'),
                     ]) ?></li>

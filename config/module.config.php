@@ -44,6 +44,7 @@ return [
     ],
     'form_elements' => [
         'invokables' => [
+            Form\ConfirmAllForm::class => Form\ConfirmAllForm::class,
             Form\ConvertForm::class => Form\ConvertForm::class,
             Form\ThesaurusFieldset::class => Form\ThesaurusFieldset::class,
         ],

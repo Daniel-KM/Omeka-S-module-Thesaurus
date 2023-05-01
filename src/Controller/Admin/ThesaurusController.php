@@ -10,6 +10,7 @@ use Omeka\Controller\Admin\ItemController;
 use Omeka\Mvc\Exception\NotFoundException;
 use Omeka\Mvc\Exception\RuntimeException;
 use Omeka\Stdlib\Message;
+use Thesaurus\Form\ConfirmAllForm;
 use Thesaurus\Form\ConvertForm;
 
 /**
@@ -33,6 +34,68 @@ class ThesaurusController extends ItemController
     {
         return parent::sidebarSelectAction()
             ->setTemplate('omeka/admin/item/sidebar-select');
+    }
+
+    public function deleteConfirmAction()
+    {
+        $view = parent::deleteConfirmAction();
+
+        $form = $this->getForm(ConfirmAllForm::class);
+        $form->setAttribute(
+            'action',
+            $this->url()->fromRoute('admin/thesaurus/id', ['action' => 'delete', 'id' => $view->getVariable('resource')->id()], true)
+        );
+
+        return $view
+            ->setTemplate('common/delete-all-confirm-details')
+            ->setVariable('resourceLabel', 'thesaurus') // @translate
+            ->setVariable('form', $form);
+    }
+
+    public function deleteAction()
+    {
+        $request = $this->getRequest();
+        if ($request->isPost()) {
+            $post = $request->getPost();
+            $form = $this->getForm(ConfirmAllForm::class);
+            $form->setData($post);
+            if ($form->isValid()) {
+                /** @var \Omeka\Mvc\Controller\Plugin\Api $api */
+                $api = $this->api($form);
+                $id = (int) $this->params('id');
+                $scheme = $api->searchOne('items', ['id' => $id])->getContent();
+                if (!$scheme) {
+                    $message = new Message('The item #%d is not available.', $id); // @translate
+                    $this->messenger()->addError($message);
+                } else {
+                    /** @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus */
+                    $thesaurus = $this->thesaurus($scheme);
+                    if (!$thesaurus->isSkos()) {
+                        $message = new Message('The item #%d does not belong to a thesaurus.', $id); // @translate
+                        $this->messenger()->addError($message);
+                    } else {
+                        $mode = ($post['mode'] ?? 'scheme') === 'full' ? 'full' : 'scheme';
+                        if ($mode === 'full') {
+                            $ids = $thesaurus->flatTree();
+                            $ids = array_keys($ids);
+                            $ids[] = $id;
+                            $response = $api->batchDelete('items', $ids);
+                            if ($response) {
+                                $this->messenger()->addSuccess('Full thesaurus successfully deleted'); // @translate
+                            }
+                        } else {
+                           $response = $this->api($form)->delete('items', $id);
+                            if ($response) {
+                                $this->messenger()->addSuccess('Thesaurus scheme successfully deleted'); // @translate
+                            }
+                        }
+                    }
+                }
+            } else {
+                $this->messenger()->addFormErrors($form);
+            }
+        }
+        return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'browse'], true);
     }
 
     public function batchEditAction()

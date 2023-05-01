@@ -1,0 +1,29 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\AbstractResourceEntityRepresentation $resource
+ * @var \Omeka\Api\Representation\ItemRepresentation $item
+ * @var string $resourceLabel
+ * @var string $partialPath
+ * @var string $linkTitle
+ * @var array $values
+ * @var \Thesaurus\Form\ConfirmAllForm $form
+ */
+
+?>
+
+<style>
+.sidebar .inputs label::after {
+    background-color: #f7f7f7;
+}
+</style>
+
+<?= $this->partial('common/delete-all-confirm', [
+        'wrapSidebar' => false,
+        'resource' => $resource,
+        'resourceLabel' => $resourceLabel,
+        'form' => $form,
+    ]) ?>
+<?php if (isset($partialPath)): ?>
+    <?= $this->partial($partialPath) ?>
+<?php endif; ?>
