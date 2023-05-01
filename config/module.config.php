@@ -51,7 +51,11 @@ return [
             Form\UpdateConceptsForm::class => Form\UpdateConceptsForm::class,
         ],
         'factories' => [
+            Form\Element\CustomVocabSelect::class => Service\Form\Element\CustomVocabSelectFactory::class,
             Form\Element\ThesaurusSelect::class => Service\Form\Element\ThesaurusSelectFactory::class,
+        ],
+        'aliases' => [
+            \CustomVocab\Form\Element\CustomVocabSelect::class => Form\Element\CustomVocabSelect::class,
         ],
     ],
     'controllers' => [
