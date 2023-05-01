@@ -483,15 +483,14 @@ SQL;
         // Just add the ascendance in data, they will be saved automatically.
 
         if ($propertyPathId) {
-            if ($ascendanceTitles) {
-                $descriptor = $content[$propertyDescriptor][0]['@value'] ?? null;
-                if ($descriptor) {
-                    $content[$propertyPath] = [[
-                        'type' => 'literal',
-                        'property_id' => $propertyPathId,
-                        '@value' => implode($separator, $ascendanceTitles) . $separator . $descriptor,
-                    ]];
-                }
+            $descriptor = $content[$propertyDescriptor][0]['@value'] ?? '';
+            if (mb_strlen($descriptor)) {
+                $content[$propertyPath] = [[
+                    'type' => 'literal',
+                    'property_id' => $propertyPathId,
+                    '@value' => (count($ascendanceTitles) ? implode($separator, $ascendanceTitles) . $separator : '')
+                        . $descriptor,
+                ]];
             } else {
                 unset($content[$propertyPath]);
             }

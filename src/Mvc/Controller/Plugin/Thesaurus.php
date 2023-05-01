@@ -977,9 +977,11 @@ class Thesaurus extends AbstractPlugin
             $separator = $options['separator'];
             $list = array_map(function ($term) use ($separator) {
                 if ($term['level'] && isset($this->structure[$term['self']['id']])) {
-                    $ascendance = array_reverse($this->ancestors($this->structure[$term['self']['id']]));
-                    $ascendanceTitles = array_column($ascendance, 'title', 'id');
-                    $term['self']['title'] = implode($separator, $ascendanceTitles) . $separator . $term['self']['title'];
+                    $ascendance = $this->ancestors($this->structure[$term['self']['id']]);
+                    if (count($ascendance)) {
+                        $ascendanceTitles = array_reverse(array_column($ascendance, 'title', 'id'));
+                        $term['self']['title'] = implode($separator, $ascendanceTitles) . $separator . $term['self']['title'];
+                    }
                 }
                 return $term;
             }, $list);

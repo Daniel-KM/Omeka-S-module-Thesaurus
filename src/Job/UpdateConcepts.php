@@ -171,33 +171,38 @@ class UpdateConcepts extends AbstractJob
             }
 
             foreach ($chunk as $conceptId => $itemData) {
-                $update = false;
                 $item = $thesaurus->itemFromData($itemData);
+
                 $ascendance = $thesaurus->setItem($item)->ascendants(true);
-                if (count($ascendance)) {
-                    $data = json_decode(json_encode($item), true);
-                    $ascendanceTitles = array_column($ascendance, 'title', 'id');
-                    if (!empty($fill['path'])) {
-                        $term = $fill['path'];
-                        $update = true;
-                        $val = [
-                            'type' => 'literal',
-                            'property_id' => $skosIds[$term],
-                            '@value' => implode($separator, $ascendanceTitles) . $separator . $itemData['self']['title'],
-                        ];
-                        if ($mode === 'remove') {
-                            unset($data[$term]);
-                        } elseif ($mode === 'replace') {
-                            $data[$term] = [$val];
-                        } elseif ($mode === 'prepend') {
-                            array_unshift($data[$term], $val);
-                        } elseif ($mode === 'append') {
-                            $data[$term][] = $val;
-                        }
+                $ascendanceTitles = array_column($ascendance, 'title', 'id');
+
+                $data = json_decode(json_encode($item), true);
+
+                // TODO Remove path when mode is remove/replace and fill option is empty.
+                if (!empty($fill['path'])) {
+                    $term = $fill['path'];
+                    $val = [
+                        'type' => 'literal',
+                        'property_id' => $skosIds[$term],
+                        '@value' => count($ascendanceTitles)
+                            ? implode($separator, $ascendanceTitles) . $separator . $itemData['self']['title']
+                            : $itemData['self']['title'],
+                    ];
+                    if ($mode === 'remove') {
+                        unset($data[$term]);
+                    } elseif ($mode === 'replace') {
+                        $data[$term] = [$val];
+                    } elseif ($mode === 'prepend') {
+                        array_unshift($data[$term], $val);
+                    } elseif ($mode === 'append') {
+                        $data[$term][] = $val;
                     }
-                    if (!empty($fill['ascendance'])) {
-                        $term = $fill['ascendance'];
-                        $update = true;
+                }
+
+                // TODO Remove ascendance when mode is remove/replace and fill option is empty.
+                if (!empty($fill['ascendance'])) {
+                    $term = $fill['ascendance'];
+                    if (count($ascendance)) {
                         $val = [
                             'type' => 'literal',
                             'property_id' => $skosIds[$term],
@@ -212,14 +217,16 @@ class UpdateConcepts extends AbstractJob
                         } elseif ($mode === 'append') {
                             $data[$term][] = $val;
                         }
+                    } elseif ($mode === 'remove' || $mode === 'replace') {
+                        unset($data[$term]);
                     }
                 }
-                if ($update) {
-                    // To avoid issues with doctrine, remove owner, class and
-                    // template. They are kept anyway because update is partial.
-                    unset($data['o:owner'], $data['o:resource_template'], $data['o:resource_class']);
-                    $this->api->update('items', ['id' => $conceptId], $data, [], ['isPartial' => true]);
-                }
+
+                // To avoid issues with doctrine, remove owner, class and
+                // template. They are kept anyway because update is partial.
+                unset($data['o:owner'], $data['o:resource_template'], $data['o:resource_class']);
+                $this->api->update('items', ['id' => $conceptId], $data, [], ['isPartial' => true]);
+
                 ++$totalProcessed;
             }
         }

@@ -337,21 +337,23 @@ class CreateThesaurus extends AbstractJob
                     '@value' => $descriptor,
                 ];
             }
-            if ($level && count($ascendance)) {
-                if (!empty($fill['path'])) {
-                    $data[$fill['path']][] = [
-                        'type' => 'literal',
-                        'property_id' => $skosIds[$fill['path']],
-                        '@value' => implode($separator, array_slice($ascendance, 0, $level)) . $separator . $descriptor,
-                    ];
-                }
-                if (!empty($fill['ascendance'])) {
-                    $data[$fill['ascendance']][] = [
-                        'type' => 'literal',
-                        'property_id' => $skosIds[$fill['ascendance']],
-                        '@value' => implode($separator, array_slice($ascendance, 0, $level)),
-                    ];
-                }
+
+            if (!empty($fill['path'])) {
+                $data[$fill['path']][] = [
+                    'type' => 'literal',
+                    'property_id' => $skosIds[$fill['path']],
+                    '@value' => $level && count($ascendance)
+                        ? implode($separator, array_slice($ascendance, 0, $level)) . $separator . $descriptor
+                        : $descriptor,
+                ];
+            }
+
+            if ($level && count($ascendance) && !empty($fill['ascendance'])) {
+                $data[$fill['ascendance']][] = [
+                    'type' => 'literal',
+                    'property_id' => $skosIds[$fill['ascendance']],
+                    '@value' => implode($separator, array_slice($ascendance, 0, $level)),
+                ];
             }
 
             if ($level) {
@@ -492,14 +494,16 @@ class CreateThesaurus extends AbstractJob
                     '@value' => $descriptor,
                 ];
             }
+            if (!empty($fill['path'])) {
+                $data[$fill['path']][] = [
+                    'type' => 'literal',
+                    'property_id' => $skosIds[$fill['path']],
+                    '@value' => $level && count($ascendance)
+                        ? implode($separator, array_slice($ascendance, 0, $level)) . $separator . $descriptor
+                        : $descriptor,
+                ];
+            }
             if ($level && count($ascendance)) {
-                if (!empty($fill['path'])) {
-                    $data[$fill['path']][] = [
-                        'type' => 'literal',
-                        'property_id' => $skosIds[$fill['path']],
-                        '@value' => implode($separator, array_slice($ascendance, 0, $level)) . $separator . $descriptor,
-                    ];
-                }
                 if (!empty($fill['ascendance'])) {
                     $data[$fill['ascendance']][] = [
                         'type' => 'literal',
