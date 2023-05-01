@@ -86,7 +86,7 @@ $sortHeadings = [
         ?>
         <tr>
             <td>
-                <?= $item->linkPretty() ?>
+                <?= str_replace(['/admin/item/', '&#x2F;admin&#x2F;item&#x2F;'], ['/admin/thesaurus/', '&#x2F;admin&#x2F;thesaurus&#x2F;'], $item->linkPretty()) ?>
                 <?php if (!$item->isPublic()): ?>
                     <span class="o-icon-private" aria-label="<?= $translate('Private') ?>"></span>
                 <?php endif; ?>

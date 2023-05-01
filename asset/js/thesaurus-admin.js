@@ -9,13 +9,20 @@ $(document).ready( function() {
     const tree = $('#jstree');
     if (!tree.jstree) return;
 
+    const isEdit = $('body').hasClass('edit');
+
     var initialTreeData;
+
+    // Disable button "save" until the menu is fully loaded
+    // to avoid to override it with an empty menu.
+    const buttonSave = $('body.edit.menus #page-actions button[type=submit]');
+    buttonSave.prop('disabled', true);
 
     /**
      * Display element plugin for jsTree.
      * Adapted from jstree-plugins.
      */
-    $.jstree.plugins.displayElement = function(options, parent) {
+    $.jstree.plugins.displayElements = function(options, parent) {
        // Use a <i> instead of a <a> because inside a <a>.
         var displayIcon = $('<i>', {
             class: 'jstree-icon jstree-displaylink',
@@ -52,7 +59,7 @@ $(document).ready( function() {
         };
     };
 
-    var jstree = tree
+    tree
         .jstree({
             'core': {
                 'check_callback': true,
@@ -66,24 +73,28 @@ $(document).ready( function() {
                         url: tree.data('jstree-url'),
                     },
             },
-            // Plugins jstree and omeka (jstree-plugins).
-            // TODO Use lazy massload?
-             'plugins': ['dnd', 'removenode', /*'editlink'*/, 'displayElement']
+            // Plugins jstree, omeka (jstree-plugins) or above.
+            // TODO Use lazy massload? Useless until 10000 concepts.
+            plugins: isEdit
+                ? ['dnd', 'removenode', /* 'editlink' */, 'displayElements']
+                : ['displayElements'],
         })
         .on('loaded.jstree', function() {
             // Open all nodes by default.
             tree.jstree(true).open_all();
-            initialTreeData = JSON.stringify(tree.jstree(true).get_json());
+            // Don't store node state open/closed, since it's not stored.
+            initialTreeData = JSON.stringify(tree.jstree(true).get_json(null, {no_state: true, no_a_attr: true, no_li_attr: true}));
+            buttonSave.prop('disabled', false);
         })
         .on('move_node.jstree', function(e, data) {
-            // Open node after moving it.
+            // Open parent node after moving it.
             var parent = tree.jstree(true).get_node(data.parent);
             tree.jstree(true).open_all(parent);
         });
 
     $('#thesaurus-tree-form')
         .on('o:before-form-unload', function () {
-            if (initialTreeData !== JSON.stringify(tree.jstree(true).get_json())) {
+            if (initialTreeData !== JSON.stringify(tree.jstree(true).get_json(null, {no_state: true, no_a_attr: true, no_li_attr: true}))) {
                 Omeka.markDirty(this);
             }
         });

@@ -1,0 +1,12 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Form\ResourceForm $form
+ * @var \Omeka\Api\Representation\ItemRepresentation $item
+ * @var \Omeka\Api\Representation\ItemRepresentation $resource
+ * @var array $mediaForms
+ */
+
+$this->vars()->offsetSet('form', null);
+
+echo $this->partial('thesaurus/admin/thesaurus/structure');
