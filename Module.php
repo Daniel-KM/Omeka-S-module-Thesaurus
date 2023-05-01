@@ -409,6 +409,8 @@ SQL;
         $script = sprintf('const customVocabThesaurus = %s;', json_encode($cvThesaurus));
 
         $assetUrl = $plugins->get('assetUrl');
+        $plugins->get('headLink')
+            ->appendStylesheet($assetUrl('css/thesaurus-admin.css', 'Thesaurus'));
         $plugins->get('headScript')
             ->appendScript($script)
             ->appendFile($assetUrl('js/thesaurus-resource-form.js', 'Thesaurus'), 'text/javascript', ['defer' => 'defer']);

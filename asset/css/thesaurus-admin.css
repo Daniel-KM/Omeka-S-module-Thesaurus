@@ -21,4 +21,12 @@
     body.thesaurus.update-concepts form .field .inputs label {
         display: block;
     }
+
+    .field.resource-property .chosen-container .chosen-results {
+        max-height: 65vh;
+    }
+
+    .field.resource-property .chosen-container-single .chosen-single span {
+        white-space: break-spaces;
+    }
 }
