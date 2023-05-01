@@ -151,6 +151,21 @@ class ThesaurusController extends ItemController
         );
     }
 
+    public function updateAction()
+    {
+        /** @var \Omeka\Api\Representation\ItemRepresentation $item */
+        $item = $this->api()->read('items', $this->params('id'))->getContent();
+
+        if (!$item->userIsAllowed('batch-edit')) {
+            $message = 'User is not allowed to batch edit thesaurus.'; // @translate
+            $this->messenger()->addError($message);
+            return $this->redirect()->toRoute('admin/thesaurus/id', ['action' => 'browse'], true);
+        }
+
+        $this->processUpdateConcepts($item);
+        return $this->redirect()->toRoute('admin/thesaurus/id', ['action' => 'show'], true);
+    }
+
     public function updateConceptsAction()
     {
         /** @var \Omeka\Api\Representation\ItemRepresentation $item */
@@ -168,33 +183,7 @@ class ThesaurusController extends ItemController
             $form->setData($post);
             if ($form->isValid()) {
                 $data = $form->getData();
-                $settings = $this->settings();
-                $dispatcher = $this->jobDispatcher();
-                $args = [
-                    'scheme' => (int) $item->id(),
-                    // A preferred label is required.
-                    'fill' => [
-                        // Pass the descriptor to job for check, but not used.
-                        'descriptor' => $settings->get('thesaurus_property_descriptor', 'skos:prefLabel'),
-                        'path' => $settings->get('thesaurus_property_path', ''),
-                        'ascendance' => $settings->get('thesaurus_property_ascendance', ''),
-                    ],
-                    'separator' => $settings->get('thesaurus_separator', \Thesaurus\Module::SEPARATOR),
-                    'mode' => $data['mode'] ?? 'replace',
-                ];
-                $job = $dispatcher->dispatch(\Thesaurus\Job\UpdateConcepts::class, $args);
-                $message = new \Omeka\Stdlib\Message(
-                    'Updating concepts in background (%1$sjob #%2$d%3$s, %4$slogs%3$s).', // @translate
-                    sprintf(
-                        '<a href="%s">',
-                        htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))
-                        ),
-                    $job->getId(),
-                    '</a>',
-                    sprintf('<a href="%1$s">', class_exists('Log\Entity\Log') ? $this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]) :  $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()]))
-                );
-                $message->setEscapeHtml(false);
-                $this->messenger()->addSuccess($message);
+                $this->processUpdateConcepts($item, $data['mode'] ?? 'replace');
                 return $this->redirect()->toRoute('admin/thesaurus/id', ['action' => 'show'], true);
             } else {
                 $this->messenger()->addFormErrors($form);
@@ -626,6 +615,39 @@ class ThesaurusController extends ItemController
             $job->getId(),
             '</a>',
             sprintf('<a href="%1$s">', class_exists('Log\Stdlib\PsrMessage') ? $urlHelper('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]) :  $urlHelper('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()]))
+        );
+        $message->setEscapeHtml(false);
+        $this->messenger()->addSuccess($message);
+    }
+
+    protected function processUpdateConcepts(ItemRepresentation $item, string $mode = 'replace')
+    {
+        $settings = $this->settings();
+
+        $args = [
+            'scheme' => (int) $item->id(),
+            // A preferred label is required.
+            'fill' => [
+                // Pass the descriptor to job for check, but not used.
+                'descriptor' => $settings->get('thesaurus_property_descriptor', 'skos:prefLabel'),
+                'path' => $settings->get('thesaurus_property_path', ''),
+                'ascendance' => $settings->get('thesaurus_property_ascendance', ''),
+            ],
+            'separator' => $settings->get('thesaurus_separator', \Thesaurus\Module::SEPARATOR),
+            'mode' => $mode,
+        ];
+
+        $dispatcher = $this->jobDispatcher();
+        $job = $dispatcher->dispatch(\Thesaurus\Job\UpdateConcepts::class, $args);
+        $message = new \Omeka\Stdlib\Message(
+            'Updating concepts in background (%1$sjob #%2$d%3$s, %4$slogs%3$s).', // @translate
+            sprintf(
+                '<a href="%s">',
+                htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))
+                ),
+            $job->getId(),
+            '</a>',
+            sprintf('<a href="%1$s">', class_exists('Log\Entity\Log') ? $this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]) :  $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()]))
         );
         $message->setEscapeHtml(false);
         $this->messenger()->addSuccess($message);

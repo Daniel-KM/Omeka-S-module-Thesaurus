@@ -224,8 +224,11 @@ class UpdateConcepts extends AbstractJob
             }
         }
 
+        $indexing = new \Thesaurus\Job\Indexing($this->job, $services);
+        $indexing->perform();
+
         $message = new Message(
-            'Concepts were restructured and reindexed for thesaurus "%1$s" (#%2$d).', // @translate
+            'Concepts were updated and reindexed for thesaurus "%1$s" (#%2$d).', // @translate
             $scheme->displayTitle(), $schemeId
         );
         $this->logger->notice($message);

@@ -103,9 +103,9 @@ $sortHeadings = [
                         'class' => 'thesaurus fas fa-sitemap o-icon-',
                         'title' => $translate('Edit structure'),
                     ]) ?></li>
-                    <li><?= $hyperlink('', $url('admin/thesaurus/id', ['action' => 'reindex', 'id' => $item->id()], true), [
+                    <li><?= $hyperlink('', $url('admin/thesaurus/id', ['action' => 'update', 'id' => $item->id()], true), [
                         'class' => 'thesaurus fa fa-refresh fa-sync o-icon-',
-                        'title' => $translate('Reindex'),
+                        'title' => $translate('Update path/ascendance and reindex'),
                     ]) ?></li>
                     <?php endif; ?>
                     <?php if ($item->userIsAllowed('delete')): ?>
