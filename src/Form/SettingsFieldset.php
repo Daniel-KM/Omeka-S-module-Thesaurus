@@ -4,6 +4,7 @@ namespace Thesaurus\Form;
 
 use Laminas\Form\Element;
 use Laminas\Form\Fieldset;
+use Thesaurus\Form\Element as ThesaurusElement;
 
 class SettingsFieldset extends Fieldset
 {
@@ -37,7 +38,7 @@ class SettingsFieldset extends Fieldset
             ])
             ->add([
                 'name' => 'thesaurus_property_path',
-                'type' => Element\Radio::class,
+                'type' => ThesaurusElement\OptionalRadio::class,
                 'options' => [
                     'element_group' => 'thesaurus',
                     'label' => 'Property used for the full path (ascendance and descriptor)', // @translate
@@ -55,7 +56,7 @@ class SettingsFieldset extends Fieldset
             ])
             ->add([
                 'name' => 'thesaurus_property_ascendance',
-                'type' => Element\Radio::class,
+                'type' => ThesaurusElement\OptionalRadio::class,
                 'options' => [
                     'element_group' => 'thesaurus',
                     'label' => 'Property used for the ascendance', // @translate

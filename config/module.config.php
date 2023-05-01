@@ -44,6 +44,7 @@ return [
     ],
     'form_elements' => [
         'invokables' => [
+            Form\Element\OptionalRadio::class => Form\Element\OptionalRadio::class,
             Form\ConfirmAllForm::class => Form\ConfirmAllForm::class,
             Form\ConvertForm::class => Form\ConvertForm::class,
             Form\SettingsFieldset::class => Form\SettingsFieldset::class,
