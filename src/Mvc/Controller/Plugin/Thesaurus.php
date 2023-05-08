@@ -989,10 +989,19 @@ class Thesaurus extends AbstractPlugin
                 }
             }
             if ($hasSeparator) {
-                $this->logger->warn(new \Omeka\Stdlib\Message(
-                    'At least one descriptor ("%1$s") contains the separator "%2$s". You must change it, unless if it is related to the template title property.', // @translate
-                    $data['self']['title'], $separator
-                ));
+                // Set message only when template title is skos:prefLabel.
+                // TODO Check setting "thesaurus_property_descriptor" too.
+                /** @var \Omeka\Api\Representation\ResourceTemplateRepresentation $templateConcept */
+                $templateConcept = $this->api->read('resource_templates', ['label' => 'Thesaurus Concept'])->getContent();
+                $titleProperty = $templateConcept->titleProperty();
+                if ($titleProperty && $titleProperty->term() === 'skos:prefLabel') {
+                    $this->logger->warn(new \Omeka\Stdlib\Message(
+                        'At least one descriptor ("%1$s") contains the separator "%2$s". You must change it.', // @translate
+                        $data['self']['title'], $separator
+                    ));
+                }
+                // Else, the path is probably used as title, so no need to
+                // create the tree structure here.
             } else {
                 foreach ($list as &$term) {
                     if ($term['level'] && isset($this->structure[$term['self']['id']])) {
