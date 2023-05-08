@@ -25,6 +25,25 @@ class ThesaurusController extends ItemController
             ->setTemplate('omeka/admin/item/search');
     }
 
+    public function showAction()
+    {
+        $response = $this->api()->read('items', $this->params('id'));
+        $item = $response->getContent();
+
+        // Check if the thesaurus of the item has a collection, that is
+        // required to make custom vocab working for thesaurus in resource form.
+        /** @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus */
+        $thesaurus = $this->thesaurus($item);
+        if (!$thesaurus->getItemSet()) {
+            $this->messenger()->addWarning('The thesaurus has no item set with class "skos:Collection" or "skos:OrderedCollection".'); // @translate
+        }
+
+        return new ViewModel([
+            'item' => $item,
+            'resource' => $item,
+        ]);
+    }
+
     public function showDetailsAction()
     {
         return parent::showDetailsAction()

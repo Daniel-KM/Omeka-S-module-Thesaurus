@@ -44,6 +44,21 @@ Usage
 This module allows to manage concept as any other items and to use and to manage
 directly the terms of the ontology [skos].
 
+You can create a thesaurus in various ways.
+
+### Manual creation of a thesaurus
+
+Create first an item set with class "skos:Collection" or "skos:orderedCollection".
+This is required to get the display the tree structure in resource form via Custom Vocab.
+This item set must contains only the scheme and all concepts.
+
+Then create the scheme with the template "Thesaurus Scheme", then each concept
+with the template "Thesaurus Concept". Each concept should have the required property
+"skos:inScheme" filled with the scheme.
+
+To make the structure, you can link each concept via the resource form interface,
+or via the menu "Thesaurus".
+
 ### Use of concepts as related items
 
 You can create your own thesaurus (or import it via module such [Bulk Import]).
