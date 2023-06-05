@@ -71,6 +71,11 @@ class Thesaurus extends AbstractPlugin
     protected $itemSet;
 
     /**
+     * @var int
+     */
+    protected $itemSetId;
+
+    /**
      * @var ItemRepresentation
      */
     protected $scheme;
