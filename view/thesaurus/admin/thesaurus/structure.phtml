@@ -23,7 +23,6 @@ if ($isAllowed && $form): $form->prepare(); else: $form = null; endif;
 $this->headLink()
     ->prependStylesheet($assetUrl('css/advanced-search.css', 'Omeka'))
     ->appendStylesheet($assetUrl('css/jstree.css', 'Omeka'))
-    ->appendStylesheet($assetUrl('css/query-form.css', 'Omeka'))
     ->appendStylesheet($assetUrl('css/thesaurus-admin.css', 'Thesaurus'));
 $this->headScript()
     ->appendFile($assetUrl('vendor/jstree/jstree.min.js', 'Omeka'))
