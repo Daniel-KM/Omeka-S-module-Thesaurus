@@ -78,7 +78,7 @@ if (version_compare($oldVersion, '3.4.9', '<')) {
     $messenger->addSuccess($message);
 
     $settings->set('easyadmin_interface', ['resource_public_view']);
-    $message = new Message('%1$sNew setttings%2$s allow to store the path or the ascendance of each concept automatically or via the update button of the thesaurus.', // @translate
+    $message = new Message('%1$sNew settings%2$s allow to store the path or the ascendance of each concept automatically or via the update button of the thesaurus.', // @translate
         sprintf('<a href="%s">', $url('admin/default', ['controller' => 'setting'], ['fragment' => 'thesaurus'])),
         '</a>'
     );
