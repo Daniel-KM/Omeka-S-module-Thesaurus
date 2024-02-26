@@ -3,7 +3,6 @@
 namespace Thesaurus\Job;
 
 use Omeka\Job\AbstractJob;
-use Omeka\Stdlib\Message;
 
 class CreateThesaurus extends AbstractJob
 {
@@ -98,31 +97,31 @@ class CreateThesaurus extends AbstractJob
 
         // Check properties in options one time.
         if (!empty($fill['descriptor']) && empty($skosIds[$fill['descriptor']])) {
-            $this->logger->err(new Message(
-                'The property "%1$s" for descriptor is not managed.', // @translate
-                $fill['descriptor']
-            ));
+            $this->logger->err(
+                'The property {property} for descriptor is not managed.', // @translate
+                ['property' => $fill['descriptor']]
+            );
             return;
         }
         if (!empty($fill['path']) && empty($skosIds[$fill['path']])) {
-            $this->logger->err(new Message(
-                'The property "%1$s" for path is not managed.', // @translate
-                $fill['path']
-            ));
+            $this->logger->err(
+                'The property "{property}" for path is not managed.', // @translate
+                ['property' => $fill['path']]
+            );
             return;
         }
         if (!empty($fill['ascendance']) && empty($skosIds[$fill['ascendance']])) {
-            $this->logger->err(new Message(
-                'The property "%1$s" for ascendance is not managed.', // @translate
-                $fill['ascendance']
-            ));
+            $this->logger->err(
+                'The property "{property}" for ascendance is not managed.', // @translate
+                ['property' => $fill['ascendance']]
+            );
             return;
         }
 
-        $this->logger->notice(new Message(
-            'Processing %d descriptors in three steps.', // @translate
-            count($input)
-        ));
+        $this->logger->notice(
+            'Processing {count} descriptors in three steps.', // @translate
+            ['count' => count($input)]
+        );
 
         // First create the item set.
         $data = [
@@ -175,10 +174,10 @@ class CreateThesaurus extends AbstractJob
 
         // Third, create each item one by one to set tree.
 
-        $this->logger->notice(new Message(
-            'Step 1/3: creation of %d descriptors.', // @translate
-            count($input)
-        ));
+        $this->logger->notice(
+            'Step 1/3: creation of {count} descriptors.', // @translate
+            ['count' => count($input)]
+        );
 
         $baseConcept = [
             'o:owner' => ['o:id' => $ownerId],
@@ -208,18 +207,18 @@ class CreateThesaurus extends AbstractJob
         $narrowers = $result['narrowers'];
         $narrowers = array_filter($narrowers);
 
-        $this->logger->notice(new Message(
+        $this->logger->notice(
             'Step 2/3: creation of relations between descriptors.' // @translate
-        ));
+        );
 
         // Fourth, append narrower concepts to concepts.
         $totalProcessed = 0;
         foreach ($narrowers as $parentId => $narrowerIds) {
             if ($totalProcessed && ($totalProcessed % 100) === 0) {
-                $this->logger->info(new Message(
-                    '%1$d/%2$d descriptors completed.', // @translate
-                    $totalProcessed, count($narrowers)
-                ));
+                $this->logger->info(
+                    '{count}/{total} descriptors completed.', // @translate
+                    ['count' => $totalProcessed, 'total' => count($narrowers)]
+                );
 
                 $this->entityManager->clear();
                 $this->entityManager->getRepository(\Omeka\Entity\User::class)->find($ownerId);
@@ -252,9 +251,9 @@ class CreateThesaurus extends AbstractJob
             $this->api->update('items', $schemeId, $schemeJson, [], ['isPartial' => true]);
         }
 
-        $this->logger->notice(new Message(
+        $this->logger->notice(
             'Step 3/3: indexation of new thesaurus.' // @translate
-        ));
+        );
 
         // The scheme is needed for job Indexing.
         $args = $this->job->getArgs();
@@ -263,11 +262,10 @@ class CreateThesaurus extends AbstractJob
         $indexing = new \Thesaurus\Job\Indexing($this->job, $services);
         $indexing->perform();
 
-        $message = new Message(
-            'The thesaurus "%1$s" is ready, with %2$d descriptors.', // @translate
-            ucfirst($name), count($input)
+        $this->logger->notice(
+            'The thesaurus "{name}" is ready, with {count} descriptors.', // @translate
+            ['name' => ucfirst($name), 'count' => count($input)]
         );
-        $this->logger->notice($message);
     }
 
     /**
@@ -294,10 +292,10 @@ class CreateThesaurus extends AbstractJob
         $totalProcessed = 0;
         foreach ($lines as $line) {
             if ($this->shouldStop()) {
-                $this->logger->warn(new Message(
-                    'The job  was stopped. %1$d/%2$d descriptors processed.', // @translate
-                    $totalProcessed, count($lines)
-                ));
+                $this->logger->warn(
+                    'The job  was stopped. {count}/{total} descriptors processed.', // @translate
+                    ['count' => $totalProcessed, 'total' => count($lines)]
+                );
                 return [
                     'topIds' => $topIds,
                     'narrowers' => $narrowers,
@@ -305,10 +303,10 @@ class CreateThesaurus extends AbstractJob
             }
 
             if ($totalProcessed && ($totalProcessed % 100) === 0) {
-                $this->logger->info(new Message(
-                    '%1$d/%2$d descriptors processed.', // @translate
-                    $totalProcessed, count($lines)
-                ));
+                $this->logger->info(
+                    '{count}/{total} descriptors processed.', // @translate
+                    ['count' => $totalProcessed, 'total' => count($lines)]
+                );
 
                 $this->entityManager->clear();
                 $this->entityManager->getRepository(\Omeka\Entity\User::class)->find($ownerId);
@@ -448,10 +446,10 @@ class CreateThesaurus extends AbstractJob
         $input = array_filter($input);
 
         if (count($input) !== count($lines)) {
-            $this->logger->notice(new Message(
-                'After first step, %1$d descriptors can be processed.', // @translate
-                count($input)
-            ));
+            $this->logger->notice(
+                'After first step, {count} descriptors can be processed.', // @translate
+                ['count' => count($input)]
+            );
         }
 
         // Second, prepare each row.
@@ -460,10 +458,10 @@ class CreateThesaurus extends AbstractJob
         $totalProcessed = 0;
         foreach ($input as $structure => $descriptor) {
             if ($this->shouldStop()) {
-                $this->logger->warn(new Message(
-                    'The job  was stopped. %1$d/%2$d descriptors processed.', // @translate
-                    $totalProcessed, count($input)
-                ));
+                $this->logger->warn(
+                    'The job  was stopped. {count}/{total} descriptors processed.', // @translate
+                    ['count' => $totalProcessed, 'total' => count($input)]
+                );
                 return [
                     'topIds' => $topIds,
                     'narrowers' => $narrowers,
@@ -471,10 +469,10 @@ class CreateThesaurus extends AbstractJob
             }
 
             if ($totalProcessed && ($totalProcessed % 100) === 0) {
-                $this->logger->info(new Message(
-                    '%1$d/%2$d descriptors processed.', // @translate
-                    $totalProcessed, count($input)
-                ));
+                $this->logger->info(
+                    '{count}/{total} descriptors processed.', // @translate
+                    ['count' => $totalProcessed, 'total' => count($input)]
+                );
 
                 $this->entityManager->clear();
                 $this->entityManager->getRepository(\Omeka\Entity\User::class)->find($ownerId);

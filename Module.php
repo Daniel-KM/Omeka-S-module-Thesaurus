@@ -29,31 +29,49 @@ namespace Thesaurus;
  * knowledge of the CeCILL license and that you accept its terms.
  */
 
-if (!class_exists(\Generic\AbstractModule::class)) {
-    require file_exists(dirname(__DIR__) . '/Generic/AbstractModule.php')
-        ? dirname(__DIR__) . '/Generic/AbstractModule.php'
-        : __DIR__ . '/src/Generic/AbstractModule.php';
+if (!class_exists(\Common\TraitModule::class)) {
+    require_once dirname(__DIR__) . '/Common/TraitModule.php';
 }
 
+use Common\Stdlib\PsrMessage;
+use Common\TraitModule;
 use Doctrine\ORM\Query\Expr\Join;
-use Generic\AbstractModule;
 use Laminas\EventManager\Event;
 use Laminas\EventManager\SharedEventManagerInterface;
 use Laminas\Mvc\MvcEvent;
+use Omeka\Module\AbstractModule;
 
 /**
  * Thesaurus
  *
  * Allows to use standard thesaurus (ISO 25964 to describe documents).
  *
- * @copyright Daniel Berthereau, 2018-2023
+ * @copyright Daniel Berthereau, 2018-2024
  * @license http://www.cecill.info/licences/Licence_CeCILL_V2.1-en.txt
  */
 class Module extends AbstractModule
 {
+    use TraitModule;
+
     const NAMESPACE = __NAMESPACE__;
 
     const SEPARATOR = ' :: ';
+
+    protected function preInstall(): void
+    {
+        $services = $this->getServiceLocator();
+        $translate = $services->get('ControllerPluginManager')->get('translate');
+
+        if (!method_exists($this, 'checkModuleActiveVersion') || !$this->checkModuleActiveVersion('Common', '3.4.54')) {
+            $message = new \Omeka\Stdlib\Message(
+                $translate('The module %1$s should be upgraded to version %2$s or later.'), // @translate
+                'Common', '3.4.54'
+            );
+            throw new \Omeka\Module\Exception\ModuleCannotInstallException((string) $message);
+        }
+
+        $this->installDir();
+    }
 
     protected function postInstall(): void
     {
@@ -66,7 +84,7 @@ class Module extends AbstractModule
         $services = $this->getServiceLocator();
         $messenger = $services->get('ControllerPluginManager')->get('messenger');
 
-        $message = new \Omeka\Stdlib\Message(
+        $message = new PsrMessage(
             'It is recommended to install module CustomVocab to take full advantage of this module.' // @translate
         );
         $messenger->addWarning($message);

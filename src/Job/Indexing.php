@@ -2,10 +2,10 @@
 
 namespace Thesaurus\Job;
 
+use Common\Stdlib\PsrMessage;
 use Doctrine\ORM\EntityManager;
 use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Job\AbstractJob;
-use Omeka\Stdlib\Message;
 use Thesaurus\Entity\Term;
 
 class Indexing extends AbstractJob
@@ -69,34 +69,31 @@ class Indexing extends AbstractJob
 
         $scheme = $this->api->search('items', ['id' => $schemeId])->getContent();
         if (!$scheme) {
-            $this->logger->err(new Message(
+            $this->logger->err(
                 'Thesaurus #%d not found.', // @translate
-                $schemeId
-            ));
+                ['item_id' => $schemeId]
+            );
             return;
         }
         $scheme = reset($scheme);
 
-        $message = new Message(
-            'Starting indexing of thesaurus "%1$s" (#%2$d).', // @translate
-            $scheme->displayTitle(), $schemeId
+        $this->logger->notice(
+            'Starting indexing of thesaurus "{title}" (#{item_id}).', // @translate
+            ['title' => $scheme->displayTitle(), 'item_id' => $schemeId]
         );
-        $this->logger->notice($message);
 
         $result = $this->indexScheme($scheme);
 
         if ($result) {
-            $message = new Message(
-                'Thesaurus "%1$s" (#%2$d) indexed.', // @translate
-                $scheme->displayTitle(), $schemeId
+            $this->logger->notice(
+                'Thesaurus "{title}" (#{item_id}) indexed.', // @translate
+                ['title' => $scheme->displayTitle(), 'item_id' => $schemeId]
             );
-            $this->logger->notice($message);
         } else {
-            $message = new Message(
-                'Thesaurus "%1$s" (#%2$d) not indexed.', // @translate
-                $scheme->displayTitle(), $schemeId
+            $this->logger->err(
+                'Thesaurus "{title}" (#{item_id}) not indexed.', // @translate
+                ['title' => $scheme->displayTitle(), 'item_id' => $schemeId]
             );
-            $this->logger->err($message);
         }
     }
 
@@ -143,12 +140,10 @@ class Indexing extends AbstractJob
                     $broader = null;
                     $ancestors = [];
                 } elseif (!$root) {
-                    $message = new Message(
-                        'Thesaurus #%1$d has a missing root for item #%2$d.', // @translate
-                        $scheme->id(),
-                        $concept['self']->id()
+                    $this->logger->err(
+                        'Thesaurus #{item_id} has a missing root for item #{item_id_2}.', // @translate
+                        ['item_id' => $scheme->id(), 'item_id_2' => $concept['self']->id()]
                     );
-                    $this->logger->err($message);
                     $this->resetThesaurus($scheme);
                     return;
                 } else {
@@ -236,11 +231,10 @@ class Indexing extends AbstractJob
     {
         $tops = $this->resourcesFromValue($scheme, 'skos:hasTopConcept');
         if (empty($tops)) {
-            $message = new Message(
-                'Thesaurus #%d has no top concepts.', // @translate
-                $scheme->id()
+            $this->logger->err(
+                'Thesaurus #{item_id} has no top concepts.', // @translate
+                ['item_id' => $scheme->id()]
             );
-            $this->logger->err($message);
             return [];
         }
 
@@ -267,10 +261,9 @@ class Indexing extends AbstractJob
     protected function recursiveFlatBranch(ItemRepresentation $item, array $branch = [], $level = 0)
     {
         if ($level > $this->maxAncestors) {
-            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
-                'The term #%1$d has more than %2$d levels.', // @translate
-                $item->id(),
-                $this->maxAncestors
+            throw new \Omeka\Api\Exception\BadResponseException(new PsrMessage(
+                'The term #{item_id} has more than {count} levels.', // @translate
+                ['item_id' => $item->id(), 'count' => $this->maxAncestors]
             ));
         }
 

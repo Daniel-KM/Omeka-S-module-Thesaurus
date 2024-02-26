@@ -3,7 +3,6 @@
 namespace Thesaurus\Job;
 
 use Omeka\Job\AbstractJob;
-use Omeka\Stdlib\Message;
 use Thesaurus\Mvc\Controller\Plugin\Thesaurus;
 
 class UpdateConcepts extends AbstractJob
@@ -47,9 +46,9 @@ class UpdateConcepts extends AbstractJob
 
         $schemeId = (int) $this->getArg('scheme');
         if (!$schemeId) {
-            $this->logger->err(new Message(
+            $this->logger->err(
                 'No thesaurus specified.' // @translate
-            ));
+            );
             return;
         }
 
@@ -57,23 +56,27 @@ class UpdateConcepts extends AbstractJob
         if (empty($fill['descriptor'])
             && empty($fill['path'])
         ) {
-            $this->logger->err('A preferred label with the descriptor or the full path is required to fill concepts.'); // @translate
+            $this->logger->err(
+                'A preferred label with the descriptor or the full path is required to fill concepts.' // @translate
+            );
             return;
         }
 
         if (empty($fill['path'])
             && empty($fill['ascendance'])
         ) {
-            $this->logger->warn('No defined property for path or ascendance, so nothing to fill.'); // @translate
+            $this->logger->warn(
+                'No defined property for path or ascendance, so nothing to fill.' // @translate
+            );
             return;
         }
 
         $scheme = $this->api->search('items', ['id' => $schemeId])->getContent();
         if (!$scheme) {
-            $this->logger->err(new Message(
-                'Thesaurus #%d not found.', // @translate
-                $schemeId
-            ));
+            $this->logger->err(
+                'Thesaurus #{item_id} not found.', // @translate
+                ['item_id' => $schemeId]
+            );
             return;
         }
         $scheme = reset($scheme);
@@ -82,10 +85,10 @@ class UpdateConcepts extends AbstractJob
         $thesaurusHelper = $services->get('ControllerPluginManager')->get('thesaurus');
         $thesaurus = $thesaurusHelper($scheme);
         if (!$thesaurus->isSkos()) {
-            $this->logger->err(new Message(
-                'Item #%d is not a thesaurus.', // @translate
-                $schemeId
-            ));
+            $this->logger->err(
+                'Item #{item_id} is not a thesaurus.', // @translate
+                 ['item_id' => $schemeId]
+            );
             return;
         }
 
@@ -97,10 +100,10 @@ class UpdateConcepts extends AbstractJob
         ];
         $mode = $this->getArg('mode') ?: 'replace';
         if (!in_array($mode, $modes)) {
-            $this->logger->err(new Message(
-                'The mode "%s" is not supported.', // @translate
-                $mode
-            ));
+            $this->logger->err(
+                'The mode "{mode}" is not supported.', // @translate
+                ['mode' => $mode]
+            );
             return;
         }
 
@@ -121,24 +124,24 @@ class UpdateConcepts extends AbstractJob
 
         // Check properties in options one time.
         if (!empty($fill['descriptor']) && empty($skosIds[$fill['descriptor']])) {
-            $this->logger->err(new Message(
-                'The property "%1$s" for descriptor is not managed.', // @translate
-                $fill['descriptor']
-            ));
+            $this->logger->err(
+                'The property "{property}" for descriptor is not managed.', // @translate
+                ['property' => $fill['descriptor']]
+            );
             return;
         }
         if (!empty($fill['path']) && empty($skosIds[$fill['path']])) {
-            $this->logger->err(new Message(
-                'The property "%1$s" for path is not managed.', // @translate
-                $fill['path']
-            ));
+            $this->logger->err(
+                'The property "{property}" for path is not managed.', // @translate
+                ['property' => $fill['path']]
+            );
             return;
         }
         if (!empty($fill['ascendance']) && empty($skosIds[$fill['ascendance']])) {
-            $this->logger->err(new Message(
-                'The property "%1$s" for ascendance is not managed.', // @translate
-                $fill['ascendance']
-            ));
+            $this->logger->err(
+                'The property "{property}" for ascendance is not managed.', // @translate
+                ['property' => $fill['ascendance']]
+            );
             return;
         }
 
@@ -146,31 +149,30 @@ class UpdateConcepts extends AbstractJob
         $conceptTemplate = $this->api->read('resource_templates', ['label' => 'Thesaurus Concept'])->getContent();
         $titleProperty = $conceptTemplate->titleProperty();
         if (!$titleProperty) {
-            $this->logger->err(new Message(
-                'The property to use as a title is not set in the template Thesaurus Concept.', // @translate
-                $fill['ascendance']
-            ));
+            $this->logger->err(
+                'The property to use as a title is not set in the template Thesaurus Concept.' // @translate
+            );
             return;
         }
         if ($titleProperty->term() !== 'skos:prefLabel') {
-            $this->logger->err(new Message(
-                'To update data, the property used as a title in the template "Thesaurus Concept" must be "skos:prefLabel", not "%s".', // @translate
-                $titleProperty->term()
-            ));
+            $this->logger->err(
+                'To update data, the property used as a title in the template "Thesaurus Concept" must be "skos:prefLabel", not "{property}".', // @translate
+                ['property' => $titleProperty->term()]
+            );
             return;
         }
         if ($fill['descriptor'] !== 'skos:prefLabel') {
-            $this->logger->err(new Message(
-                'To update data, the descriptor must be the preferred label, not "%s".', // @translate
-                $fill['descriptor']
-            ));
+            $this->logger->err(
+                'To update data, the descriptor must be the preferred label, not "{property}".', // @translate
+                ['property' => $fill['descriptor']]
+            );
             return;
         }
 
-        $this->logger->notice(new Message(
-            'Updating %d descriptors.', // @translate
-            count($flatTree)
-        ));
+        $this->logger->notice(
+            'Updating {count} descriptors.', // @translate
+            ['count' => count($flatTree)]
+        );
 
         // Don't update descriptor, but keep it.
         unset($fill['descriptor']);
@@ -178,17 +180,17 @@ class UpdateConcepts extends AbstractJob
         $totalProcessed = 0;
         foreach (array_chunk($flatTree, self::BATCH_SIZE, true) as $chunk) {
             if ($this->shouldStop()) {
-                $this->logger->warn(new Message(
-                    'The job  was stopped. %1$d/%2$d descriptors processed.', // @translate
-                    $totalProcessed, count($flatTree)
-                ));
+                $this->logger->warn(
+                    'The job  was stopped. {count}/{total} descriptors processed.', // @translate
+                    ['count' => $totalProcessed, 'total' => count($flatTree)]
+                );
                 return;
             }
 
             if ($totalProcessed) {
                 $this->logger->info(new Message(
-                    '%1$d/%2$d descriptors processed.', // @translate
-                    $totalProcessed, count($flatTree)
+                    '{count}/{total} descriptors processed.', // @translate
+                    ['count' => $totalProcessed, 'total' => count($flatTree)]
                 ));
 
                 // Avoid a speed and memory issue.
@@ -260,10 +262,9 @@ class UpdateConcepts extends AbstractJob
         $indexing = new \Thesaurus\Job\Indexing($this->job, $services);
         $indexing->perform();
 
-        $message = new Message(
-            'Concepts were updated and reindexed for thesaurus "%1$s" (#%2$d).', // @translate
-            $scheme->displayTitle(), $schemeId
+        $this->logger->notice(
+            'Concepts were updated and reindexed for thesaurus "{title}" (#{item_id}).', // @translate
+            ['title' => $scheme->displayTitle(), 'item_id' => $schemeId]
         );
-        $this->logger->notice($message);
     }
 }

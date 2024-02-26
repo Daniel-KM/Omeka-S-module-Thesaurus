@@ -2,6 +2,7 @@
 
 namespace Thesaurus\Controller\Admin;
 
+use Common\Stdlib\PsrMessage;
 use finfo;
 use Laminas\View\Model\JsonModel;
 use Laminas\View\Model\ViewModel;
@@ -9,7 +10,6 @@ use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Controller\Admin\ItemController;
 use Omeka\Mvc\Exception\NotFoundException;
 use Omeka\Mvc\Exception\RuntimeException;
-use Omeka\Stdlib\Message;
 use Thesaurus\Form\ConfirmAllForm;
 use Thesaurus\Form\ConvertForm;
 use Thesaurus\Form\UpdateConceptsForm;
@@ -35,7 +35,9 @@ class ThesaurusController extends ItemController
         /** @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus */
         $thesaurus = $this->thesaurus($item);
         if (!$thesaurus->getItemSet()) {
-            $this->messenger()->addWarning('The thesaurus has no item set with class "skos:Collection" or "skos:OrderedCollection".'); // @translate
+            $this->messenger()->addWarning(
+                'The thesaurus has no item set with class "skos:Collection" or "skos:OrderedCollection".' // @translate
+            );
         }
 
         return new ViewModel([
@@ -85,14 +87,18 @@ class ThesaurusController extends ItemController
                 $id = (int) $this->params('id');
                 $scheme = $api->searchOne('items', ['id' => $id])->getContent();
                 if (!$scheme) {
-                    $message = new Message('The item #%d is not available.', $id); // @translate
-                    $this->messenger()->addError($message);
+                    $this->messenger()->addError(new PsrMessage(
+                        'The item #{item_id} is not available.', // @translate
+                        ['item_id' => $id]
+                    ));
                 } else {
                     /** @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus */
                     $thesaurus = $this->thesaurus($scheme);
                     if (!$thesaurus->isSkos()) {
-                        $message = new Message('The item #%d does not belong to a thesaurus.', $id); // @translate
-                        $this->messenger()->addError($message);
+                        $this->messenger()->addError(new PsrMessage(
+                            'The item #{item_id} does not belong to a thesaurus.', // @translate
+                            ['item_id' => $id]
+                        ));
                     } else {
                         $data = $form->getData();
                         $mode = $data['mode'] ?? 'scheme';
@@ -159,9 +165,9 @@ class ThesaurusController extends ItemController
         /** @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus */
         $thesaurus = $this->thesaurus($item);
         if (!$thesaurus->isSkos()) {
-            throw new RuntimeException(new Message(
-                'Item #%d is not a skos scheme and is not a thesaurus.', // @translate
-                $id
+            throw new RuntimeException(new PsrMessage(
+                'Item #{item_id} is not a skos scheme and is not a thesaurus.', // @translate
+                ['item_id' => $id]
             ));
         }
 
@@ -225,12 +231,12 @@ class ThesaurusController extends ItemController
         /* // Don't check thesaurus if not indexed, it can be memory intensive.
         $thesaurus = $this->thesaurus($item);
         if (!$thesaurus->isSkos()) {
-            $message = 'The item #%d does not belong to a thesaurus.'; // @translate
             $message = new Message(
-                $message,
-                $item->id()
             );
-            $this->messenger()->addError($message);
+            $this->messenger()->addError(new PsrMessage(
+                'The item #{item_id} does not belong to a thesaurus.', // @translate
+                ['item_id' => $item->id()]
+            ));
             return $this->redirect()->toRoute('admin/thesaurus/default');
         }
         */
@@ -241,15 +247,16 @@ class ThesaurusController extends ItemController
             'scheme' => (int) $item->id(),
         ];
         $job = $dispatcher->dispatch(\Thesaurus\Job\Indexing::class, $args);
-        $message = new \Omeka\Stdlib\Message(
-            'Indexing concepts in background (%1$sjob #%2$d%3$s, %4$slogs%3$s).', // @translate
-            sprintf(
-                '<a href="%s">',
-                htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))
-            ),
-            $job->getId(),
-            '</a>',
-            sprintf('<a href="%1$s">', class_exists('Log\Entity\Log') ? $this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]) :  $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()]))
+        $message = new PsrMessage(
+            'Indexing concepts in background ({link}job #{job_id}{link_end}, {link_log}logs{link_end}).', // @translate
+            [
+                'link' => sprintf('<a href="%s">', htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))),
+                'job_id' => $job->getId(),
+                'link_end' => '</a>',
+                'link_log' => class_exists('Log\Entity\Log')
+                    ? sprintf('<a href="%1$s">', $this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]))
+                    : sprintf('<a href="%1$s">', $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()])),
+            ]
         );
         $message->setEscapeHtml(false);
         $this->messenger()->addSuccess($message);
@@ -271,13 +278,12 @@ class ThesaurusController extends ItemController
                     $form->setData($formData);
                     if ($form->isValid() && is_array($jstree)) {
                         $this->updateThesaurusStructure($item, $jstree);
-                        $message = 'You may need to reload %1$sthis page%2$s a second time to clean indexation of top concepts.'; // @translate
-                        $message = new Message(
-                            $message,
-                            sprintf('<a href="%s">',
-                                htmlspecialchars($this->url()->fromRoute('admin/thesaurus/id', [], true))
-                            ),
-                            '</a>'
+                        $message = new PsrMessage(
+                            'You may need to reload {link}this page{link_end} a second time to clean indexation of top concepts.', // @translate
+                            [
+                                'link' => sprintf('<a href="%s">', htmlspecialchars($this->url()->fromRoute('admin/thesaurus/id', [], true))),
+                                'link_end' => '</a>',
+                            ]
                         );
                         $message->setEscapeHtml(false);
                         $this->messenger()->addWarning($message);
@@ -366,20 +372,20 @@ class ThesaurusController extends ItemController
                 sprintf('An error occurred when uploading the file.') // @translate
             );
         } elseif ($fileCheck === false) {
-            $this->messenger()->addError(new Message(
-                'Wrong media type ("%s") for file.', // @translate
-                $file['type']
+            $this->messenger()->addError(new PsrMessage(
+                'Wrong media type ("{type}") for file.', // @translate
+                ['type' => $file['type']]
             ));
         } elseif (empty($file['size'])) {
             $this->messenger()->addError(
-                sprintf('The file is empty.') // @translate
+                'The file is empty.' // @translate
             );
         } else {
             $file = $fileCheck;
             $converted = $this->convertThesaurus($file['tmp_name'], $options, $file['type']);
             if (empty($converted)) {
                 $this->messenger()->addError(
-                    sprintf('Unable to convert the file.') // @translate
+                    'Unable to convert the file.' // @translate
                 );
             } else {
                 if ($outputType === 'thesaurus') {
@@ -449,21 +455,23 @@ class ThesaurusController extends ItemController
         // Use a foreground job: it's only some seconds.
         if (count($structure) < 100) {
             $job = $dispatcher->dispatch(\Thesaurus\Job\UpdateStructure::class, $args, $item->getServiceLocator()->get('Omeka\Job\DispatchStrategy\Synchronous'));
-            $message = 'Structure saved and reindexed (%1$sjob #%2$d%3$s, %4$slogs%3$s).'; // @translate
+            $message = 'Structure saved and reindexed ({link}job #{job_id}{link_end}, {link_log}logs{link_end}).'; // @translate
         } else {
             // TODO If background job, check if the thesaurus is not restructurating or indexing before to display its structure, else errors may occur.
             $job = $dispatcher->dispatch(\Thesaurus\Job\UpdateStructure::class, $args);
-            $message = 'Indexing structure in background. Do not display structure while indexing, else errors may occur (%1$sjob #%2$d%3$s, %4$slogs%3$s).'; // @translate
+            $message = 'Indexing structure in background. Do not display structure while indexing, else errors may occur ({link}job #{job_id}{link_end}, {link_log}logs{link_end}).'; // @translate
         }
 
-        $message = new Message(
+        $message = new PsrMessage(
             $message,
-            sprintf('<a href="%s">',
-                htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))
-            ),
-            $job->getId(),
-            '</a>',
-            sprintf('<a href="%1$s">', class_exists('Log\Entity\Log') ? $this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]) :  $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()]))
+            [
+                'link' => sprintf('<a href="%s">', htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))),
+                'job_id' => $job->getId(),
+                'link_end' => '</a>',
+                'link_log' => class_exists('Log\Entity\Log')
+                    ? sprintf('<a href="%1$s">', $this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]))
+                    : sprintf('<a href="%1$s">', $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()])),
+            ]
         );
         $message->setEscapeHtml(false);
         $this->messenger()->addSuccess($message);
@@ -597,10 +605,9 @@ class ThesaurusController extends ItemController
 
         $lines = $this->stringToList($text, false);
         if (!$lines) {
-            $message = new Message(
+            $this->messenger()->addError(
                 'The file is empty.' // @translate
             );
-            $this->messenger()->addError($message);
             return;
         }
 
@@ -616,24 +623,26 @@ class ThesaurusController extends ItemController
         $small = count($lines) <= 100;
         if ($small) {
             $dispatcher->dispatch(\Thesaurus\Job\CreateThesaurus::class, $params, $this->api()->read('vocabularies', 1)->getContent()->getServiceLocator()->get('Omeka\Job\DispatchStrategy\Synchronous'));
-            $message = new Message(
-                'The thesaurus "%s" is created.', // @translate
-                ucfirst($name)
-            );
-            $this->messenger()->addSuccess($message);
+            $this->messenger()->addSuccess(new PsrMessage(
+                'The thesaurus "{title}" is created.', // @translate
+                ['title' => ucfirst($name)]
+            ));
             return;
         }
 
         $job = $dispatcher->dispatch(\Thesaurus\Job\CreateThesaurus::class, $params);
-        $urlHelper = $this->viewHelpers()->get('url');
-        $message = new Message(
-            'Creation of thesaurus "%1$s" with %2$d concepts started in job %3$s#%4$d%5$s (%6$slogs%5$s)', // @translate
-            ucfirst($name),
-            count($lines),
-            sprintf('<a href="%1$s">', $urlHelper('admin/id', ['controller' => 'job', 'id' => $job->getId()])),
-            $job->getId(),
-            '</a>',
-            sprintf('<a href="%1$s">', class_exists('Log\Stdlib\PsrMessage') ? $urlHelper('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]) :  $urlHelper('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()]))
+        $message = new PsrMessage(
+            'Creation of thesaurus "{title}" with {total} concepts started ({link}job #{job_id}{link_end}, {link_log}logs{link_end})', // @translate
+            [
+                'title' => ucfirst($name),
+                'count' => count($lines),
+                'link' => sprintf('<a href="%s">', htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))),
+                'job_id' => $job->getId(),
+                'link_end' => '</a>',
+                'link_log' => class_exists('Log\Entity\Log')
+                    ? sprintf('<a href="%1$s">', $this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]))
+                    : sprintf('<a href="%1$s">', $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()])),
+            ]
         );
         $message->setEscapeHtml(false);
         $this->messenger()->addSuccess($message);
@@ -658,15 +667,16 @@ class ThesaurusController extends ItemController
 
         $dispatcher = $this->jobDispatcher();
         $job = $dispatcher->dispatch(\Thesaurus\Job\UpdateConcepts::class, $args);
-        $message = new \Omeka\Stdlib\Message(
-            'Updating concepts in background (%1$sjob #%2$d%3$s, %4$slogs%3$s).', // @translate
-            sprintf(
-                '<a href="%s">',
-                htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))
-                ),
-            $job->getId(),
-            '</a>',
-            sprintf('<a href="%1$s">', class_exists('Log\Entity\Log') ? $this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]) :  $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()]))
+        $message = new PsrMessage(
+            'Updating concepts in background ({link}job #{job_id}{link_end}, {link_log}logs{link_end}).', // @translate
+            [
+                'link' => sprintf('<a href="%s">', htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))),
+                'job_id' => $job->getId(),
+                'link_end' => '</a>',
+                'link_log' => class_exists('Log\Entity\Log')
+                    ? sprintf('<a href="%1$s">', $this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]))
+                    : sprintf('<a href="%1$s">', $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()])),
+            ]
         );
         $message->setEscapeHtml(false);
         $this->messenger()->addSuccess($message);

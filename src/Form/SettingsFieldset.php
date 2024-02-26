@@ -2,9 +2,9 @@
 
 namespace Thesaurus\Form;
 
+use Common\Form\Element as CommonElement;
 use Laminas\Form\Element;
 use Laminas\Form\Fieldset;
-use Thesaurus\Form\Element as ThesaurusElement;
 
 class SettingsFieldset extends Fieldset
 {
@@ -21,7 +21,7 @@ class SettingsFieldset extends Fieldset
             ->setOption('element_groups', $this->elementGroups)
             ->add([
                 'name' => 'thesaurus_property_descriptor',
-                'type' => Element\Radio::class,
+                'type' => CommonElement\OptionalRadio::class,
                 'options' => [
                     'element_group' => 'thesaurus',
                     'label' => 'Property used for the label of the descriptor', // @translate
@@ -38,7 +38,7 @@ class SettingsFieldset extends Fieldset
             ])
             ->add([
                 'name' => 'thesaurus_property_path',
-                'type' => ThesaurusElement\OptionalRadio::class,
+                'type' => CommonElement\OptionalRadio::class,
                 'options' => [
                     'element_group' => 'thesaurus',
                     'label' => 'Property used for the full path (ascendance and descriptor)', // @translate
@@ -56,7 +56,7 @@ class SettingsFieldset extends Fieldset
             ])
             ->add([
                 'name' => 'thesaurus_property_ascendance',
-                'type' => ThesaurusElement\OptionalRadio::class,
+                'type' => CommonElement\OptionalRadio::class,
                 'options' => [
                     'element_group' => 'thesaurus',
                     'label' => 'Property used for the ascendance', // @translate
@@ -88,7 +88,7 @@ class SettingsFieldset extends Fieldset
 
             ->add([
                 'name' => 'thesaurus_select_display',
-                'type' => Element\Radio::class,
+                'type' => CommonElement\OptionalRadio::class,
                 'options' => [
                     'element_group' => 'thesaurus',
                     'label' => 'Display of html "select" options', // @translate

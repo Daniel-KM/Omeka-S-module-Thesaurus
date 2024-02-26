@@ -3,7 +3,6 @@
 namespace Thesaurus\Job;
 
 use Omeka\Job\AbstractJob;
-use Omeka\Stdlib\Message;
 use Thesaurus\Mvc\Controller\Plugin\Thesaurus;
 
 class UpdateStructure extends AbstractJob
@@ -97,10 +96,10 @@ class UpdateStructure extends AbstractJob
         $thesaurusHelper = $services->get('ControllerPluginManager')->get('thesaurus');
         $thesaurus = $thesaurusHelper($scheme);
         if (!$thesaurus->isSkos()) {
-            $this->logger->err(new Message(
-                'Item #%d is not a thesaurus.', // @translate
-                $schemeId
-            ));
+            $this->logger->err(
+                'Item #{item_id} is not a thesaurus.', // @translate
+                ['item_id' => $schemeId]
+            );
             return;
         }
 
@@ -113,18 +112,17 @@ class UpdateStructure extends AbstractJob
         // This is a flat tree.
         $structure = $this->getArg('structure') ?: [];
         if (empty($structure)) {
-            $this->logger->warn(new Message(
-                'The thesaurus "%1$s" (#%1$d) is empty. No process can be done for now. Include concepts in thesaurus first.', // @translate
-                $schemeId
-            ));
+            $this->logger->warn(
+                'The thesaurus "{title}" (#{item_id}) is empty. No process can be done for now. Include concepts in thesaurus first.', // @translate
+                ['title' => $schemeTitle, 'item_id' => $schemeId]
+            );
             return;
         }
 
-        $message = new Message(
-            'Starting restructuration of thesaurus "%1$s" (#%2$d).', // @translate
-            $schemeTitle, $schemeId
+        $this->logger->notice(
+            'Starting restructuration of thesaurus "{title}" (#{item_id}) .', // @translate
+            ['title' => $schemeTitle, 'item_id' => $schemeId]
         );
-        $this->logger->notice($message);
 
         $result = $this->restructureThesaurus($thesaurus, $structure);
 
@@ -134,17 +132,15 @@ class UpdateStructure extends AbstractJob
             // should be refreshed.
             $indexing = new \Thesaurus\Job\Indexing($this->job, $services);
             $indexing->perform();
-            $message = new Message(
-                'Concepts were restructured and reindexed for thesaurus "%1$s" (#%2$d).', // @translate
-                $schemeTitle, $schemeId
+            $this->logger->notice(
+                'Concepts were restructured and reindexed for thesaurus "{title}" (#{item_id}) .', // @translate
+                ['title' => $schemeTitle, 'item_id' => $schemeId]
             );
-            $this->logger->notice($message);
         } else {
-            $message = new Message(
-                'An error occurred. Ended restructuration of thesaurus "%1$s" (#%2$d).', // @translate
-                $schemeTitle, $schemeId
+            $this->logger->warn(
+                'An error occurred. Ended restructuration of thesaurus "{title}" (#{item_id}) .', // @translate
+                ['title' => $schemeTitle, 'item_id' => $schemeId]
             );
-            $this->logger->warn($message);
         }
     }
 
@@ -171,11 +167,10 @@ class UpdateStructure extends AbstractJob
         $topConcepts = [];
         foreach ($tree as $id => &$data) {
             if (!(int) $id || !array_key_exists('parent', $data)) {
-                $message = new Message(
-                    'Missing id or parent key for id #%d.', // @translate
-                    $id
+                $this->logger->err(
+                    'Missing id or parent key for id #{item_id}.', // @translate
+                    ['item_id' => $id]
                 );
-                $this->logger->err($message);
                 return false;
             }
             $parent = $data['parent'] = (int) $data['parent'] ?: null;
@@ -217,11 +212,9 @@ class UpdateStructure extends AbstractJob
         // Third, update each remaining concepts.
         $tree = array_diff_key($tree, $removed);
         if (!$tree) {
-            $message = new Message(
-                'The thesaurus is now empty.', // @translate
-                $id
+            $this->logger->warn(
+                'The thesaurus is now empty.' // @translate
             );
-            $this->logger->warn($message);
             return true;
         }
 

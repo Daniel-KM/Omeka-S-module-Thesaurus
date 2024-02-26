@@ -2,6 +2,7 @@
 
 namespace Thesaurus;
 
+use Common\Stdlib\PsrMessage;
 use Omeka\Stdlib\Message;
 
 /**
@@ -20,10 +21,19 @@ use Omeka\Stdlib\Message;
 $plugins = $services->get('ControllerPluginManager');
 $url = $services->get('ViewHelperManager')->get('url');
 $api = $plugins->get('api');
+$translate = $plugins->get('translate');
 $settings = $services->get('Omeka\Settings');
 $connection = $services->get('Omeka\Connection');
 $messenger = $plugins->get('messenger');
 $entityManager = $services->get('Omeka\EntityManager');
+
+if (!method_exists($this, 'checkModuleActiveVersion') || !$this->checkModuleActiveVersion('Common', '3.4.54')) {
+    $message = new Message(
+        $translate('The module %1$s should be upgraded to version %2$s or later.'), // @translate
+        'Common', '3.4.54'
+    );
+    throw new \Omeka\Module\Exception\ModuleCannotInstallException((string) $message);
+}
 
 if (version_compare($oldVersion, '3.0.4', '<')) {
     $sql = <<<SQL
@@ -54,7 +64,7 @@ if (version_compare($oldVersion, '3.3.7.0', '<')) {
 }
 
 if (version_compare($oldVersion, '3.3.8.0', '<')) {
-    $message = new Message(
+    $message = new PsrMessage(
         'It is now possible to get thesaurus data for another item without rebuilding it.' // @translate
     );
     $messenger->addSuccess($message);
@@ -67,20 +77,23 @@ if (version_compare($oldVersion, '3.4.9', '<')) {
     $settings->set('thesaurus_separator', ' :: ');
     $settings->set('thesaurus_select_display', 'ascendance');
 
-    $message = new Message(
+    $message = new PsrMessage(
         'Many performance improvements have been implemented. Big thesaurus can be managed instantly.' // @translate
     );
     $messenger->addSuccess($message);
 
-    $message = new Message(
+    $message = new PsrMessage(
         'It is now possible to import a file and to create a standard thesaurus with all linked resources.' // @translate
     );
     $messenger->addSuccess($message);
 
     $settings->set('easyadmin_interface', ['resource_public_view']);
-    $message = new Message('%1$sNew settings%2$s allow to store the path or the ascendance of each concept automatically or via the update button of the thesaurus.', // @translate
-        sprintf('<a href="%s">', $url('admin/default', ['controller' => 'setting'], ['fragment' => 'thesaurus'])),
-        '</a>'
+    $message = new PsrMessage(
+        '{link}New settings{link_end} allow to store the path or the ascendance of each concept automatically or via the update button of the thesaurus.', // @translate
+        [
+            'link' => sprintf('<a href="%s">', $url('admin/default', ['controller' => 'setting'], ['fragment' => 'thesaurus'])),
+            'link_end' => '</a>'
+        ]
     );
     $message->setEscapeHtml(false);
     $messenger->addSuccess($message);

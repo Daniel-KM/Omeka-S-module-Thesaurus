@@ -1,9 +1,10 @@
 <?php declare(strict_types=1);
+
 namespace Thesaurus\Form;
 
 use Laminas\Form\Element;
 use Laminas\Form\Fieldset;
-use Omeka\Form\Element\PropertySelect;
+use Omeka\Form\Element as OmekaElement;
 
 class ThesaurusFieldset extends Fieldset
 {
@@ -89,7 +90,7 @@ class ThesaurusFieldset extends Fieldset
             ])
             ->add([
                 'name' => 'o:block[__blockIndex__][o:data][term]',
-                'type' => PropertySelect::class,
+                'type' => OmekaElement\PropertySelect::class,
                 'options' => [
                     'label' => 'Property for links', // @translate
                     'info' => 'Generally, it is "dcterms:subject".', // @translate

@@ -2,6 +2,7 @@
 
 namespace Thesaurus\Mvc\Controller\Plugin;
 
+use Common\Stdlib\PsrMessage;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\ORM\EntityManager;
@@ -298,9 +299,9 @@ class Thesaurus extends AbstractPlugin
                 return $this->api->read('items', ['id' => $id])->getContent();
             } catch (\Exception $e) {
                 $this->logger->err(
-                    sprintf('Thesaurus based on item #%s does not exist or is not available to current user.', // @translate
-                    $id
-                ));
+                    'Thesaurus based on item #{item_id} does not exist or is not available to current user.', // @translate
+                    ['item_id' => $id]
+                );
             }
         }
         return null;
@@ -878,9 +879,9 @@ class Thesaurus extends AbstractPlugin
                 return [];
             }
             if ($level > $this->maxAncestors) {
-                throw new \Omeka\Api\Exception\BadResponseException(sprintf(
-                    'There cannot be more than %d levels of descendants.', // @translate
-                    $this->maxAncestors
+                throw new \Omeka\Api\Exception\BadResponseException(new PsrMessage(
+                    'There cannot be more than {total} levels of descendants.', // @translate
+                    ['total' => $this->maxAncestors]
                 ));
             }
             $children = $this->children($itemData);
@@ -1000,10 +1001,10 @@ class Thesaurus extends AbstractPlugin
                 $templateConcept = $this->api->read('resource_templates', ['label' => 'Thesaurus Concept'])->getContent();
                 $titleProperty = $templateConcept->titleProperty();
                 if ($titleProperty && $titleProperty->term() === 'skos:prefLabel') {
-                    $this->logger->warn(new \Omeka\Stdlib\Message(
-                        'At least one descriptor ("%1$s") contains the separator "%2$s". You must change it.', // @translate
-                        $data['self']['title'], $separator
-                    ));
+                    $this->logger->warn(
+                        'At least one descriptor ("{title}") contains the separator "{value}". You must change it.', // @translate
+                        ['title' => $data['self']['title'], 'value' => $separator]
+                    );
                 }
                 // Else, the path is probably used as title, so no need to
                 // create the tree structure here.
@@ -1180,9 +1181,9 @@ class Thesaurus extends AbstractPlugin
             return null;
         }
         if ($level > $this->maxAncestors) {
-            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
-                'There cannot be more than %d ancestors.', // @translate
-                $this->maxAncestors
+            throw new \Omeka\Api\Exception\BadResponseException(new PsrMessage(
+                'There cannot be more than {total} ancestors.', // @translate
+                ['total' => $this->maxAncestors]
             ));
         }
         $parent = $this->parent($itemData);
@@ -1204,9 +1205,9 @@ class Thesaurus extends AbstractPlugin
             return $list;
         }
         if ($level > $this->maxAncestors) {
-            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
-                'There cannot be more than %d ancestors.', // @translate
-                $this->maxAncestors
+            throw new \Omeka\Api\Exception\BadResponseException(new PsrMessage(
+                'There cannot be more than {total} ancestors.', // @translate
+                ['total' => $this->maxAncestors]
             ));
         }
         $parent = $this->parent($itemData);
@@ -1231,9 +1232,9 @@ class Thesaurus extends AbstractPlugin
             return [];
         }
         if ($level > $this->maxAncestors) {
-            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
-                'There cannot be more than %d levels of descendants.', // @translate
-                $this->maxAncestors
+            throw new \Omeka\Api\Exception\BadResponseException(new PsrMessage(
+                'There cannot be more than {total} levels of descendants.', // @translate
+                ['total' => $this->maxAncestors]
             ));
         }
         $children = $this->children($itemData);
@@ -1259,9 +1260,9 @@ class Thesaurus extends AbstractPlugin
             return [];
         }
         if ($level > $this->maxAncestors) {
-            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
-                'There cannot be more than %d levels of descendants.', // @translate
-                $this->maxAncestors
+            throw new \Omeka\Api\Exception\BadResponseException(new PsrMessage(
+                'There cannot be more than {total} levels of descendants.', // @translate
+                ['total' => $this->maxAncestors]
             ));
         }
         $children = $this->children($itemData);
@@ -1286,9 +1287,9 @@ class Thesaurus extends AbstractPlugin
     protected function recursiveBranchItems(ItemRepresentation $item, array $branch = [], $level = 0): array
     {
         if ($level > $this->maxAncestors) {
-            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
-                'There cannot be more than %d levels of descendants.', // @translate
-                $this->maxAncestors
+            throw new \Omeka\Api\Exception\BadResponseException(new PsrMessage(
+                'There cannot be more than {total} levels of descendants.', // @translate
+                ['total' => $this->maxAncestors]
             ));
         }
         $children = $this->children($this->structure[$item->id()]);
@@ -1318,9 +1319,9 @@ class Thesaurus extends AbstractPlugin
             return [];
         }
         if ($level > $this->maxAncestors) {
-            throw new \Omeka\Api\Exception\BadResponseException(sprintf(
-                'There cannot be more than %d levels of descendants.', // @translate
-                $this->maxAncestors
+            throw new \Omeka\Api\Exception\BadResponseException(new PsrMessage(
+                'There cannot be more than {total} levels of descendants.', // @translate
+                ['total' => $this->maxAncestors]
             ));
         }
         $children = $this->children($itemData);
