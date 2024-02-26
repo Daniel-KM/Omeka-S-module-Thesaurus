@@ -30,12 +30,23 @@ other vocabularies).
 Installation
 ------------
 
-Optional modules are [Generic], [Custom Vocab] or [Value Suggest: Any], and [Block Plus].
+See general end user documentation for [installing a module].
 
-Uncompress files and rename module folder `Thesaurus`. Then install it like any
-other Omeka module and follow the config instructions.
+This module requires the module [Common], that should be installed first.
 
-See general end user documentation for [Installing a module].
+Optional modules are [Custom Vocab] or [Value Suggest: Any], and [Block Plus].
+
+* From the zip
+
+Download the last release [Thesaurus.zip] from the list of releases, and
+uncompress it in the `modules` directory.
+
+* From the source and for development
+
+If the module was installed from the source, rename the name of the folder of
+the module to `Thesaurus`.
+
+Then install it like any other Omeka module and follow the config instructions.
 
 
 Usage
@@ -246,7 +257,8 @@ of the French higher administrative court [Conseil d’État].
 [Omeka S]: https://omeka.org/s
 [Thesaurus]: https://gitlab.com/Daniel-KM/Omeka-S-module-Thesaurus
 [skos]: https://www.w3.org/2004/02/skos
-[Installing a module]: https://omeka.org/s/docs/user-manual/modules/#installing-modules
+[installing a module]: https://omeka.org/s/docs/user-manual/modules/#installing-modules
+[Common]: https://gitlab.com/Daniel-KM/Omeka-S-module-Common
 [Custom Vocab]: https://github.com/omeka-s-modules/CustomVocab
 [Value Suggest]: https://github.com/omeka-s-modules/ValueSuggest
 [Value Suggest: Any]: https://gitlab.com/Daniel-KM/Omeka-S-module-ValueSuggestAny
