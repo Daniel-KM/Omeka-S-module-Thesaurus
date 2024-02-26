@@ -31,7 +31,7 @@ class Thesaurus extends AbstractBlockLayout
         $defaultSettings = $services->get('Config')['thesaurus']['block_settings']['thesaurus'];
         $blockFieldset = \Thesaurus\Form\ThesaurusFieldset::class;
 
-        $data = $block ? $block->data() + $defaultSettings : $defaultSettings;
+        $data = $block ? ($block->data() ?? []) + $defaultSettings : $defaultSettings;
 
         $dataForm = [];
         foreach ($data as $key => $value) {
