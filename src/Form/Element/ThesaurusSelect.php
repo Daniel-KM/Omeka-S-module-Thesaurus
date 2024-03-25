@@ -49,13 +49,13 @@ class ThesaurusSelect extends Select
         return $this;
     }
 
-    public function setThesaurus(Thesaurus $thesaurus)
+    public function setThesaurus(Thesaurus $thesaurus): self
     {
         $this->thesaurusPlugin = $thesaurus;
         return $this;
     }
 
-    public function setThesaurusTerm($term)
+    public function setThesaurusTerm($term): self
     {
         // The term cannot be fully checked, because the thesaurus plugin may
         // not be ready.
@@ -71,10 +71,10 @@ class ThesaurusSelect extends Select
 
     public function getThesaurusTerm(): ?AbstractResourceEntityRepresentation
     {
-        if (is_int($this->thesaurusTerm)) {
+        if (is_int($this->thesaurusTerm) && $this->thesaurusPlugin) {
             $this->thesaurusTerm = $this->thesaurusPlugin->__invoke()->itemFromData($this->thesaurusTerm) ?: null;
         }
-        return $this->thesaurusTerm;
+        return is_int($this->thesaurusTerm) ? null : $this->thesaurusTerm;
     }
 
     /**
@@ -103,7 +103,7 @@ class ThesaurusSelect extends Select
     {
         $valueOptions = [];
         $thesaurusResource = $this->getThesaurusTerm();
-        if ($thesaurusResource) {
+        if ($thesaurusResource && $this->thesaurusPlugin) {
             /** @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $theso */
             $theso = $this->thesaurusPlugin->__invoke($thesaurusResource);
             if ($theso->isSkos()) {
