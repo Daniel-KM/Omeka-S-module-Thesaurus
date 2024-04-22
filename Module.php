@@ -158,6 +158,18 @@ class Module extends AbstractModule
             [$this, 'handleMainSettings']
         );
 
+        // Add a job to upgrade structure from v3.
+        $sharedEventManager->attach(
+            \EasyAdmin\Form\CheckAndFixForm::class,
+            'form.add_elements',
+            [$this, 'handleEasyAdminJobsForm']
+        );
+        $sharedEventManager->attach(
+            \EasyAdmin\Controller\CheckAndFixController::class,
+            'easyadmin.job',
+            [$this, 'handleEasyAdminJobs']
+        );
+
         // See module Next: an issue may occur when there are multiple properties.
         // Anyway, it's a selection of categories, so other properties can be set
         // separately, but not in the form.
@@ -500,6 +512,29 @@ SQL;
         }
 
         $request->setContent($content);
+    }
+
+    public function handleEasyAdminJobsForm(Event $event): void
+    {
+        /**
+         * @var \EasyAdmin\Form\CheckAndFixForm $form
+         * @var \Laminas\Form\Element\Radio $process
+         */
+        $form = $event->getTarget();
+        $fieldset = $form->get('module_tasks');
+        $process = $fieldset->get('process');
+        $valueOptions = $process->getValueOptions();
+        $valueOptions['db_thesaurus_index'] = 'Index thesaurus (module Thesaurus)'; // @translate
+        $process->setValueOptions($valueOptions);
+    }
+
+    public function handleEasyAdminJobs(Event $event): void
+    {
+        $process = $event->getParam('process');
+        if ($process === 'db_thesaurus_index') {
+            $event->setParam('job', \Thesaurus\Job\IndexThesaurus::class);
+            $event->setParam('args', []);
+        }
     }
 
     protected function getThesaurusSettings(): array
