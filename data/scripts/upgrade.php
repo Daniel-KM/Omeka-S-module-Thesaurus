@@ -3,7 +3,6 @@
 namespace Thesaurus;
 
 use Common\Stdlib\PsrMessage;
-use Omeka\Stdlib\Message;
 
 /**
  * @var Module $this
@@ -28,7 +27,7 @@ $messenger = $plugins->get('messenger');
 $entityManager = $services->get('Omeka\EntityManager');
 
 if (!method_exists($this, 'checkModuleActiveVersion') || !$this->checkModuleActiveVersion('Common', '3.4.56')) {
-    $message = new Message(
+    $message = new \Omeka\Stdlib\Message(
         $translate('The module %1$s should be upgraded to version %2$s or later.'), // @translate
         'Common', '3.4.56'
     );
@@ -92,7 +91,7 @@ if (version_compare($oldVersion, '3.4.9', '<')) {
         '{link}New settings{link_end} allow to store the path or the ascendance of each concept automatically or via the update button of the thesaurus.', // @translate
         [
             'link' => sprintf('<a href="%s">', $url('admin/default', ['controller' => 'setting'], ['fragment' => 'thesaurus'])),
-            'link_end' => '</a>',
+            'link_end' => '</a>'
         ]
     );
     $message->setEscapeHtml(false);
