@@ -487,7 +487,8 @@ class ThesaurusController extends ItemController
         ?string $mediaType = 'text/plain'
     ): string {
         $text = file_get_contents($filepath);
-        $text = mb_convert_encoding($text, 'HTML-ENTITIES', 'UTF-8');
+        // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
+        $text = @mb_convert_encoding($text, 'HTML-ENTITIES', 'UTF-8');
         $lines = $this->stringToList($text, false);
         $format = $options['format'] ?? '';
         if ($format === 'tab_offset') {
@@ -513,7 +514,8 @@ class ThesaurusController extends ItemController
         foreach ($lines as $line) {
             $descriptor = trim($line);
             // Replace entities first to avoid to break html entities.
-            $descriptor = mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
+            // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
+            $descriptor = @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
             if ($trimPunctuation) {
                 $descriptor = trim($descriptor, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
             }
@@ -562,8 +564,9 @@ class ThesaurusController extends ItemController
         foreach ($lines as $line) {
             [$structure, $descriptor] = array_map('trim', (explode(' ', $line . ' ', 2)));
             // Replace entities first to avoid to break html entities.
-            $structure = mb_convert_encoding($structure, 'UTF-8', 'HTML-ENTITIES');
-            $descriptor = mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
+            // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
+            $structure = @mb_convert_encoding($structure, 'UTF-8', 'HTML-ENTITIES');
+            $descriptor = @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
             if ($trimPunctuation) {
                 $structure = trim($structure, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
                 $descriptor = trim($descriptor, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
@@ -601,7 +604,8 @@ class ThesaurusController extends ItemController
         ?string $mediaType = 'text/plain'
     ): void {
         $text = file_get_contents($filepath);
-        $text = mb_convert_encoding($text, 'HTML-ENTITIES', 'UTF-8');
+        // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
+        $text = @mb_convert_encoding($text, 'HTML-ENTITIES', 'UTF-8');
 
         $lines = $this->stringToList($text, false);
         if (!$lines) {
