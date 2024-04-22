@@ -130,7 +130,7 @@ class UpdateStructure extends AbstractJob
             // Args are same (just need scheme).
             // Do not dispatch to avoid issue with doctrine: authenticated owner
             // should be refreshed.
-            $indexing = new \Thesaurus\Job\Indexing($this->job, $services);
+            $indexing = new \Thesaurus\Job\IndexThesaurus($this->job, $services);
             $indexing->perform();
             $this->logger->notice(
                 'Concepts were restructured and reindexed for thesaurus "{title}" (#{item_id}) .', // @translate

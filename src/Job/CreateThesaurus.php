@@ -271,7 +271,7 @@ class CreateThesaurus extends AbstractJob
         $args = $this->job->getArgs();
         $args['scheme'] = $schemeId;
         $this->job->setArgs($args);
-        $indexing = new \Thesaurus\Job\Indexing($this->job, $services);
+        $indexing = new \Thesaurus\Job\IndexThesaurus($this->job, $services);
         $indexing->perform();
 
         $this->logger->notice(

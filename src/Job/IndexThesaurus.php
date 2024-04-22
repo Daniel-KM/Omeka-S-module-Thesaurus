@@ -6,9 +6,8 @@ use Common\Stdlib\PsrMessage;
 use Doctrine\ORM\EntityManager;
 use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Job\AbstractJob;
-use Thesaurus\Entity\Term;
 
-class Indexing extends AbstractJob
+class IndexThesaurus extends AbstractJob
 {
     /**
      * Limit for the loop to avoid heavy sql requests.
@@ -59,52 +58,52 @@ class Indexing extends AbstractJob
 
         $this->api = $services->get('Omeka\ApiManager');
 
+        /** @var \Omeka\Settings\Settings $settings */
+        $settings = $services->get('Omeka\ApiManager');
+
+        $schemeIds = $this->getArg('schemes') ?: [];
         $schemeId = (int) $this->getArg('scheme');
-        if (!$schemeId) {
-            $this->logger->err(
-                'No thesaurus specified.' // @translate
-            );
-            return;
+        if ($schemeId) {
+            $schemeIds[] = $schemeId;
+        } else {
+            $schemeClassId = (int) $settings->get('thesaurus_skos_concept_class_id');
+            $schemeTemplateId = (int) $settings->get('thesaurus_skos_scheme_template_id');
+            $schemeIds = $schemeTemplateId
+                ? $this->api->search('items', ['resource_template_id' => $schemeTemplateId], ['returnScalar' => 'id'])->getContent()
+                : ($schemeClassId ? $this->api->search('items', ['resource_class_id' => $schemeClassId], ['returnScalar' => 'id'])->getContent() : []);
+            if (!count($schemeIds)) {
+                $this->logger->err(
+                    'No thesaurus in the database.' // @translate
+                );
+                return;
+            }
         }
 
-        $scheme = $this->api->search('items', ['id' => $schemeId])->getContent();
-        if (!$scheme) {
+        foreach ($schemeIds as $schemeId) {
+            $this->indexScheme((int) $schemeId);
+        }
+    }
+
+    /**
+     * Index a thesaurus: get the tree, update terms positions, and save them.
+     */
+    protected function indexScheme(int $schemeId): bool
+    {
+        try {
+            $scheme = $this->api->read('items', ['id' => $schemeId])->getContent();
+        } catch (\Omeka\Api\Exception\NotFoundException $e) {
             $this->logger->err(
-                'Thesaurus #%d not found.', // @translate
+                'Thesaurus #{item_id} not found.', // @translate
                 ['item_id' => $schemeId]
             );
-            return;
+            return false;
         }
-        $scheme = reset($scheme);
 
         $this->logger->notice(
             'Starting indexing of thesaurus "{title}" (#{item_id}).', // @translate
             ['title' => $scheme->displayTitle(), 'item_id' => $schemeId]
         );
 
-        $result = $this->indexScheme($scheme);
-
-        if ($result) {
-            $this->logger->notice(
-                'Thesaurus "{title}" (#{item_id}) indexed.', // @translate
-                ['title' => $scheme->displayTitle(), 'item_id' => $schemeId]
-            );
-        } else {
-            $this->logger->err(
-                'Thesaurus "{title}" (#{item_id}) not indexed.', // @translate
-                ['title' => $scheme->displayTitle(), 'item_id' => $schemeId]
-            );
-        }
-    }
-
-    /**
-     * Index a thesaurus: get the tree, update terms positions, and save them.
-     *
-     * @param ItemRepresentation $scheme
-     * @return bool
-     */
-    protected function indexScheme(ItemRepresentation $scheme)
-    {
         // Reset the scheme first.
         // Ids are not kept, since they are only an index currently.
         $this->resetThesaurus($scheme);
@@ -112,6 +111,10 @@ class Indexing extends AbstractJob
         // Get the tree from the values.
         $flatTree = $this->flatTree($scheme);
         if (empty($flatTree)) {
+            $this->logger->err(
+                'Thesaurus "{title}" (#{item_id}) not indexed.', // @translate
+                ['title' => $scheme->displayTitle(), 'item_id' => $schemeId]
+            );
             return false;
         }
 
@@ -128,7 +131,7 @@ class Indexing extends AbstractJob
                 $item = $this->entityManager->find(\Omeka\Entity\Item::class, $concept['self']->id());
                 $level = $concept['level'];
 
-                $term = new Term;
+                $term = new \Thesaurus\Entity\Term;
                 $term
                     ->setItem($item)
                     ->setScheme($schemeResource)
@@ -145,7 +148,7 @@ class Indexing extends AbstractJob
                         ['item_id' => $scheme->id(), 'item_id_2' => $concept['self']->id()]
                     );
                     $this->resetThesaurus($scheme);
-                    return;
+                    return false;
                 } else {
                     if ($level < $previousLevel) {
                         $ancestors = array_slice($ancestors, 0, $level + 1);
@@ -178,6 +181,11 @@ class Indexing extends AbstractJob
         $this->entityManager->clear();
         */
 
+        $this->logger->notice(
+            'Thesaurus "{title}" (#{item_id}) indexed.', // @translate
+            ['title' => $scheme->displayTitle(), 'item_id' => $schemeId]
+        );
+
         return true;
     }
 
@@ -197,12 +205,8 @@ class Indexing extends AbstractJob
 
     /**
      * Get all linked resources of this item for a term.
-     *
-     * @param ItemRepresentation $item
-     * @param string $term
-     * @return ItemRepresentation[]
      */
-    protected function resourcesFromValue(ItemRepresentation $item, $term)
+    protected function resourcesFromValue(ItemRepresentation $item, string $term): array
     {
         $result = [];
         $values = $item->values();
@@ -223,11 +227,8 @@ class Indexing extends AbstractJob
 
     /**
      * Create an ordered flat thesaurus for a scheme.
-     *
-     * @param ItemRepresentation $scheme
-     * @return array
      */
-    protected function flatTree(ItemRepresentation $scheme)
+    protected function flatTree(ItemRepresentation $scheme): array
     {
         $tops = $this->resourcesFromValue($scheme, 'skos:hasTopConcept');
         if (empty($tops)) {
@@ -255,10 +256,9 @@ class Indexing extends AbstractJob
      *
      * @param ItemRepresentation $item
      * @param array $branch Internal param for recursive process.
-     * @param int $level
-     * @return array|false
+     * @param int $level Internal level.
      */
-    protected function recursiveFlatBranch(ItemRepresentation $item, array $branch = [], $level = 0)
+    protected function recursiveFlatBranch(ItemRepresentation $item, array $branch = [], int $level = 0): array
     {
         if ($level > $this->maxAncestors) {
             throw new \Omeka\Api\Exception\BadResponseException(new PsrMessage(

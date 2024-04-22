@@ -246,7 +246,7 @@ class ThesaurusController extends ItemController
             // 'scheme' => (int) $thesaurus->scheme()->id(),
             'scheme' => (int) $item->id(),
         ];
-        $job = $dispatcher->dispatch(\Thesaurus\Job\Indexing::class, $args);
+        $job = $dispatcher->dispatch(\Thesaurus\Job\IndexThesaurus::class, $args);
         $message = new PsrMessage(
             'Indexing concepts in background ({link}job #{job_id}{link_end}, {link_log}logs{link_end}).', // @translate
             [
