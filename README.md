@@ -145,7 +145,10 @@ A template is added for the simple block of module [Block Plus] too. Just set
 Development
 -----------
 
-### Controller plugin and view helper `thesaurus()`
+### Service Thesaurus\Thesaurus, controller plugin and view helper `thesaurus()`
+
+When possible, use the service Thesaurus\Thesaurus. The controller plugin and
+the view helper are wrapper to it.
 
 The controller plugin or view helper thesaurus() allows to create a thesaurus
 and to get the whole tree, a flat tree, the tops, any branch, the ascendants,
@@ -246,7 +249,7 @@ altered, and that no provisions are either added or removed herefrom.
 Copyright
 ---------
 
-* Copyright Daniel Berthereau, 2018-2023 (see [Daniel-KM] on GitLab)
+* Copyright Daniel Berthereau, 2018-2024 (see [Daniel-KM] on GitLab)
 
 First version of this module was developed for the project [Ontologie du christianisme médiéval en images]
 for the [Institut national d’histoire de l’art] (INHA). Improvements were done
