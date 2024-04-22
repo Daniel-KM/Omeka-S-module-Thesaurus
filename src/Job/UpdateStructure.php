@@ -3,7 +3,7 @@
 namespace Thesaurus\Job;
 
 use Omeka\Job\AbstractJob;
-use Thesaurus\Mvc\Controller\Plugin\Thesaurus;
+use Thesaurus\Stdlib\Thesaurus;
 
 class UpdateStructure extends AbstractJob
 {
@@ -76,25 +76,25 @@ class UpdateStructure extends AbstractJob
 
         $schemeId = (int) $this->getArg('scheme');
         if (!$schemeId) {
-            $this->logger->err(new Message(
+            $this->logger->err(
                 'No thesaurus specified.' // @translate
-            ));
+            );
             return;
         }
 
         $scheme = $this->api->search('items', ['id' => $schemeId])->getContent();
         if (!$scheme) {
-            $this->logger->err(new Message(
+            $this->logger->err(
                 'Thesaurus #%d not found.', // @translate
                 $schemeId
-            ));
+            );
             return;
         }
         $scheme = reset($scheme);
 
-        /** @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus */
-        $thesaurusHelper = $services->get('ControllerPluginManager')->get('thesaurus');
-        $thesaurus = $thesaurusHelper($scheme);
+        /** @var \Thesaurus\Stdlib\Thesaurus $thesaurus */
+        $thesaurusLib = $services->get('Thesaurus\Thesaurus');
+        $thesaurus = $thesaurusLib($scheme);
         if (!$thesaurus->isSkos()) {
             $this->logger->err(
                 'Item #{item_id} is not a thesaurus.', // @translate

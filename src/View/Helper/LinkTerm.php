@@ -146,7 +146,7 @@ class LinkTerm extends AbstractHelper
      * It may be used to translate a term, waiting for a full implementation of
      * the internationalisation of  the title.
      *
-     * @see \Thesaurus\Mvc\Controller\Plugin\Thesaurus::itemFromData()
+     * @see \Thesaurus\Stdlib\Thesaurus::itemFromData()
      */
     public function itemFromData(?array $itemData = null): ?ItemRepresentation
     {

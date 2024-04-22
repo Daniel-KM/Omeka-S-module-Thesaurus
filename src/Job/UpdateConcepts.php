@@ -87,9 +87,9 @@ class UpdateConcepts extends AbstractJob
         }
         $scheme = reset($scheme);
 
-        /** @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus */
-        $thesaurusHelper = $services->get('ControllerPluginManager')->get('thesaurus');
-        $thesaurus = $thesaurusHelper($scheme);
+        /** @var \Thesaurus\Stdlib\Thesaurus $thesaurus */
+        $thesaurusLib = $services->get('Thesaurus\Thesaurus');
+        $thesaurus = $thesaurusLib($scheme);
         if (!$thesaurus->isSkos()) {
             $this->logger->err(
                 'Item #{item_id} is not a thesaurus.', // @translate

@@ -5,16 +5,16 @@ namespace Thesaurus\Form\Element;
 use Common\Form\Element\TraitOptionalElement;
 use Laminas\Form\Element\Select;
 use Omeka\Api\Representation\AbstractResourceEntityRepresentation;
-use Thesaurus\Mvc\Controller\Plugin\Thesaurus;
+use Thesaurus\Stdlib\Thesaurus;
 
 class ThesaurusSelect extends Select
 {
     use TraitOptionalElement;
 
     /**
-     * @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus
+     * @var \Thesaurus\Stdlib\Thesaurus
      */
-    protected $thesaurusPlugin;
+    protected $thesaurusLib;
 
     /**
      * @var \Omeka\Api\Representation\ItemRepresentation|\Omeka\Api\Representation\ItemSetRepresentation|int
@@ -51,7 +51,7 @@ class ThesaurusSelect extends Select
 
     public function setThesaurus(Thesaurus $thesaurus): self
     {
-        $this->thesaurusPlugin = $thesaurus;
+        $this->thesaurusLib = $thesaurus;
         return $this;
     }
 
@@ -71,8 +71,8 @@ class ThesaurusSelect extends Select
 
     public function getThesaurusTerm(): ?AbstractResourceEntityRepresentation
     {
-        if (is_int($this->thesaurusTerm) && $this->thesaurusPlugin) {
-            $this->thesaurusTerm = $this->thesaurusPlugin->__invoke()->itemFromData($this->thesaurusTerm) ?: null;
+        if (is_int($this->thesaurusTerm) && $this->thesaurusLib) {
+            $this->thesaurusTerm = $this->thesaurusLib->__invoke()->itemFromData($this->thesaurusTerm) ?: null;
         }
         return is_int($this->thesaurusTerm) ? null : $this->thesaurusTerm;
     }
@@ -103,9 +103,9 @@ class ThesaurusSelect extends Select
     {
         $valueOptions = [];
         $thesaurusResource = $this->getThesaurusTerm();
-        if ($thesaurusResource && $this->thesaurusPlugin) {
-            /** @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $theso */
-            $theso = $this->thesaurusPlugin->__invoke($thesaurusResource);
+        if ($thesaurusResource && $this->thesaurusLib) {
+            /** @var \Thesaurus\Stdlib\Thesaurus $theso */
+            $theso = $this->thesaurusLib->__invoke($thesaurusResource);
             if ($theso->isSkos()) {
                 $options = $this->getOptions();
                 $thesoType = $this->getOption('output_type');

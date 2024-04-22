@@ -3,7 +3,7 @@
 namespace Thesaurus\Form\Element;
 
 use CustomVocab\Api\Representation\CustomVocabRepresentation;
-use Thesaurus\Mvc\Controller\Plugin\Thesaurus;
+use Thesaurus\Stdlib\Thesaurus;
 
 /**
  * This select should extend CustomVocabSelect to be compliant with CustomVocab

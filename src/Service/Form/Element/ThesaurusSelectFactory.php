@@ -12,6 +12,6 @@ class ThesaurusSelectFactory implements FactoryInterface
     {
         $element = new ThesaurusSelect(null, $options ?? []);
         return $element
-            ->setThesaurus($services->get('ControllerPluginManager')->get('thesaurus'));
+            ->setThesaurus($services->get('Thesaurus\Thesaurus'));
     }
 }

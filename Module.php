@@ -253,18 +253,16 @@ class Module extends AbstractModule
             return;
         }
 
-        $plugins = $this->getServiceLocator()->get('ControllerPluginManager');
         /**
-         * @var \Omeka\Mvc\Controller\Plugin\Api $api
-         * @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus
-         */
-        $api = $plugins->get('api');
-        $thesaurus = $plugins->get('thesaurus');
-
-        /**
+         * @var \Omeka\Api\Manager $api
+         * @var \Thesaurus\Stdlib\Thesaurus $thesaurus
          * @var \Doctrine\ORM\QueryBuilder $qb
          * @var \Omeka\Api\Adapter\ItemAdapter $adapter
          */
+        $services = $this->getServiceLocator();
+        $api = $services->get('Omeka\ApiManager');
+        $thesaurus = $services->get('Thesaurus\Thesaurus');
+
         $qb = $event->getParam('queryBuilder');
         $adapter = $event->getTarget();
 
@@ -283,8 +281,9 @@ class Module extends AbstractModule
             }
 
             // TODO Improve performance: currently, the thesaurus is built manually each time.
-            $item = $api->searchOne('items', ['id' => (int) $queryProperty['text']], ['initialize' => false])->getContent();
-            if (!$item) {
+            try {
+                $item = $api->read('items', ['id' => (int) $queryProperty['text']])->getContent();
+            } catch (\Omeka\Api\Exception\NotFoundException $e) {
                 continue;
             }
 
@@ -469,8 +468,8 @@ SQL;
             if (empty($broader['value_resource_id'])) {
                 $ascendanceTitles = [];
             } else {
-                /** @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus */
-                $thesaurus = $this->getServiceLocator()->get('ControllerPluginManager')->get('thesaurus');
+                /** @var \Thesaurus\Stdlib\Thesaurus $thesaurus */
+                $thesaurus = $this->getServiceLocator()->get('Thesaurus\Thesaurus');
                 $thesaurus = $thesaurus($broader['value_resource_id']);
                 if (!$thesaurus->isSkos() || !$thesaurus->isConcept()) {
                     return;
@@ -560,7 +559,8 @@ SQL;
          * @var \Laminas\ServiceManager\ServiceLocatorInterface $services
          * @var \Omeka\Api\Manager $api
          * @var \Laminas\Log\Logger $logger
-         * @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus
+         * @var \Omeka\Settings\Settings $settings
+         * @see \Thesaurus\Stdlib\Thesaurus $thesaurus
          */
         $services = $this->getServiceLocator();
         $api = $services->get('Omeka\ApiManager');
@@ -628,6 +628,10 @@ SQL;
      */
     protected function storeSchemeAndConceptIds(): self
     {
+        /**
+         * @var \Omeka\Api\Manager $api
+         * @var \Omeka\Settings\Settings $settings
+         */
         $services = $this->getServiceLocator();
         $api = $services->get('Omeka\ApiManager');
         $settings = $services->get('Omeka\Settings');
