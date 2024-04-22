@@ -5,6 +5,7 @@
  */
 
 $plugins = $this->getHelperPluginManager();
+$url = $plugins->get('url');
 $assetUrl = $plugins->get('assetUrl');
 $translate = $plugins->get('translate');
 
@@ -20,7 +21,13 @@ $form->prepare();
 
 <p class="explanation">
     <?= $translate('Convert a list into a thesaurus.') ?>
-    <?= $translate('Properties and separator should be set in main settings.') ?>
+    <?= (new \Common\Stdlib\PsrMessage(
+        'Properties and separator should be set in {link}main settings{link_end}.', // @translate
+        [
+            'link' => sprintf('<a href="%s">', $url('admin/default', ['controller' => 'setting'], ['fragment' => 'thesaurus'])),
+            'link_end' => '</a>'
+        ]
+    ))->setTranslator($this->translator()) ?>
 </p>
 <p>
     <?= $this->form()->openTag($form) ?>
