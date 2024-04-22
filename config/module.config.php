@@ -16,6 +16,17 @@ return [
             dirname(__DIR__) . '/data/doctrine-proxies',
         ],
     ],
+    'service_manager' => [
+        'invokables' => [
+            Mvc\MvcListeners::class => Mvc\MvcListeners::class,
+        ],
+        'factories' => [
+            'Thesaurus\Thesaurus' => Service\Stdlib\ThesaurusFactory::class,
+        ],
+    ],
+    'listeners' => [
+        Mvc\MvcListeners::class,
+    ],
     'view_manager' => [
         'template_path_stack' => [
             dirname(__DIR__) . '/view',
@@ -66,14 +77,6 @@ return [
     'controller_plugins' => [
         'factories' => [
             'thesaurus' => Service\ControllerPlugin\ThesaurusFactory::class,
-        ],
-    ],
-    'listeners' => [
-        Mvc\MvcListeners::class,
-    ],
-    'service_manager' => [
-        'invokables' => [
-            Mvc\MvcListeners::class => Mvc\MvcListeners::class,
         ],
     ],
     'router' => [
