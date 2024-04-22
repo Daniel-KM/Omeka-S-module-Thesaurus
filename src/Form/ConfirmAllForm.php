@@ -12,7 +12,7 @@ use Omeka\Form\ConfirmForm;
  */
 class ConfirmAllForm extends ConfirmForm
 {
-    public function init()
+    public function init(): void
     {
         $this
             ->add([

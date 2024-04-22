@@ -2,16 +2,7 @@
 
 namespace Thesaurus\Mvc\Controller\Plugin;
 
-use Common\Stdlib\PsrMessage;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\DBAL\ParameterType;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Query\Parameter;
-use Laminas\Log\Logger;
 use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
-use Laminas\Mvc\Plugin\Identity\Identity;
-use Omeka\Api\Adapter\ItemAdapter;
-use Omeka\Api\Manager as ApiManager;
 use Omeka\Api\Representation\AbstractResourceEntityRepresentation;
 use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Api\Representation\ItemSetRepresentation;

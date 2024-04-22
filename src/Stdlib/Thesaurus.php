@@ -8,7 +8,6 @@ use Doctrine\DBAL\ParameterType;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Query\Parameter;
 use Laminas\Log\Logger;
-use Laminas\Mvc\Plugin\Identity\Identity;
 use Omeka\Api\Adapter\ItemAdapter;
 use Omeka\Api\Manager as ApiManager;
 use Omeka\Api\Representation\AbstractResourceEntityRepresentation;
@@ -1118,9 +1117,7 @@ class Thesaurus
             return [];
         }
         $item = $this->itemFromData($itemData);
-        return array_map(function ($v) {
-            return $this->structure[$v];
-        }, $this->resourcesItemsFromValue($item, $term));
+        return array_map(fn ($v) => $this->structure[$v], $this->resourcesItemsFromValue($item, $term));
     }
 
     /**
@@ -1175,9 +1172,7 @@ class Thesaurus
             return [];
         }
         $children = $this->structure[$itemData['id']]['children'] ?? [];
-        return array_map(function ($v) {
-            return $this->structure[$v];
-        }, $children);
+        return array_map(fn ($v) => $this->structure[$v], $children);
     }
 
     /**

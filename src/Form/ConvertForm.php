@@ -88,23 +88,23 @@ class ConvertForm extends Form
                 ],
             ]);
 
-            $inputFilter = $this->getInputFilter();
-            $inputFilter
-                ->add([
-                    'name' => 'file',
-                    'required' => true,
-                ])
-                ->add([
-                    'name' => 'format',
-                    'required' => false,
-                ])
-                ->add([
-                    'name' => 'clean',
-                    'required' => false,
-                ])
-                ->add([
-                    'name' => 'output',
-                    'required' => false,
-                ]);
+        $inputFilter = $this->getInputFilter();
+        $inputFilter
+            ->add([
+                'name' => 'file',
+                'required' => true,
+            ])
+            ->add([
+                'name' => 'format',
+                'required' => false,
+            ])
+            ->add([
+                'name' => 'clean',
+                'required' => false,
+            ])
+            ->add([
+                'name' => 'output',
+                'required' => false,
+            ]);
     }
 }

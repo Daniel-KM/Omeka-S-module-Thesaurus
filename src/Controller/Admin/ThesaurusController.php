@@ -652,7 +652,7 @@ class ThesaurusController extends ItemController
         $this->messenger()->addSuccess($message);
     }
 
-    protected function processUpdateConcepts(ItemRepresentation $item, string $mode = 'replace')
+    protected function processUpdateConcepts(ItemRepresentation $item, string $mode = 'replace'): void
     {
         $settings = $this->settings();
 

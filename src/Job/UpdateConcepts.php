@@ -3,7 +3,6 @@
 namespace Thesaurus\Job;
 
 use Omeka\Job\AbstractJob;
-use Thesaurus\Mvc\Controller\Plugin\Thesaurus;
 
 class UpdateConcepts extends AbstractJob
 {

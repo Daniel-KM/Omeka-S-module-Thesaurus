@@ -344,7 +344,7 @@ DQL;
                 }
 
                 $existing = $this->flatTree[$conceptId] ?? null;
-                $data['children'] = $data['children'] ?? [];
+                $data['children'] ??= [];
 
                 if (!$existing) {
                     if (empty($data['parent'])) {
