@@ -14,9 +14,9 @@ class CreateThesaurus extends AbstractJob
     const TRIM_PUNCTUATION = " \n\r\t\v\x00.,-?!:;";
 
     /**
-     * @var \Laminas\Log\Logger
+     * @var \Omeka\Api\Manager
      */
-    protected $logger;
+    protected $api;
 
     /**
      * @var \Doctrine\ORM\EntityManager
@@ -24,9 +24,14 @@ class CreateThesaurus extends AbstractJob
     protected $entityManager;
 
     /**
-     * @var \Omeka\Api\Manager
+     * @var \Laminas\Log\Logger
      */
-    protected $api;
+    protected $logger;
+
+    /**
+     * @var \Omeka\Settings\Settings
+     */
+    protected $settings;
 
     public function perform(): void
     {
@@ -77,14 +82,21 @@ class CreateThesaurus extends AbstractJob
         ];
 
         $this->api = $services->get('Omeka\ApiManager');
+        $this->settings = $services->get('Omeka\Settings');
 
         // Prepare resource classes and templates.
         $ownerId = $this->job->getOwner()->getId();
         $skosVocabulary = $this->api->read('vocabularies', ['prefix' => 'skos'])->getContent();
         $schemeClass = $this->api->read('resource_classes', ['vocabulary' => $skosVocabulary->id(), 'localName' => 'ConceptScheme'])->getContent();
         $conceptClass = $this->api->read('resource_classes', ['vocabulary' => $skosVocabulary->id(), 'localName' => 'Concept'])->getContent();
-        $schemeTemplate = $this->api->read('resource_templates', ['label' => 'Thesaurus Scheme'])->getContent();
-        $conceptTemplate = $this->api->read('resource_templates', ['label' => 'Thesaurus Concept'])->getContent();
+        $schemeTemplateId = (int) $this->settings->get('thesaurus_skos_scheme_template_id');
+        $schemeTemplate = $schemeTemplateId
+            ? $this->api->read('resource_templates', ['id' => $schemeTemplateId])->getContent()
+            : $this->api->read('resource_templates', ['label' => 'Thesaurus Scheme'])->getContent();
+        $conceptTemplateId = (int) $this->settings->get('thesaurus_skos_concept_template_id');
+        $conceptTemplate = $conceptTemplateId
+            ? $this->api->read('resource_templates', ['id' => $conceptTemplateId])->getContent()
+            : $this->api->read('resource_templates', ['label' => 'Thesaurus Concept'])->getContent();
         $collectionClass = $this->api->read('resource_classes', ['vocabulary' => $skosVocabulary->id(), 'localName' => 'Collection'])->getContent();
 
         // Scalar fields cannot be returned < v4.1.

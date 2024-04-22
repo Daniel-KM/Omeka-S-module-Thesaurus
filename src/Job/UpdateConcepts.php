@@ -15,9 +15,9 @@ class UpdateConcepts extends AbstractJob
     const BATCH_SIZE = 100;
 
     /**
-     * @var \Laminas\Log\Logger
+     * @var \Omeka\Api\Manager
      */
-    protected $logger;
+    protected $api;
 
     /**
      * @var \Doctrine\ORM\EntityManager
@@ -25,9 +25,14 @@ class UpdateConcepts extends AbstractJob
     protected $entityManager;
 
     /**
-     * @var \Omeka\Api\Manager
+     * @var \Laminas\Log\Logger
      */
-    protected $api;
+    protected $logger;
+
+    /**
+     * @var \Omeka\Settings\Settings
+     */
+    protected $settings;
 
     public function perform(): void
     {
@@ -43,6 +48,7 @@ class UpdateConcepts extends AbstractJob
         $this->entityManager = $services->get('Omeka\EntityManager');
 
         $this->api = $services->get('Omeka\ApiManager');
+        $this->settings = $services->get('Omeka\Settings');
 
         $schemeId = (int) $this->getArg('scheme');
         if (!$schemeId) {
@@ -146,7 +152,10 @@ class UpdateConcepts extends AbstractJob
         }
 
         /** @var \Omeka\Api\Representation\ResourceTemplateRepresentation $conceptTemplate */
-        $conceptTemplate = $this->api->read('resource_templates', ['label' => 'Thesaurus Concept'])->getContent();
+        $conceptTemplateId = (int) $this->settings->get('thesaurus_skos_concept_template_id');
+        $conceptTemplate = $conceptTemplateId
+            ? $this->api->read('resource_templates', ['id' => $conceptTemplateId])->getContent()
+            : $this->api->read('resource_templates', ['label' => 'Thesaurus Concept'])->getContent();
         $titleProperty = $conceptTemplate->titleProperty();
         if (!$titleProperty) {
             $this->logger->err(

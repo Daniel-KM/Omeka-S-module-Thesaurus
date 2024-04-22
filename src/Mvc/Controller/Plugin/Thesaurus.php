@@ -112,49 +112,56 @@ class Thesaurus extends AbstractPlugin
     protected $isPublic;
 
     /**
-     * @var EntityManager
+     * @var string
+     */
+    protected $separator;
+
+    /**
+     * @var \Doctrine\ORM\EntityManager
      */
     protected $entityManager;
 
     /**
-     * @var ItemAdapter
+     * @var \Omeka\Api\Adapter\ItemAdapter
      */
     protected $itemAdapter;
 
     /**
-     * @var ApiManager
+     * @var \Omeka\Api\Manager
      */
     protected $api;
 
     /**
-     * @var Logger
+     * @var \Laminas\Log\Logger
      */
     protected $logger;
+
+    /**
+     * @var \Omeka\Settings\Settings
+     */
+    protected $settings;
 
     /**
      * @var ?\Omeka\Entity\User
      */
     protected $user;
 
-    /**
-     * @var string
-     */
-    protected $separator;
-
     public function __construct(
+        ApiManager $api,
         EntityManager $entityManager,
         ItemAdapter $itemAdapter,
-        ApiManager $api,
         Logger $logger,
-        Identity $identity,
+        Settings $settings,
+        ?User $user,
         string $separator
     ) {
+        $this->api = $api;
         $this->entityManager = $entityManager;
         $this->itemAdapter = $itemAdapter;
-        $this->api = $api;
         $this->logger = $logger;
-        $this->user = $identity();
-        $this->isPublic = empty($this->user)
+        $this->settings = $settings;
+        $this->user = $user;
+        $this->isPublic = empty($user)
             || $this->user->getRole() === 'guest';
         $this->separator = $separator;
     }
@@ -998,7 +1005,10 @@ class Thesaurus extends AbstractPlugin
                 // Set message only when template title is skos:prefLabel.
                 // TODO Check setting "thesaurus_property_descriptor" too.
                 /** @var \Omeka\Api\Representation\ResourceTemplateRepresentation $templateConcept */
-                $templateConcept = $this->api->read('resource_templates', ['label' => 'Thesaurus Concept'])->getContent();
+                $templateConceptId = (int) $this->settings->get('thesaurus_skos_concept_template_id');
+                $templateConcept = $templateConceptId
+                    ? $this->api->read('resource_templates', ['id' => $templateConceptId])->getContent()
+                    : $this->api->read('resource_templates', ['label' => 'Thesaurus Concept'])->getContent();
                 $titleProperty = $templateConcept->titleProperty();
                 if ($titleProperty && $titleProperty->term() === 'skos:prefLabel') {
                     $this->logger->warn(

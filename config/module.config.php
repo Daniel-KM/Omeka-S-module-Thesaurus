@@ -162,13 +162,12 @@ return [
         ],
     ],
     'thesaurus' => [
-        // Keep empty config for automatic management.
         'config' => [
             // Hidden options to store resource classes and templates.
-            'thesaurus_skos_scheme_class_id' => null,
             'thesaurus_skos_concept_class_id' => null,
-            'thesaurus_skos_scheme_template_id' => null,
             'thesaurus_skos_concept_template_id' => null,
+            'thesaurus_skos_scheme_class_id' => null,
+            'thesaurus_skos_scheme_template_id' => null,
         ],
         'settings' => [
             'thesaurus_property_descriptor' => 'skos:prefLabel',

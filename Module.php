@@ -533,7 +533,10 @@ SQL;
         $settings = $services->get('Omeka\Settings');
 
         try {
-            $static['conceptTemplateId'] = $api->read('resource_templates', ['label' => 'Thesaurus Concept'], [], ['responseContent' => 'resource'])->getContent()->getId();
+            $conceptTemplateId = (int) $settings->get('thesaurus_skos_concept_template_id');
+            $static['conceptTemplateId'] = $conceptTemplateId
+                ? $api->read('resource_templates', ['id' => $conceptTemplateId], [], ['responseContent' => 'resource'])->getContent()->getId()
+                : $api->read('resource_templates', ['label' => 'Thesaurus Concept'], [], ['responseContent' => 'resource'])->getContent()->getId();
         } catch (\Exception $e) {
             $logger->err('Unable to find resource template "Thesaurus Concept".'); // @translate
             $static = [];
