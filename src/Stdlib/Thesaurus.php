@@ -491,18 +491,6 @@ class Thesaurus
     }
 
     /**
-     * Get the root concept of this item, that may be itself.
-     *
-     * @deprecated Use self::top() instead. Root is more like the scheme.
-     * @uses self::top()
-     * @return ItemRepresentation|array|null
-     */
-    public function root()
-    {
-        return $this->top();
-    }
-
-    /**
      * Get the broader concept of this item.
      *
      * @return ItemRepresentation|array|null

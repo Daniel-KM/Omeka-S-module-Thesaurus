@@ -243,18 +243,6 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
-     * Get the root concept of this item, that may be itself.
-     *
-     * @deprecated Use self::top() instead. Root is more like the scheme.
-     * @uses \Thesaurus\Stdlib\Thesaurus::root()
-     * @return ItemRepresentation|array|null
-     */
-    public function root()
-    {
-        return $this->thesaurus->top();
-    }
-
-    /**
      * Get the broader concept of this item.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::broader()
