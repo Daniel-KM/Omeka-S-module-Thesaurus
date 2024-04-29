@@ -404,17 +404,6 @@ class Thesaurus
     }
 
     /**
-     * Check if a concept is a root (top concept).
-     *
-     * @deprecated Use isTop() instead. Root is more like the scheme.
-     * @see self:isTop()
-     */
-    public function isRoot(): bool
-    {
-        return $this->isTop();
-    }
-
-    /**
      * This item is a collection if it has class Collection or OrderedCollection
      * or properties skos:member or skos:memberList.
      *
