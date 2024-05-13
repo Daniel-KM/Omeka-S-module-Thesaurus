@@ -132,6 +132,30 @@ class Module extends AbstractModule
             'api.search.query',
             [$this, 'handleApiSearchQuery']
         );
+        $controllers = [
+            'Omeka\Controller\Admin\Item',
+            'Omeka\Controller\Admin\ItemSet',
+            'Omeka\Controller\Admin\Media',
+            'Omeka\Controller\Site\Item',
+            'Omeka\Controller\Site\ItemSet',
+            'Omeka\Controller\Site\Media',
+        ];
+        foreach ($controllers as $controller) {
+            // foreach ($controllers as $controller) {
+            //     // Add the search field to the advanced search pages.
+            //     $sharedEventManager->attach(
+            //         $controller,
+            //         'view.advanced_search',
+            //         [$this, 'displayAdvancedSearch']
+            //     );
+            // }
+            // Filter the search filters for the advanced search pages.
+            $sharedEventManager->attach(
+                $controller,
+                'view.search.filters',
+                [$this, 'filterSearchFilters']
+            );
+        }
 
         // Add css/js to some admin pages.
         $sharedEventManager->attach(
@@ -169,32 +193,6 @@ class Module extends AbstractModule
             'easyadmin.job',
             [$this, 'handleEasyAdminJobs']
         );
-
-        // See module Next: an issue may occur when there are multiple properties.
-        // Anyway, it's a selection of categories, so other properties can be set
-        // separately, but not in the form.
-        // $controllers = [
-        //     'Omeka\Controller\Admin\Item',
-        //     'Omeka\Controller\Admin\ItemSet',
-        //     'Omeka\Controller\Admin\Media',
-        //     'Omeka\Controller\Site\Item',
-        //     'Omeka\Controller\Site\ItemSet',
-        //     'Omeka\Controller\Site\Media',
-        // ];
-        // foreach ($controllers as $controller) {
-        //     // Add the search field to the advanced search pages.
-        //     $sharedEventManager->attach(
-        //         $controller,
-        //         'view.advanced_search',
-        //         [$this, 'displayAdvancedSearch']
-        //     );
-        //     // Filter the search filters for the advanced search pages.
-        //     $sharedEventManager->attach(
-        //         $controller,
-        //         'view.search.filters',
-        //         [$this, 'filterSearchFilters']
-        //     );
-        // }
     }
 
     /**
@@ -400,6 +398,50 @@ class Module extends AbstractModule
                 ->leftJoin($valuesJoin, $valuesAlias)
                 ->andWhere($predicateExpr);
         }
+    }
+
+    public function filterSearchFilters(Event $event)
+    {
+        /**
+         * @var \Laminas\View\Renderer\PhpRenderer $view
+         * @var \Omeka\Api\Manager $api
+         * @var \Common\Stdlib\EasyMeta $easyMeta
+         * @var \Thesaurus\Stdlib\Thesaurus $thesaurus
+         * @var array $query
+         * @var array $filters
+         */
+        $query = $event->getParam('query', []);
+        if (empty($query)) {
+            return;
+        }
+
+        if (empty($query['thesaurus']) || !is_array($query['thesaurus'])) {
+            return;
+        }
+
+        $services = $this->getServiceLocator();
+        $api = $services->get('Omeka\ApiManager');
+        $plugins = $services->get('ControllerPluginManager');
+        $translate = $plugins->get('translate');
+        $easyMeta = $services->get('EasyMeta');
+        // $thesaurus = $services->get('Thesaurus\Thesaurus');
+
+        $is = $translate('is'); // @translate
+
+        foreach ($query['thesaurus'] as $term => $itemIds) {
+            if (!$itemIds) {
+                continue;
+            }
+            $propertyLabel = $easyMeta->propertyLabel($term);
+            if (!$propertyLabel) {
+                continue;
+            }
+            $filterLabel = $propertyLabel . ' ' . $is;
+            $itemTitles = $api->search('items', ['id' => $itemIds], ['returnScalar' => 'title'])->getContent();
+            $filters[$filterLabel][] = $itemTitles ? implode(', ', $itemTitles) : '–';
+        }
+
+        $event->setParam('filters', $filters);
     }
 
     public function addAdminResourceHeaders(Event $event): void
