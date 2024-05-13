@@ -230,6 +230,8 @@ class Thesaurus
      *
      * If the item does not belong to the current thesaurus, the thesaurus is
      * reinitialized. If the item is empty, the thesaurus is reset.
+     *
+     * @todo Allow to set the item id directly and prepare the stored item lately, since it is not needed most of the time.
      */
     public function setItem(?ItemRepresentation $item): self
     {
@@ -1171,7 +1173,7 @@ class Thesaurus
         }
         $parent = $this->parent($itemData);
         return $parent
-            ? $this->ancestor($parent, $level + 1)
+            ? $this->ancestor($parent, ++$level)
             : $itemData;
     }
 
@@ -1194,11 +1196,11 @@ class Thesaurus
             ));
         }
         $parent = $this->parent($itemData);
-        if ($parent) {
-            $list[$parent['id']] = $parent;
-            return $this->ancestors($parent, $list);
+        if (!$parent) {
+            return $list;
         }
-        return $list;
+        $list[$parent['id']] = $parent;
+        return $this->ancestors($parent, $list, ++$level);
     }
 
     /**
