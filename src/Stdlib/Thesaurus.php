@@ -800,6 +800,40 @@ class Thesaurus
     }
 
     /**
+     * Get the really flat hierarchy of this item from the top concepts.
+     */
+    public function simpleTree(): array
+    {
+        $tree = $this->flatTree();
+        if (!$tree || $this->returnItem) {
+            return $tree;
+        }
+        foreach ($tree as $k => $v) {
+            $t = $v['self'];
+            $t['level'] = $v['level'];
+            $tree[$k] = $t;
+        }
+        return $tree;
+    }
+
+    /**
+     * Get the simple flat hierarchy branch of this item, self included.
+     */
+    public function simpleBranch(): array
+    {
+        $tree = $this->flatBranch();
+        if (!$tree || $this->returnItem) {
+            return $tree;
+        }
+        foreach ($tree as $k => $v) {
+            $t = $v['self'];
+            $t['level'] = $v['level'];
+            $tree[$k] = $t;
+        }
+        return $tree;
+    }
+
+    /**
      * Get the list of terms or items by id from the root (top concept).
      *
      * This output is recommended for a select element form (terms).

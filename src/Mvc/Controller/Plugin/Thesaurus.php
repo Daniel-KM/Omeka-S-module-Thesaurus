@@ -436,6 +436,26 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
+     * Get the really flat hierarchy of this item from the top concepts.
+     *
+     * @uses \Thesaurus\Stdlib\Thesaurus::simpleTree()
+     */
+    public function simpleTree(): array
+    {
+        return $this->thesaurus->simpleTree();
+    }
+
+    /**
+     * Get the really flat hierarchy branch of this item, self included.
+     *
+     * @uses \Thesaurus\Stdlib\Thesaurus::simpleBranch()
+     */
+    public function simpleBranch(): array
+    {
+        return $this->thesaurus->simpleBranch();
+    }
+
+    /**
      * Get the list of terms or items by id from the root (top concept).
      *
      * This output is recommended for a select element form (terms).
