@@ -167,14 +167,38 @@ display the tree, a list, or anything else via a view template.
 
 ### Html "select" with the tree
 
-A specific form element `ThesaurusSelect` allows to create a html `<select>`
-with options.
+A specific form element and the associated view helper `ThesaurusSelect` allow
+to create a html `<select>` with options. This is the recommended way to create
+select.
+
+### Api to search a resource with a concept
+
+- It is possible to do a query according to thesaurus items. In fact, a standard
+  query on properties with type `res` is the simplest way to do it.
+
+- You may use the format `thesaurus[dcterms:subject][]=xxx`, where xxx is the
+  item id of an item of the thesaurus.
+
+### Api to search a resource belonging to a thesaurus
+
+To search resources with a property value belonging to a thesaurus, you may use
+the query property with the type `cat` and the text the thesaurus item id:
+`property[0][property]=dcterms:subject&property[0][type]=cat&property[0][text]=xxx`,
+where xxx is the thesaurus item id.
+
+### Api sort
+
+It is possible to sort a query according to thesaurus items order with `sort_by=thesaurus&sort_thesaurus=xxx`,
+where xxx is the item id of the thesaurus.
+
+### Use with the module Collecting (old version)
 
 For the module Collecting, the select can be created manually too. You may need
 to use a [fork of the module Collecting], which commits will be integrated
-upstream soon. Then choose a property to fill, the input type "resource item",
-then the query:
-`resource_class_id[0]=xxx&property[0][joiner]=and&property[0][property]=skos:inScheme&property[0][type]=res&property[0][text]=yyy&sort_by=thesaurus&sort_thesaurus=yyy`
+upstream soon.
+
+Then choose a property to fill, the input type "resource item", then the query:
+`resource_class_id[0]=xxx&property[0][joiner]=and&property[0][property]=skos:inScheme&property[0][type]=res&property[0][text]=yyy&sort_by=thesaurus&sort_thesaurus=yyy`.
 or in php:
 
 ```php
