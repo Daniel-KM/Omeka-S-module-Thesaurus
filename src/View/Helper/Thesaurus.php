@@ -511,6 +511,8 @@ class Thesaurus extends AbstractHelper
         $select = $this->formElementManager->get(\Thesaurus\Form\Element\ThesaurusSelect::class);
         return $select
             ->setOptions($options)
+            // Normally useless.
+            ->setThesaurus($this->thesaurus)
             ->setThesaurusTerm($this->thesaurus->getItem());
     }
 

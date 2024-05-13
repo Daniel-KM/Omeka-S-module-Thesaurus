@@ -30,18 +30,7 @@ class ThesaurusSelect extends Select
     public function setOptions($options)
     {
         if (isset($options['thesaurus'])) {
-            // @deprecated Use the term as thesaurus.
-            if (is_array($options['thesaurus'])) {
-                $thesaurusOptions = $options['thesaurus']['options'] ?? null;
-                if (is_array($thesaurusOptions)) {
-                    $options = array_merge($options, $thesaurusOptions);
-                }
-                if ($options['thesaurus']['term']) {
-                    $this->setThesaurusTerm($options['thesaurus']['term']);
-                }
-            } else {
-                $this->setThesaurusTerm($options['thesaurus']);
-            }
+            $this->setThesaurusTerm($options['thesaurus']);
         }
 
         parent::setOptions($options);
@@ -87,7 +76,7 @@ class ThesaurusSelect extends Select
      *   - prepend_value_options
      * - standard Thesaurus options:
      *   - output_type: "listTree" (default) or "listBranch".
-     *   - ascendance (bool): Prepend the ascendants.
+     *   - ascendance (bool): Prepend the ascendants. False by default, so flat.
      *   - separator (string): Ascendance separator (with spaces).
      *   - indent (string): String like "– " to prepend to terms to show level.
      *   - prepend_id (bool): Prepend the id of the terms.

@@ -158,7 +158,7 @@ class Module extends AbstractModule
             [$this, 'handleMainSettings']
         );
 
-        // Add a job to upgrade structure from v3.
+        // Add a job for EasyAdmin.
         $sharedEventManager->attach(
             \EasyAdmin\Form\CheckAndFixForm::class,
             'form.add_elements',
@@ -202,7 +202,7 @@ class Module extends AbstractModule
      *
      * @param Event $event
      */
-    public function handleApiSearchQueryItem(Event $event)
+    public function handleApiSearchQueryItem(Event $event): void
     {
         $query = $event->getParam('request')->getContent();
         if (!empty($query['sort_thesaurus'])
@@ -238,7 +238,7 @@ class Module extends AbstractModule
             ;
         }
 
-        return $this->handleApiSearchQuery($event);
+        $this->handleApiSearchQuery($event);
     }
 
     /**
@@ -523,7 +523,7 @@ SQL;
         $fieldset = $form->get('module_tasks');
         $process = $fieldset->get('process');
         $valueOptions = $process->getValueOptions();
-        $valueOptions['db_thesaurus_index'] = 'Index thesaurus (module Thesaurus)'; // @translate
+        $valueOptions['db_thesaurus_index'] = 'Thesaurus: Index thesaurus'; // @translate
         $process->setValueOptions($valueOptions);
     }
 
