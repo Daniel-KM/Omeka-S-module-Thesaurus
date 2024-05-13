@@ -249,10 +249,20 @@ class Module extends AbstractModule
     public function handleApiSearchQuery(Event $event): void
     {
         $query = $event->getParam('request')->getContent();
-        if (!isset($query['property']) || !is_array($query['property'])) {
-            return;
+
+        $hasQueryProperty = isset($query['property']) && !is_array($query['property']);
+        if ($hasQueryProperty) {
+            $this->handleApiSearchQueryProperty($event, $query);
         }
 
+        $hasQueryThesaurus = isset($query['thesaurus']) && is_array($query['thesaurus']);
+        if ($hasQueryThesaurus) {
+            $this->handleApiSearchQueryThesaurus($event, $query);
+        }
+    }
+
+    protected function handleApiSearchQueryProperty(Event $event, array $query): void
+    {
         /**
          * @var \Omeka\Api\Manager $api
          * @var \Thesaurus\Stdlib\Thesaurus $thesaurus
@@ -335,6 +345,60 @@ class Module extends AbstractModule
 
         if ($where) {
             $qb->andWhere($where);
+        }
+    }
+
+    /**
+     * Handle api query like "thesaurus[dcterms:subject]=xxx.
+     *
+     * The thesaurus itself and the presence of the value in the thesaurus are
+     * not checked.
+     */
+    protected function handleApiSearchQueryThesaurus(Event $event, array $query): void
+    {
+        /**
+         * @var \Omeka\Api\Manager $api
+         * @var \Common\Stdlib\EasyMeta $easyMeta
+         * @var \Doctrine\ORM\QueryBuilder $qb
+         * @var \Omeka\Api\Adapter\ItemAdapter $adapter
+         */
+        $services = $this->getServiceLocator();
+        $easyMeta = $services->get('EasyMeta');
+
+        $qb = $event->getParam('queryBuilder');
+        $adapter = $event->getTarget();
+
+        $expr = $qb->expr();
+
+        $valuesJoin = 'omeka_root.values';
+
+        // The query thesaurus is already checked.
+        $queryThesaurus = array_filter($query['thesaurus']);
+
+        foreach ($queryThesaurus as $termOrId => $vals) {
+            $propertyId = $easyMeta->propertyId($termOrId);
+            if (!$propertyId) {
+                continue;
+            }
+            $valuesAlias = $adapter->createAlias();
+            $itemIds = is_array($vals)
+                ? array_filter(array_map('intval', $vals))
+                : array_filter([(int) $vals]);
+            if (!$itemIds) {
+                // Return no value when error.
+                $param = $adapter->createNamedParameter($qb, -1);
+                $predicateExpr = $expr->eq("$valuesAlias.valueResource", $param);
+            } elseif (count($itemIds) === 1) {
+                $param = $adapter->createNamedParameter($qb, reset($itemIds));
+                $predicateExpr = $expr->eq("$valuesAlias.valueResource", $param);
+            } else {
+                $param = $adapter->createNamedParameter($qb, $itemIds);
+                $qb->setParameter(substr($param, 1), $itemIds, Connection::PARAM_INT_ARRAY);
+                $predicateExpr = $expr->in("$valuesAlias.valueResource", $param);
+            }
+            $qb
+                ->leftJoin($valuesJoin, $valuesAlias)
+                ->andWhere($predicateExpr);
         }
     }
 
