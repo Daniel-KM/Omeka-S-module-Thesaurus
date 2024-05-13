@@ -986,7 +986,7 @@ class Thesaurus
                 // TODO Check setting "thesaurus_property_descriptor" too.
                 /** @var \Omeka\Api\Representation\ResourceTemplateRepresentation $templateConcept */
                 $templateConcept = $this->templateConceptId
-                    ? $this->api->read('resource_templates', ['id' => $templateConceptId])->getContent()
+                    ? $this->api->read('resource_templates', ['id' => $this->templateConceptId])->getContent()
                     : $this->api->read('resource_templates', ['label' => 'Thesaurus Concept'])->getContent();
                 $titleProperty = $templateConcept->titleProperty();
                 if ($titleProperty && $titleProperty->term() === 'skos:prefLabel') {
