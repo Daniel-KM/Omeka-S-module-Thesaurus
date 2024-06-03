@@ -1,0 +1,216 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-06-10 00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "SKOS Vocabulary"
+msgstr ""
+
+msgid "An RDF vocabulary for describing the basic structure and content of concept schemes such as thesauri, classification schemes, subject heading lists, taxonomies, 'folksonomies', other types of controlled vocabulary, and also concept schemes embedded in glossaries and terminologies."
+msgstr ""
+
+msgid "Concept"
+msgstr ""
+
+msgid "An idea or notion; a unit of thought."
+msgstr ""
+
+msgid "Concept Scheme"
+msgstr ""
+
+msgid "A set of concepts, optionally including statements about semantic relationships between those concepts."
+msgstr ""
+
+msgid "Collection"
+msgstr ""
+
+msgid "A meaningful collection of concepts."
+msgstr ""
+
+msgid "Ordered Collection"
+msgstr ""
+
+msgid "An ordered collection of concepts, where both the grouping and the ordering are meaningful."
+msgstr ""
+
+msgid "is in scheme"
+msgstr ""
+
+msgid "Relates a resource (for example a concept) to a concept scheme in which it is included."
+msgstr ""
+
+msgid "has top concept"
+msgstr ""
+
+msgid "Relates, by convention, a concept scheme to a concept which is topmost in the broader/narrower concept hierarchies for that scheme, providing an entry point to these hierarchies."
+msgstr ""
+
+msgid "is top concept in scheme"
+msgstr ""
+
+msgid "Relates a concept to the concept scheme that it is a top level concept of."
+msgstr ""
+
+msgid "preferred label"
+msgstr ""
+
+msgid "The preferred lexical label for a resource, in a given language."
+msgstr ""
+
+msgid "alternative label"
+msgstr ""
+
+msgid "An alternative lexical label for a resource."
+msgstr ""
+
+msgid "hidden label"
+msgstr ""
+
+msgid "A lexical label for a resource that should be hidden when generating visual displays of the resource, but should still be accessible to free text search operations."
+msgstr ""
+
+msgid "notation"
+msgstr ""
+
+msgid "A notation, also known as classification code, is a string of characters such as \"T58.5\" or \"303.4833\" used to uniquely identify a concept within the scope of a given concept scheme."
+msgstr ""
+
+msgid "note"
+msgstr ""
+
+msgid "A general note, for any purpose."
+msgstr ""
+
+msgid "change note"
+msgstr ""
+
+msgid "A note about a modification to a concept."
+msgstr ""
+
+msgid "definition"
+msgstr ""
+
+msgid "A statement or formal explanation of the meaning of a concept."
+msgstr ""
+
+msgid "editorial note"
+msgstr ""
+
+msgid "A note for an editor, translator or maintainer of the vocabulary."
+msgstr ""
+
+msgid "example"
+msgstr ""
+
+msgid "An example of the use of a concept."
+msgstr ""
+
+msgid "history note"
+msgstr ""
+
+msgid "A note about the past state/use/meaning of a concept."
+msgstr ""
+
+msgid "scope note"
+msgstr ""
+
+msgid "A note that helps to clarify the meaning and/or the use of a concept."
+msgstr ""
+
+msgid "is in semantic relation with"
+msgstr ""
+
+msgid "Links a concept to a concept related by meaning."
+msgstr ""
+
+msgid "has broader"
+msgstr ""
+
+msgid "Relates a concept to a concept that is more general in meaning."
+msgstr ""
+
+msgid "has narrower"
+msgstr ""
+
+msgid "Relates a concept to a concept that is more specific in meaning."
+msgstr ""
+
+msgid "has related"
+msgstr ""
+
+msgid "Relates a concept to a concept with which there is an associative semantic relationship."
+msgstr ""
+
+msgid "has broader transitive"
+msgstr ""
+
+msgid "skos:broaderTransitive is a transitive superproperty of skos:broader."
+msgstr ""
+
+msgid "has narrower transitive"
+msgstr ""
+
+msgid "skos:narrowerTransitive is a transitive superproperty of skos:narrower."
+msgstr ""
+
+msgid "has member"
+msgstr ""
+
+msgid "Relates a collection to one of its members."
+msgstr ""
+
+msgid "has member list"
+msgstr ""
+
+msgid "Relates an ordered collection to the RDF list containing its members."
+msgstr ""
+
+msgid "is in mapping relation with"
+msgstr ""
+
+msgid "Relates two concepts coming, by convention, from different schemes, and that have comparable meanings"
+msgstr ""
+
+msgid "has broader match"
+msgstr ""
+
+msgid "skos:broadMatch is used to state a hierarchical mapping link between two conceptual resources in different concept schemes."
+msgstr ""
+
+msgid "has narrower match"
+msgstr ""
+
+msgid "skos:narrowMatch is used to state a hierarchical mapping link between two conceptual resources in different concept schemes."
+msgstr ""
+
+msgid "has related match"
+msgstr ""
+
+msgid "skos:relatedMatch is used to state an associative mapping link between two conceptual resources in different concept schemes."
+msgstr ""
+
+msgid "has exact match"
+msgstr ""
+
+msgid "skos:exactMatch is used to link two concepts, indicating a high degree of confidence that the concepts can be used interchangeably across a wide range of information retrieval applications. skos:exactMatch is a transitive property, and is a sub-property of skos:closeMatch."
+msgstr ""
+
+msgid "has close match"
+msgstr ""
+
+msgid "skos:closeMatch is used to link two concepts that are sufficiently similar that they can be used interchangeably in some information retrieval applications. In order to avoid the possibility of \"compound errors\" when combining mappings across more than two concept schemes, skos:closeMatch is not declared to be a transitive property."
+msgstr ""
