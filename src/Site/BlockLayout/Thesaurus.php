@@ -46,9 +46,14 @@ class Thesaurus extends AbstractBlockLayout
 
     public function render(PhpRenderer $view, SitePageBlockRepresentation $block)
     {
-        $item = $view->api()->searchOne('items', ['id' => $block->dataValue('item')])->getContent();
-        if (empty($item) && $block->dataValue('hideIfEmpty')) {
-            return '';
+        $itemId = (int) $block->dataValue('item');
+        try {
+            $item = $itemId ? $view->api()->read('items', ['id' => $itemId])->getContent() : null;
+        } catch (Exception $e) {
+            if ($block->dataValue('hideIfEmpty')) {
+                return '';
+            }
+            $item = null;
         }
 
         $vars = [
