@@ -8,6 +8,7 @@ if (!class_exists(\Common\TraitModule::class)) {
 
 use Common\Stdlib\PsrMessage;
 use Common\TraitModule;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\Query\Expr\Join;
 use Laminas\EventManager\Event;
 use Laminas\EventManager\SharedEventManagerInterface;
@@ -400,7 +401,7 @@ class Module extends AbstractModule
         }
     }
 
-    public function filterSearchFilters(Event $event)
+    public function filterSearchFilters(Event $event): void
     {
         /**
          * @var \Laminas\View\Renderer\PhpRenderer $view
