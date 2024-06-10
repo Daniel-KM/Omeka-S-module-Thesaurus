@@ -97,3 +97,38 @@ if (version_compare($oldVersion, '3.4.9', '<')) {
     $message->setEscapeHtml(false);
     $messenger->addSuccess($message);
 }
+
+if (version_compare($oldVersion, '3.4.16', '<')) {
+    $logger = $services->get('Omeka\Logger');
+    $blocksRepository = $entityManager->getRepository(\Omeka\Entity\SitePageBlock::class);
+
+    // Replace Block plus template with Omeka layout template.
+    $result = [];
+    foreach ($blocksRepository->findBy(['layout' => 'thesaurus']) as $block) {
+        $data = $block->getData();
+        $template = $data['template'] ?? '';
+        $layoutData = $block->getLayoutData() ?? [];
+        $existingTemplateName = $layoutData['template_name'] ?? null;
+        $templateName = pathinfo($template, PATHINFO_FILENAME);
+        if ($templateName && $templateName !== 'thesaurus' && (!$existingTemplateName || $existingTemplateName === 'thesaurus')) {
+            $layoutData['template_name'] = $templateName;
+            $page = $block->getPage();
+            $pageSlug = $page->getSlug();
+            $result[$page->getSite()->getSlug()][$pageSlug] = $pageSlug;
+        }
+        unset($data['template']);
+        $block->setLayoutData($layoutData);
+    }
+
+    $entityManager->flush();
+
+    if ($result) {
+        $result = array_map('array_values', $result);
+        $message = new PsrMessage(
+            'The template layout of some blocks Thesaurus was renamed. Check matching pages: {json}.', // @translate
+            ['json' => json_encode($result)]
+        );
+        $messenger->addWarning($message);
+        $logger->warn($message->getMessage(), $message->getContext());
+    }
+}
