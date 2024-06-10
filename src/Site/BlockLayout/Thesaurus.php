@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Thesaurus\Site\BlockLayout;
 
 use Laminas\View\Renderer\PhpRenderer;
@@ -6,8 +7,9 @@ use Omeka\Api\Representation\SitePageBlockRepresentation;
 use Omeka\Api\Representation\SitePageRepresentation;
 use Omeka\Api\Representation\SiteRepresentation;
 use Omeka\Site\BlockLayout\AbstractBlockLayout;
+use Omeka\Site\BlockLayout\TemplateableBlockLayoutInterface;
 
-class Thesaurus extends AbstractBlockLayout
+class Thesaurus extends AbstractBlockLayout implements TemplateableBlockLayoutInterface
 {
     /**
      * The default partial view script.
@@ -44,7 +46,7 @@ class Thesaurus extends AbstractBlockLayout
         return $view->formCollection($fieldset);
     }
 
-    public function render(PhpRenderer $view, SitePageBlockRepresentation $block)
+    public function render(PhpRenderer $view, SitePageBlockRepresentation $block, $templateViewScript = self::PARTIAL_NAME)
     {
         $itemId = (int) $block->dataValue('item');
         try {
@@ -70,11 +72,6 @@ class Thesaurus extends AbstractBlockLayout
             ],
         ];
 
-        $template = $block->dataValue('template', self::PARTIAL_NAME);
-        unset($vars['template']);
-
-        return $template !== self::PARTIAL_NAME && $view->resolver($template)
-            ? $view->partial($template, $vars)
-            : $view->partial(self::PARTIAL_NAME, $vars);
+        return $view->partial($templateViewScript, $vars);
     }
 }
