@@ -187,7 +187,6 @@ return [
                 'term' => 'dcterms:subject',
                 'hideIfEmpty' => false,
                 'expanded' => 0,
-                'template' => '',
             ],
         ],
     ],
