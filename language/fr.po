@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-24 00:00+0000\n"
+"POT-Creation-Date: 2024-07-01 00:00+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Daniel Berthereau <Daniel.fr@Berthereau.net>\n"
 "Language-Team: \n"
@@ -148,6 +148,16 @@ msgstr ""
 "Le gabarit de certains blocs Thésaurus a été renommé. Vérifiez les pages "
 "correspondantes : {json}."
 
+#: data/scripts/upgrade.php:192
+msgid ""
+"The setting \"heading\" was removed from block Thessaurus. New blocks "
+"\"Heading\" or \"Html\" were prepended to all blocks that had a filled "
+"heading. You may check pages for styles: {json}"
+msgstr ""
+"Le paramètre « Titre » a été supprimé du bloc Thesaurus. Un nouveau bloc "
+"« Titre » ou « Html » a été ajouté à tous les blocs qui contenait une "
+"entête. Vous pouvez vérifier les pages pour les styles : {json}"
+
 #: Module.php:60
 msgid ""
 "It is recommended to install module CustomVocab to take full advantage of "
@@ -180,22 +190,22 @@ msgstr "propertyPath"
 msgid "propertyAscendance"
 msgstr "propertyAscendance"
 
-#: view/common/thesaurus-list.phtml:23 src/Form/ThesaurusFieldset.php:45
+#: view/common/thesaurus-list.phtml:23 src/Form/ThesaurusFieldset.php:35
 msgid "Top concepts"
 msgstr "Concepts racines"
 
 #: view/common/thesaurus-list.phtml:24 view/common/thesaurus-list.phtml:25
-#: src/Form/ThesaurusFieldset.php:46
+#: src/Form/ThesaurusFieldset.php:36
 msgid "Narrower concepts"
 msgstr "Concepts spécifiques"
 
 #: view/common/thesaurus-list.phtml:26 view/common/thesaurus-list.phtml:27
-#: src/Form/ThesaurusFieldset.php:48
+#: src/Form/ThesaurusFieldset.php:38
 msgid "Related concepts"
 msgstr "Concepts liés"
 
 #: view/common/thesaurus-list.phtml:28 view/common/thesaurus-list.phtml:29
-#: src/Form/ThesaurusFieldset.php:50
+#: src/Form/ThesaurusFieldset.php:40
 msgid "Sibling concepts"
 msgstr "Concepts équivalents"
 
@@ -265,8 +275,8 @@ msgid ""
 "A preferred label with the descriptor or the full path is required to fill "
 "concepts."
 msgstr ""
-"Une étiquette préférée avec le descripteur ou le chemin d’accès complet "
-"est nécessaire pour remplir les concepts."
+"Une étiquette préférée avec le descripteur ou le chemin d’accès complet est "
+"nécessaire pour remplir les concepts."
 
 #: src/Job/CreateThesaurus.php:113
 msgid "The property {property} for descriptor is not managed."
@@ -526,114 +536,110 @@ msgid "Indented"
 msgstr "Indentation"
 
 #: src/Form/ThesaurusFieldset.php:18
-msgid "Block title"
-msgstr "Titre du bloc"
-
-#: src/Form/ThesaurusFieldset.php:28
 msgid "Scheme or concept id"
 msgstr "Schéma ou id du concept"
 
-#: src/Form/ThesaurusFieldset.php:40
+#: src/Form/ThesaurusFieldset.php:30
 msgid "Type of display"
 msgstr "Type d’affichage"
 
-#: src/Form/ThesaurusFieldset.php:43
+#: src/Form/ThesaurusFieldset.php:33
 msgid "Root"
 msgstr "Racine"
 
-#: src/Form/ThesaurusFieldset.php:44
+#: src/Form/ThesaurusFieldset.php:34
 msgid "Broader"
 msgstr "Générique"
 
-#: src/Form/ThesaurusFieldset.php:47
+#: src/Form/ThesaurusFieldset.php:37
 msgid "Narrower concepts or self"
 msgstr "Concepts spécifiques ou lui-même"
 
-#: src/Form/ThesaurusFieldset.php:49
+#: src/Form/ThesaurusFieldset.php:39
 msgid "Related concepts or self"
 msgstr "Concepts liés ou lui-même"
 
-#: src/Form/ThesaurusFieldset.php:51
+#: src/Form/ThesaurusFieldset.php:41
 msgid "Sibling concepts or self"
 msgstr "Concepts équivalents ou lui--même"
 
-#: src/Form/ThesaurusFieldset.php:52
+#: src/Form/ThesaurusFieldset.php:42
 msgid "Ascendants as list"
 msgstr "Ascendants en liste"
 
-#: src/Form/ThesaurusFieldset.php:53
+#: src/Form/ThesaurusFieldset.php:43
 msgid "Ascendants or self as list"
 msgstr "Ascendants ou lui-même en liste"
 
-#: src/Form/ThesaurusFieldset.php:54
+#: src/Form/ThesaurusFieldset.php:44
 msgid "Descendants as list"
 msgstr "Descendants en liste"
 
-#: src/Form/ThesaurusFieldset.php:55
+#: src/Form/ThesaurusFieldset.php:45
 msgid "Descendants or self as list"
 msgstr "Descendants ou lui-même en liste"
 
-#: src/Form/ThesaurusFieldset.php:56
+#: src/Form/ThesaurusFieldset.php:46
 msgid "Tree structure"
 msgstr "Structure en arborescence"
 
-#: src/Form/ThesaurusFieldset.php:57
+#: src/Form/ThesaurusFieldset.php:47
 msgid "Branch"
 msgstr "Branche"
 
-#: src/Form/ThesaurusFieldset.php:58
+#: src/Form/ThesaurusFieldset.php:48
 msgid "Branch without top"
 msgstr "Branche sans racine"
 
-#: src/Form/ThesaurusFieldset.php:59
+#: src/Form/ThesaurusFieldset.php:49
 msgid "Branch from item"
 msgstr "Branche depuis l’item"
 
-#: src/Form/ThesaurusFieldset.php:60
+#: src/Form/ThesaurusFieldset.php:50
 msgid "Branch below item"
 msgstr "Branche sous l’item"
 
-#: src/Form/ThesaurusFieldset.php:61
+#: src/Form/ThesaurusFieldset.php:51
 msgid "Flat tree"
 msgstr "Arborescence plate"
 
-#: src/Form/ThesaurusFieldset.php:62
+#: src/Form/ThesaurusFieldset.php:52
 msgid "Flat branch"
 msgstr "Branche plate"
 
-#: src/Form/ThesaurusFieldset.php:70
+#: src/Form/ThesaurusFieldset.php:60
 msgid "Select type…"
 msgstr "Choisir le type…"
 
-#: src/Form/ThesaurusFieldset.php:77
+#: src/Form/ThesaurusFieldset.php:67
 msgid "Type of link"
 msgstr "Type de lien"
 
-#: src/Form/ThesaurusFieldset.php:80
+#: src/Form/ThesaurusFieldset.php:70
 msgid "Concepts"
 msgstr "Concepts"
 
-#: src/Form/ThesaurusFieldset.php:82
+#: src/Form/ThesaurusFieldset.php:72
 msgid "Both"
 msgstr "Les deux"
 
-#: src/Form/ThesaurusFieldset.php:95
+#: src/Form/ThesaurusFieldset.php:85
 msgid "Property for links"
 msgstr "Propriété pour les liens"
 
-#: src/Form/ThesaurusFieldset.php:96
+#: src/Form/ThesaurusFieldset.php:86
 msgid "Generally, it is \"dcterms:subject\"."
 msgstr "Il s’agit généralement de « dcterms:subject »."
 
-#: src/Form/ThesaurusFieldset.php:112
+#: src/Form/ThesaurusFieldset.php:102
 msgid "Hide if empty"
 msgstr "Cacher si vide"
 
-#: src/Form/ThesaurusFieldset.php:122
+#: src/Form/ThesaurusFieldset.php:112
 msgid "Level expanded"
 msgstr "Profondeur initiale"
 
-#: src/Form/ThesaurusFieldset.php:123
+#: src/Form/ThesaurusFieldset.php:113
 msgid "Set 0 to start closed, a big number to display all levels."
 msgstr ""
 "Indiquer 0 pour afficher l’arborescence fermée, un grand nombre pour "
@@ -805,7 +811,7 @@ msgstr "L’utilisateur n’a pas le droit d’éditer en lot le thésaurus."
 msgid "id"
 msgstr "id"
 
-#: src/Controller/Admin/ThesaurusController.php:251
+#: src/Controller/Admin/ThesaurusController.php:250
 msgid ""
 "Indexing concepts in background ({link}job #{job_id}{link_end}, {link_log}"
 "logs{link_end})."
@@ -813,7 +819,7 @@ msgstr ""
 "Indexation des concepts en arrière-plan ({link}tâche #{job_id}{link_end}, "
 "{link_log}journaux{link_end})."
 
-#: src/Controller/Admin/ThesaurusController.php:282
+#: src/Controller/Admin/ThesaurusController.php:281
 msgid ""
 "You may need to reload {link}this page{link_end} a second time to clean "
 "indexation of top concepts."
@@ -821,40 +827,40 @@ msgstr ""
 "Vous pouvez avoir besoin de recharger {link}cette page{link_end} une seconde "
 "fois pour finaliser l’indexation des concepts racines."
 
-#: src/Controller/Admin/ThesaurusController.php:323
+#: src/Controller/Admin/ThesaurusController.php:322
 msgid "Unallowed request."
 msgstr "Requête non autorisée."
 
-#: src/Controller/Admin/ThesaurusController.php:331
+#: src/Controller/Admin/ThesaurusController.php:330
 msgid "Missing file."
 msgstr "Fichier manquant."
 
-#: src/Controller/Admin/ThesaurusController.php:343
+#: src/Controller/Admin/ThesaurusController.php:342
 msgid "Wrong request for file."
 msgstr "Requête du fichier incorrecte."
 
-#: src/Controller/Admin/ThesaurusController.php:372
+#: src/Controller/Admin/ThesaurusController.php:371
 msgid "An error occurred when uploading the file."
 msgstr "Une erreur est survenue lors du chargement du fichier."
 
-#: src/Controller/Admin/ThesaurusController.php:376
+#: src/Controller/Admin/ThesaurusController.php:375
 msgid "Wrong media type (\"{type}\") for file."
 msgstr "Média-type incorrect (« {type} ») pour le fichier."
 
-#: src/Controller/Admin/ThesaurusController.php:381
-#: src/Controller/Admin/ThesaurusController.php:613
+#: src/Controller/Admin/ThesaurusController.php:380
+#: src/Controller/Admin/ThesaurusController.php:612
 msgid "The file is empty."
 msgstr "Le fichier est vide."
 
-#: src/Controller/Admin/ThesaurusController.php:388
+#: src/Controller/Admin/ThesaurusController.php:387
 msgid "Unable to convert the file."
 msgstr "Impossible de convertir le fichier."
 
-#: src/Controller/Admin/ThesaurusController.php:398
+#: src/Controller/Admin/ThesaurusController.php:397
 msgid "The file is successfully converted."
 msgstr "Le fichier a été converti avec succès."
 
-#: src/Controller/Admin/ThesaurusController.php:406
+#: src/Controller/Admin/ThesaurusController.php:405
 msgid ""
 "The file is successfully converted. You can now copy-paste below data into a "
 "custom vocab."
@@ -862,11 +868,11 @@ msgstr ""
 "Le fichier est converti avec succès. Vous pouvez maintenant copier-coller "
 "les données ci-dessous dans un vocabulaire personnalisé."
 
-#: src/Controller/Admin/ThesaurusController.php:424
+#: src/Controller/Admin/ThesaurusController.php:423
 msgid "Convert first a file to get the flat thesaurus."
 msgstr "Convertir d’abord un fichier pour obtenir un thésaurus plat."
 
-#: src/Controller/Admin/ThesaurusController.php:458
+#: src/Controller/Admin/ThesaurusController.php:457
 msgid ""
 "Structure saved and reindexed ({link}job #{job_id}{link_end}, {link_log}"
 "logs{link_end})."
@@ -874,7 +880,7 @@ msgstr ""
 "Structure enregistrée et ré-indexée ({link}tâche #{job_id}{link_end}, "
 "{link_log}journaux{link_end})."
 
-#: src/Controller/Admin/ThesaurusController.php:462
+#: src/Controller/Admin/ThesaurusController.php:461
 msgid ""
 "Indexing structure in background. Do not display structure while indexing, "
 "else errors may occur ({link}job #{job_id}{link_end}, {link_log}"
@@ -884,11 +890,11 @@ msgstr ""
 "l’indexation, sinon des erreurs peuvent apparaître ({link}tâche #{job_id}"
 "{link_end}, {link_log}journaux{link_end})."
 
-#: src/Controller/Admin/ThesaurusController.php:631
+#: src/Controller/Admin/ThesaurusController.php:630
 msgid "The thesaurus \"{title}\" is created."
 msgstr "Le thésaurus « {title} » a été créé."
 
-#: src/Controller/Admin/ThesaurusController.php:639
+#: src/Controller/Admin/ThesaurusController.php:638
 msgid ""
 "Creation of thesaurus \"{title}\" with {total} concepts started ({link}job "
 "#{job_id}{link_end}, {link_log}logs{link_end})"
@@ -896,7 +902,7 @@ msgstr ""
 "Création du thésaurus « {title} » avec {total} concepts démarée ({link}tâche "
 "#{job_id}{link_end}, {link_log}journaux{link_end})"
 
-#: src/Controller/Admin/ThesaurusController.php:675
+#: src/Controller/Admin/ThesaurusController.php:674
 msgid ""
 "Updating concepts in background ({link}job #{job_id}{link_end}, {link_log}"
 "logs{link_end})."
@@ -1214,6 +1220,9 @@ msgstr ""
 "d’« erreurs composées » lors de la combinaison de correspondances entre plus "
 "de deux schémas conceptuels, skos:closeMatch n’est pas déclaré comme étant "
 "une propriété transitive."
+
+#~ msgid "Block title"
+#~ msgstr "Titre du bloc"
 
 #~ msgid "Template to display"
 #~ msgstr "Gabarit à afficher"

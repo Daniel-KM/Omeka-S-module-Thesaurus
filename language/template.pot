@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-24 00:00+0000\n"
+"POT-Creation-Date: 2024-07-01 00:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -135,6 +135,13 @@ msgid ""
 "pages: {json}."
 msgstr ""
 
+#: data/scripts/upgrade.php:192
+msgid ""
+"The setting \"heading\" was removed from block Thessaurus. New blocks "
+"\"Heading\" or \"Html\" were prepended to all blocks that had a filled "
+"heading. You may check pages for styles: {json}"
+msgstr ""
+
 #: Module.php:60
 msgid ""
 "It is recommended to install module CustomVocab to take full advantage of "
@@ -165,22 +172,22 @@ msgstr ""
 msgid "propertyAscendance"
 msgstr ""
 
-#: view/common/thesaurus-list.phtml:23 src/Form/ThesaurusFieldset.php:45
+#: view/common/thesaurus-list.phtml:23 src/Form/ThesaurusFieldset.php:35
 msgid "Top concepts"
 msgstr ""
 
 #: view/common/thesaurus-list.phtml:24 view/common/thesaurus-list.phtml:25
-#: src/Form/ThesaurusFieldset.php:46
+#: src/Form/ThesaurusFieldset.php:36
 msgid "Narrower concepts"
 msgstr ""
 
 #: view/common/thesaurus-list.phtml:26 view/common/thesaurus-list.phtml:27
-#: src/Form/ThesaurusFieldset.php:48
+#: src/Form/ThesaurusFieldset.php:38
 msgid "Related concepts"
 msgstr ""
 
 #: view/common/thesaurus-list.phtml:28 view/common/thesaurus-list.phtml:29
-#: src/Form/ThesaurusFieldset.php:50
+#: src/Form/ThesaurusFieldset.php:40
 msgid "Sibling concepts"
 msgstr ""
 
@@ -484,114 +491,110 @@ msgid "Indented"
 msgstr ""
 
 #: src/Form/ThesaurusFieldset.php:18
-msgid "Block title"
-msgstr ""
-
-#: src/Form/ThesaurusFieldset.php:28
 msgid "Scheme or concept id"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:40
+#: src/Form/ThesaurusFieldset.php:30
 msgid "Type of display"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:43
+#: src/Form/ThesaurusFieldset.php:33
 msgid "Root"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:44
+#: src/Form/ThesaurusFieldset.php:34
 msgid "Broader"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:47
+#: src/Form/ThesaurusFieldset.php:37
 msgid "Narrower concepts or self"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:49
+#: src/Form/ThesaurusFieldset.php:39
 msgid "Related concepts or self"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:51
+#: src/Form/ThesaurusFieldset.php:41
 msgid "Sibling concepts or self"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:52
+#: src/Form/ThesaurusFieldset.php:42
 msgid "Ascendants as list"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:53
+#: src/Form/ThesaurusFieldset.php:43
 msgid "Ascendants or self as list"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:54
+#: src/Form/ThesaurusFieldset.php:44
 msgid "Descendants as list"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:55
+#: src/Form/ThesaurusFieldset.php:45
 msgid "Descendants or self as list"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:56
+#: src/Form/ThesaurusFieldset.php:46
 msgid "Tree structure"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:57
+#: src/Form/ThesaurusFieldset.php:47
 msgid "Branch"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:58
+#: src/Form/ThesaurusFieldset.php:48
 msgid "Branch without top"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:59
+#: src/Form/ThesaurusFieldset.php:49
 msgid "Branch from item"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:60
+#: src/Form/ThesaurusFieldset.php:50
 msgid "Branch below item"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:61
+#: src/Form/ThesaurusFieldset.php:51
 msgid "Flat tree"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:62
+#: src/Form/ThesaurusFieldset.php:52
 msgid "Flat branch"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:70
+#: src/Form/ThesaurusFieldset.php:60
 msgid "Select type…"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:77
+#: src/Form/ThesaurusFieldset.php:67
 msgid "Type of link"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:80
+#: src/Form/ThesaurusFieldset.php:70
 msgid "Concepts"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:82
+#: src/Form/ThesaurusFieldset.php:72
 msgid "Both"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:95
+#: src/Form/ThesaurusFieldset.php:85
 msgid "Property for links"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:96
+#: src/Form/ThesaurusFieldset.php:86
 msgid "Generally, it is \"dcterms:subject\"."
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:112
+#: src/Form/ThesaurusFieldset.php:102
 msgid "Hide if empty"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:122
+#: src/Form/ThesaurusFieldset.php:112
 msgid "Level expanded"
 msgstr ""
 
-#: src/Form/ThesaurusFieldset.php:123
+#: src/Form/ThesaurusFieldset.php:113
 msgid "Set 0 to start closed, a big number to display all levels."
 msgstr ""
 
@@ -756,85 +759,85 @@ msgstr ""
 msgid "id"
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:251
+#: src/Controller/Admin/ThesaurusController.php:250
 msgid ""
 "Indexing concepts in background ({link}job #{job_id}{link_end}, {link_log}"
 "logs{link_end})."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:282
+#: src/Controller/Admin/ThesaurusController.php:281
 msgid ""
 "You may need to reload {link}this page{link_end} a second time to clean "
 "indexation of top concepts."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:323
+#: src/Controller/Admin/ThesaurusController.php:322
 msgid "Unallowed request."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:331
+#: src/Controller/Admin/ThesaurusController.php:330
 msgid "Missing file."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:343
+#: src/Controller/Admin/ThesaurusController.php:342
 msgid "Wrong request for file."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:372
+#: src/Controller/Admin/ThesaurusController.php:371
 msgid "An error occurred when uploading the file."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:376
+#: src/Controller/Admin/ThesaurusController.php:375
 msgid "Wrong media type (\"{type}\") for file."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:381
-#: src/Controller/Admin/ThesaurusController.php:613
+#: src/Controller/Admin/ThesaurusController.php:380
+#: src/Controller/Admin/ThesaurusController.php:612
 msgid "The file is empty."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:388
+#: src/Controller/Admin/ThesaurusController.php:387
 msgid "Unable to convert the file."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:398
+#: src/Controller/Admin/ThesaurusController.php:397
 msgid "The file is successfully converted."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:406
+#: src/Controller/Admin/ThesaurusController.php:405
 msgid ""
 "The file is successfully converted. You can now copy-paste below data into a "
 "custom vocab."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:424
+#: src/Controller/Admin/ThesaurusController.php:423
 msgid "Convert first a file to get the flat thesaurus."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:458
+#: src/Controller/Admin/ThesaurusController.php:457
 msgid ""
 "Structure saved and reindexed ({link}job #{job_id}{link_end}, {link_log}"
 "logs{link_end})."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:462
+#: src/Controller/Admin/ThesaurusController.php:461
 msgid ""
 "Indexing structure in background. Do not display structure while indexing, "
 "else errors may occur ({link}job #{job_id}{link_end}, {link_log}"
 "logs{link_end})."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:631
+#: src/Controller/Admin/ThesaurusController.php:630
 msgid "The thesaurus \"{title}\" is created."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:639
+#: src/Controller/Admin/ThesaurusController.php:638
 msgid ""
 "Creation of thesaurus \"{title}\" with {total} concepts started ({link}job "
 "#{job_id}{link_end}, {link_log}logs{link_end})"
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:675
+#: src/Controller/Admin/ThesaurusController.php:674
 msgid ""
 "Updating concepts in background ({link}job #{job_id}{link_end}, {link_log}"
 "logs{link_end})."
