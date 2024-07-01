@@ -60,7 +60,6 @@ class Thesaurus extends AbstractBlockLayout implements TemplateableBlockLayoutIn
 
         $vars = [
             'block' => $block,
-            'heading' => $block->dataValue('heading', ''),
             'item' => $item,
             'type' => $block->dataValue('type', 'tree'),
             'options' => [

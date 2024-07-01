@@ -181,7 +181,6 @@ return [
         ],
         'block_settings' => [
             'thesaurus' => [
-                'heading' => '',
                 'item' => '',
                 'type' => 'tree',
                 'link' => 'both',
