@@ -231,12 +231,11 @@ class ThesaurusController extends ItemController
         /* // Don't check thesaurus if not indexed, it can be memory intensive.
         $thesaurus = $this->thesaurus($item);
         if (!$thesaurus->isSkos()) {
-            $message = new Message(
-            );
-            $this->messenger()->addError(new PsrMessage(
+            $message = new PsrMessage(
                 'The item #{item_id} does not belong to a thesaurus.', // @translate
                 ['item_id' => $item->id()]
-            ));
+            );
+            $this->messenger()->addError($message);
             return $this->redirect()->toRoute('admin/thesaurus/default');
         }
         */

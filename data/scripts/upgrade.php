@@ -126,7 +126,7 @@ if (version_compare($oldVersion, '3.4.16', '<')) {
         $result = array_map('array_values', $result);
         $message = new PsrMessage(
             'The template layout of some blocks Thesaurus was renamed. Check matching pages: {json}.', // @translate
-            ['json' => json_encode($result)]
+            ['json' => json_encode($result, 448)]
         );
         $messenger->addWarning($message);
         $logger->warn($message->getMessage(), $message->getContext());

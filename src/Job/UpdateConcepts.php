@@ -196,10 +196,10 @@ class UpdateConcepts extends AbstractJob
             }
 
             if ($totalProcessed) {
-                $this->logger->info(new Message(
+                $this->logger->info(
                     '{count}/{total} descriptors processed.', // @translate
                     ['count' => $totalProcessed, 'total' => count($flatTree)]
-                ));
+                );
 
                 // Avoid a speed and memory issue.
                 $this->entityManager->clear();
