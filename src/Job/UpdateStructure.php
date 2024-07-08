@@ -85,8 +85,8 @@ class UpdateStructure extends AbstractJob
         $scheme = $this->api->search('items', ['id' => $schemeId])->getContent();
         if (!$scheme) {
             $this->logger->err(
-                'Thesaurus #%d not found.', // @translate
-                $schemeId
+                'Thesaurus #{item_id} not found.', // @translate
+                ['item_id' => $schemeId]
             );
             return;
         }

@@ -698,7 +698,10 @@ SQL;
         try {
             $static['propertyDescriptorId'] = $api->read('properties', ['vocabulary' => $skosVocabularyId, 'localName' => substr($static['propertyDescriptor'], strpos($static['propertyDescriptor'], ':') + 1)], [], ['responseContent' => 'resource'])->getContent()->getId();
         } catch (\Exception $e) {
-            $logger->err('Unable to find property "%s" for descriptor.', $static['propertyDescriptor']); // @translate
+            $logger->err(
+                'Unable to find property {term} for descriptor.', // @translate
+                ['term' => $static['propertyDescriptor']]
+            );
             $static = [];
             return $static;
         }
@@ -708,7 +711,10 @@ SQL;
             try {
                 $static['propertyPathId'] = $api->read('properties', ['vocabulary' => $skosVocabularyId, 'localName' => substr($static['propertyPath'], strpos($static['propertyPath'], ':') + 1)], [], ['responseContent' => 'resource'])->getContent()->getId();
             } catch (\Exception $e) {
-                $logger->err('Unable to find property "%s" for path.', $static['propertyPath']); // @translate
+                $logger->err(
+                    'Unable to find property {term} for path.', // @translate
+                    ['term' => $static['propertyPath']]
+                );
                 $static = [];
                 return $static;
             }
@@ -719,7 +725,10 @@ SQL;
             try {
                 $static['propertyAscendanceId'] = $api->read('properties', ['vocabulary' => $skosVocabularyId, 'localName' => substr($static['propertyAscendance'], strpos($static['propertyAscendance'], ':') + 1)], [], ['responseContent' => 'resource'])->getContent()->getId();
             } catch (\Exception $e) {
-                $logger->err('Unable to find property "%s" for ascendance.', $static['propertyAscendance']); // @translate
+                $logger->err(
+                    'Unable to find property {term} for ascendance.', // @translate
+                    ['term' => $static['propertyAscendance']]
+                );
                 $static = [];
                 return $static;
             }
