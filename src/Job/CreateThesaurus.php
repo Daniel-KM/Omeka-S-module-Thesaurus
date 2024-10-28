@@ -337,6 +337,11 @@ class CreateThesaurus extends AbstractJob
                 $descriptor = trim($descriptor, self::TRIM_PUNCTUATION);
             }
 
+            $descriptor = trim($descriptor);
+            if (!strlen($descriptor)) {
+                continue;
+            }
+
             $line = rtrim($line);
             $level = strrpos($line, "\t");
             $level = $level === false ? 0 : ++$level;
@@ -459,6 +464,10 @@ class CreateThesaurus extends AbstractJob
             if ($trimPunctuation) {
                 $structure = trim($structure, self::TRIM_PUNCTUATION);
                 $descriptor = trim($descriptor, self::TRIM_PUNCTUATION);
+            }
+            $descriptor = trim($descriptor);
+            if (!strlen($descriptor)) {
+                continue;
             }
             $input[(string) $structure] = $descriptor;
         }

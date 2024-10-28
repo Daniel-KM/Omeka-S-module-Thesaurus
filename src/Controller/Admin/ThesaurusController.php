@@ -518,6 +518,10 @@ class ThesaurusController extends ItemController
             if ($trimPunctuation) {
                 $descriptor = trim($descriptor, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
             }
+            $descriptor = trim($descriptor);
+            if (!strlen($descriptor)) {
+                continue;
+            }
             $line = rtrim($line);
             $level = strrpos($line, "\t");
             $level = $level === false ? 0 : ++$level;
@@ -569,6 +573,10 @@ class ThesaurusController extends ItemController
             if ($trimPunctuation) {
                 $structure = trim($structure, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
                 $descriptor = trim($descriptor, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
+            }
+            $descriptor = trim($descriptor);
+            if (!strlen($descriptor)) {
+                continue;
             }
             $input[(string) $structure] = $descriptor;
         }
