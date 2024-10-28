@@ -336,8 +336,6 @@ class CreateThesaurus extends AbstractJob
             'ascendance' => empty($fill['ascendance']) ? null : $this->easyMeta->propertyId($fill['ascendance']),
         ];
 
-        $trimPunctuation = in_array('trim_punctuation', $clean);
-
         $isCodePrepended = $isCodePrependedOrAppended === 'prepended';
         $isCodeAppended = $isCodePrependedOrAppended === 'appended';
         $hasCode = $isCodePrepended || $isCodeAppended;
@@ -366,15 +364,7 @@ class CreateThesaurus extends AbstractJob
             $descriptor = trim($line);
             // Replace entities first to avoid to break html entities.
             // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
-            $descriptor = @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
-            if ($trimPunctuation) {
-                $descriptor = trim($descriptor, self::TRIM_PUNCTUATION);
-            }
-
-            $descriptor = trim($descriptor);
-            if (!strlen($descriptor)) {
-                continue;
-            }
+            $descriptor = trim((string) @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES'));
 
             $propertyTerm = 'descriptor';
             if ($hasCode) {
@@ -389,6 +379,11 @@ class CreateThesaurus extends AbstractJob
                         ? trim(mb_substr($descriptor, 0, - mb_strlen($codeToCheck)))
                         : trim(mb_substr($descriptor,  mb_strlen($codeToCheck)));
                 }
+            }
+
+            $descriptor = $this->trimAndCleanString($descriptor, $clean);
+            if (!strlen($descriptor)) {
+                continue;
             }
 
             // Data about the previous descriptor.
@@ -580,13 +575,12 @@ class CreateThesaurus extends AbstractJob
         foreach ($lines as $line) {
             [$structure, $descriptor] = array_map('trim', (explode(' ', $line . ' ', 2)));
             // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
-            $structure = @mb_convert_encoding($structure, 'UTF-8', 'HTML-ENTITIES');
-            $descriptor = @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
+            $structure = trim((string) @mb_convert_encoding($structure, 'UTF-8', 'HTML-ENTITIES'));
+            $descriptor = trim((string) @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES'));
             if ($trimPunctuation) {
                 $structure = trim($structure, self::TRIM_PUNCTUATION);
-                $descriptor = trim($descriptor, self::TRIM_PUNCTUATION);
             }
-            $descriptor = trim($descriptor);
+            $descriptor = $this->trimAndCleanString($descriptor, $clean);
             if (!strlen($descriptor)) {
                 continue;
             }
@@ -704,5 +698,29 @@ class CreateThesaurus extends AbstractJob
             'topIds' => $topIds,
             'narrowers' => $narrowers,
         ];
+    }
+
+    /**
+     * Trim and clean string according to options.
+     */
+    protected function trimAndCleanString($string, array $params): string
+    {
+        $string = trim((string) $string);
+        if (in_array('trim_punctuation', $params)) {
+            $string = trim($string, self::TRIM_PUNCTUATION);
+        }
+        if (in_array('lowercase', $params)) {
+            $string = mb_strtolower($string);
+        }
+        if (in_array('ucfirst', $params)) {
+            $string = ucfirst(mb_strtolower($string));
+        }
+        if (in_array('ucwords', $params)) {
+            $string = ucwords(mb_strtolower($string));
+        }
+        if (in_array('uppercase', $params)) {
+            $string = mb_strtoupper($string);
+        }
+        return $string;
     }
 }

@@ -532,8 +532,6 @@ class ThesaurusController extends ItemController
 
         $levels = [];
 
-        $trimPunctuation = in_array('trim_punctuation', $options['clean']);
-
         foreach ($lines as $line) {
             $descriptor = trim($line);
             if (!strlen($descriptor)) {
@@ -541,11 +539,8 @@ class ThesaurusController extends ItemController
             }
             // Replace entities first to avoid to break html entities.
             // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
-            $descriptor = @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
-            if ($trimPunctuation) {
-                $descriptor = trim($descriptor, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
-            }
-            $descriptor = trim($descriptor);
+            $descriptor = trim((string) @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES'));
+            $descriptor = $this->trimAndCleanString($descriptor, $options['clean']);
             if (!strlen($descriptor)) {
                 continue;
             }
@@ -582,8 +577,6 @@ class ThesaurusController extends ItemController
      */
     protected function convertThesaurusTabOffsetCodes(array $lines, array $options): string
     {
-        $trimPunctuation = in_array('trim_punctuation', $options['clean']);
-
         $isCodeAppended = ($options['position_code'] ?? null) === 'appended';
 
         $valueCodes = $options['codes'] ?? [];
@@ -595,20 +588,17 @@ class ThesaurusController extends ItemController
             }
             // Replace entities first to avoid to break html entities.
             // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
-            $descriptor = @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
-            if ($trimPunctuation) {
-                $descriptor = trim($descriptor, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
-            }
-            $descriptor = trim($descriptor);
-            if (!strlen($descriptor)) {
-                continue;
-            }
+            $descriptor = trim((string) @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES'));
             if ($isCodeAppended) {
                 $codeToCheck = mb_strpos($descriptor, ' ') === false? null : trim(mb_strrchr($descriptor, ' '));
             } else {
                 $codeToCheck = mb_strpos($descriptor, ' ') === false? null : strtok(trim($descriptor), ' ');
             }
             if (isset($valueCodes[$codeToCheck])) {
+                continue;
+            }
+            $descriptor = $this->trimAndCleanString($descriptor, $options['clean']);
+            if (!strlen($descriptor)) {
                 continue;
             }
             $newLines[] = $line;
@@ -646,13 +636,12 @@ class ThesaurusController extends ItemController
             [$structure, $descriptor] = array_map('trim', (explode(' ', $line . ' ', 2)));
             // Replace entities first to avoid to break html entities.
             // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
-            $structure = @mb_convert_encoding($structure, 'UTF-8', 'HTML-ENTITIES');
-            $descriptor = @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
+            $structure = trim((string) @mb_convert_encoding($structure, 'UTF-8', 'HTML-ENTITIES'));
+            $descriptor = trim((string) @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES'));
             if ($trimPunctuation) {
                 $structure = trim($structure, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
-                $descriptor = trim($descriptor, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
             }
-            $descriptor = trim($descriptor);
+            $descriptor = $this->trimAndCleanString($descriptor, $options['clean']);
             if (!strlen($descriptor)) {
                 continue;
             }
@@ -851,6 +840,30 @@ class ThesaurusController extends ItemController
 
         // Return Response to avoid default view rendering
         return $response;
+    }
+
+    /**
+     * Trim and clean string according to options.
+     */
+    protected function trimAndCleanString($string, array $params): string
+    {
+        $string = trim((string) $string);
+        if (in_array('trim_punctuation', $params)) {
+            $string = trim($string, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
+        }
+        if (in_array('lowercase', $params)) {
+            $string = mb_strtolower($string);
+        }
+        if (in_array('ucfirst', $params)) {
+            $string = ucfirst(mb_strtolower($string));
+        }
+        if (in_array('ucwords', $params)) {
+            $string = ucwords(mb_strtolower($string));
+        }
+        if (in_array('uppercase', $params)) {
+            $string = mb_strtoupper($string);
+        }
+        return $string;
     }
 
     /**

@@ -109,6 +109,10 @@ class ConvertForm extends Form
                     'label' => 'Clean input', // @translate
                     'value_options' => [
                         'trim_punctuation' => 'Remove trailing punctuation', // @translate
+                        'lowercase' => 'Lower case for string', // @translate
+                        'ucfirst' => 'Lower case for string and upper case for first letter', // @translate
+                        'ucwords' => 'Lower case for string and upper case for each word', // @translate
+                        'uppercase' => 'Upper case for string', // @translate
                     ],
                 ],
                 'attributes' => [
