@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-01 00:00+0000\n"
+"POT-Creation-Date: 2024-10-28 00:00+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Daniel Berthereau <Daniel.fr@Berthereau.net>\n"
 "Language-Team: \n"
@@ -148,7 +148,7 @@ msgstr ""
 "Le gabarit de certains blocs Thésaurus a été renommé. Vérifiez les pages "
 "correspondantes : {json}."
 
-#: data/scripts/upgrade.php:192
+#: data/scripts/upgrade.php:213
 msgid ""
 "The setting \"heading\" was removed from block Thessaurus. New blocks "
 "\"Heading\" or \"Html\" were prepended to all blocks that had a filled "
@@ -157,6 +157,28 @@ msgstr ""
 "Le paramètre « Titre » a été supprimé du bloc Thesaurus. Un nouveau bloc "
 "« Titre » ou « Html » a été ajouté à tous les blocs qui contenait une "
 "entête. Vous pouvez vérifier les pages pour les styles : {json}"
+
+#: data/scripts/upgrade.php:223
+msgid ""
+"The setting \"template\" was moved to the new block layout settings "
+"available since Omeka S v4.1. You may check pages for styles: {json}"
+msgstr ""
+"Le paramètre « template » a été déplacé dans les nouveaux paramètres de bloc "
+"depuis Omeka S v4.1. Vous pouvez vérifier les pages pour les styles : {json}"
+
+#: data/scripts/upgrade.php:230
+msgid ""
+"The template files for the block Thesaurus should be moved from \"view/"
+"common/block-layout\" to \"view/common/block-template\" in your themes. This "
+"process can be done automatically via a task of the module Easy Admin before "
+"upgrading the module (important: backup your themes first). You may check "
+"your themes for pages: {json}"
+msgstr ""
+"Les fichiers de gabarit du bloc Thesaurus doivent être déplacés de should be "
+"moved from \"« view/common/block-layout » à « view/common/block-template » "
+"dans vos thèmes. Ce traitement peut être réalisé automatiquement via une "
+"tâche du module Easy Admin avant la mise à jour du module (important : "
+"sauvegardez vos thèmes d’abord). Vous pouvez vérifier les pages : {json}"
 
 #: Module.php:60
 msgid ""
@@ -178,17 +200,17 @@ msgstr "Impossible de trouver le modèle de ressource « Thesaurus Concept ».
 msgid "Unable to find vocabulary Skos."
 msgstr "Impossible de trouver le vocabulaire Skos."
 
-#: Module.php:701
-msgid "propertyDescriptor"
-msgstr "propertyDescriptor"
+#: Module.php:702
+msgid "Unable to find property {term} for descriptor."
+msgstr "Impossible de trouver la propriété {term} pour le descripteur."
 
-#: Module.php:711
-msgid "propertyPath"
-msgstr "propertyPath"
+#: Module.php:715
+msgid "Unable to find property {term} for path."
+msgstr "Impossible de trouver la propriété {term} pour le chemin."
 
-#: Module.php:722
-msgid "propertyAscendance"
-msgstr "propertyAscendance"
+#: Module.php:729
+msgid "Unable to find property {term} for ascendance."
+msgstr "Impossible de trouver la propriété {term} pour l’ascendance."
 
 #: view/common/thesaurus-list.phtml:23 src/Form/ThesaurusFieldset.php:35
 msgid "Top concepts"
@@ -258,19 +280,19 @@ msgstr ""
 "Les propriétés et le séparateur doivent être définis dans les {link}"
 "paramètres généraux{link_end}."
 
-#: src/Job/CreateThesaurus.php:51
+#: src/Job/CreateThesaurus.php:61
 msgid "A name is required to create a thesaurus."
 msgstr "Un nom est nécessaire pour créer un thésaurus."
 
-#: src/Job/CreateThesaurus.php:57
+#: src/Job/CreateThesaurus.php:75
 msgid "The format of the file is undetermined."
 msgstr "Le format du fichier est indéterminé."
 
-#: src/Job/CreateThesaurus.php:62
+#: src/Job/CreateThesaurus.php:84
 msgid "A list of concepts is required to create a thesaurus."
 msgstr "Une liste de concepts est nécessaire pour créer un thésaurus."
 
-#: src/Job/CreateThesaurus.php:74 src/Job/UpdateConcepts.php:65
+#: src/Job/CreateThesaurus.php:93 src/Job/UpdateConcepts.php:65
 msgid ""
 "A preferred label with the descriptor or the full path is required to fill "
 "concepts."
@@ -278,64 +300,83 @@ msgstr ""
 "Une étiquette préférée avec le descripteur ou le chemin d’accès complet est "
 "nécessaire pour remplir les concepts."
 
-#: src/Job/CreateThesaurus.php:113
+#: src/Job/CreateThesaurus.php:102
+#: src/Controller/Admin/ThesaurusController.php:370
+msgid ""
+"The input format is defined as containing codes, but no codes are defined."
+msgstr ""
+"Le format d’entrée est défini pour contenir des codes, mais aucun code n’est "
+"défini."
+
+#: src/Job/CreateThesaurus.php:139
 msgid "The property {property} for descriptor is not managed."
 msgstr "La propriété {property} du descripteur n’est pas gérée."
 
-#: src/Job/CreateThesaurus.php:120 src/Job/UpdateConcepts.php:140
+#: src/Job/CreateThesaurus.php:147 src/Job/UpdateConcepts.php:140
 msgid "The property \"{property}\" for path is not managed."
 msgstr "La propriété « {property} » pour le chemin n’est pas gérée."
 
-#: src/Job/CreateThesaurus.php:127 src/Job/UpdateConcepts.php:147
+#: src/Job/CreateThesaurus.php:155 src/Job/UpdateConcepts.php:147
 msgid "The property \"{property}\" for ascendance is not managed."
 msgstr "La propriété « {property} » pour l’ascendance n’est pas gérée."
 
-#: src/Job/CreateThesaurus.php:134
+#: src/Job/CreateThesaurus.php:163
 msgid "Processing {count} descriptors in three steps."
-msgstr "Traitement des descripteurs {count} en trois étapes."
+msgstr "Traitement des {count} descripteurs en trois étapes."
 
-#: src/Job/CreateThesaurus.php:190
+#: src/Job/CreateThesaurus.php:221
 msgid "Step 1/3: creation of {count} descriptors."
-msgstr "Étape 1/3 : création de descripteurs {count}."
+msgstr "Étape 1/3 : création de {count} descripteurs."
 
-#: src/Job/CreateThesaurus.php:223
+#: src/Job/CreateThesaurus.php:256
 msgid "Step 2/3: creation of relations between descriptors."
 msgstr "Étape 2/3 : création de relations entre les descripteurs."
 
-#: src/Job/CreateThesaurus.php:231
+#: src/Job/CreateThesaurus.php:264
 msgid "{count}/{total} descriptors completed."
 msgstr "{count}/{total} descripteurs complétés."
 
-#: src/Job/CreateThesaurus.php:267
+#: src/Job/CreateThesaurus.php:300
 msgid "Step 3/3: indexation of new thesaurus."
 msgstr "Étape 3/3 : indexation du nouveau thésaurus."
 
-#: src/Job/CreateThesaurus.php:278
+#: src/Job/CreateThesaurus.php:311
 msgid "The thesaurus \"{name}\" is ready, with {count} descriptors."
 msgstr "Le thésaurus « {name} » est prêt, avec {count} descripteurs."
 
-#: src/Job/CreateThesaurus.php:308 src/Job/CreateThesaurus.php:476
-#: src/Job/UpdateConcepts.php:192
-msgid "The job  was stopped. {count}/{total} descriptors processed."
-msgstr "La tâche a été arrêtée. {count}/{total} descripteurs traités."
+#: src/Job/CreateThesaurus.php:393
+msgid ""
+"The line \"{string} has the code \"{code}\", but there is no previous "
+"descriptor to apply to it. It is skipped."
+msgstr ""
+"La ligne « {string} » a le code « {code} », mais il n’y a aucun descripteur "
+"avant sur lequel l’appliquer. Elle est ignorée."
 
-#: src/Job/CreateThesaurus.php:319 src/Job/CreateThesaurus.php:487
+#: src/Job/CreateThesaurus.php:467
+msgid "The job was stopped. {count}/{total} lines processed."
+msgstr "La tâche a été arrêtée. {count}/{total} lignes traitées."
+
+#: src/Job/CreateThesaurus.php:478 src/Job/CreateThesaurus.php:616
 #: src/Job/UpdateConcepts.php:200
 msgid "{count}/{total} descriptors processed."
 msgstr "{count}/{total} descripteurs traités."
 
-#: src/Job/CreateThesaurus.php:464
+#: src/Job/CreateThesaurus.php:593
 msgid "After first step, {count} descriptors can be processed."
 msgstr "Après la première étape, {count} descripteurs peuvent être traités."
+
+#: src/Job/CreateThesaurus.php:605 src/Job/UpdateConcepts.php:192
+msgid "The job  was stopped. {count}/{total} descriptors processed."
+msgstr "La tâche a été arrêtée. {count}/{total} descripteurs traités."
 
 #: src/Job/UpdateStructure.php:80 src/Job/UpdateConcepts.php:55
 msgid "No thesaurus specified."
 msgstr "Pas de thésaurus indiqué."
 
-#: src/Job/UpdateStructure.php:88
-#, php-format
-msgid "Thesaurus #%d not found."
-msgstr "Le thésaurus #%d n’a pas été trouvé."
+#: src/Job/UpdateStructure.php:88 src/Job/UpdateConcepts.php:82
+#: src/Job/IndexThesaurus.php:96
+msgid "Thesaurus #{item_id} not found."
+msgstr "Le thésaurus #{item_id} n’a pas été trouvé."
 
 #: src/Job/UpdateStructure.php:100 src/Job/UpdateConcepts.php:94
 msgid "Item #{item_id} is not a thesaurus."
@@ -383,10 +424,6 @@ msgid "No defined property for path or ascendance, so nothing to fill."
 msgstr ""
 "Aucune propriété définie pour le chemin ou l’ascendance, donc rien à remplir."
 
-#: src/Job/UpdateConcepts.php:82 src/Job/IndexThesaurus.php:96
-msgid "Thesaurus #{item_id} not found."
-msgstr "Le thésaurus #{item_id} n’a pas été trouvé."
-
 #: src/Job/UpdateConcepts.php:109
 msgid "The mode \"{mode}\" is not supported."
 msgstr "Le mode « {mode} » n’est pas pris en charge."
@@ -421,7 +458,7 @@ msgstr ""
 
 #: src/Job/UpdateConcepts.php:181
 msgid "Updating {count} descriptors."
-msgstr "Mise à jour des descripteurs {count}."
+msgstr "Mise à jour des {count} descripteurs."
 
 #: src/Job/UpdateConcepts.php:274
 msgid ""
@@ -448,8 +485,11 @@ msgstr ""
 "Le thésaurus #{item_id} a une racine manquante pour le contenu #{item_id_2}."
 
 #: src/Job/IndexThesaurus.php:185
-msgid "Thesaurus \"{title}\" (#{item_id}) indexed."
-msgstr "Le thésaurus « {title} » (#{item_id}) a été indexé."
+msgid ""
+"Thesaurus \"{title}\" (#{item_id}) indexed (full thesaurus: #{thesaurus_id})."
+msgstr ""
+"Le thésaurus « {title} » (#{item_id}) a été indexé (thésaurus complet : "
+"#{thesaurus_id})."
 
 #: src/Job/IndexThesaurus.php:236
 msgid "Thesaurus #{item_id} has no top concepts."
@@ -665,11 +705,11 @@ msgstr "Ajouter une nouvelle valeur"
 msgid "Remove values"
 msgstr "Supprimer les valeurs"
 
-#: src/Form/ConvertForm.php:19
+#: src/Form/ConvertForm.php:20
 msgid "Thesaurus text file"
 msgstr "Fichier texte du thésaurus"
 
-#: src/Form/ConvertForm.php:20
+#: src/Form/ConvertForm.php:21
 msgid ""
 "The thesaurus is a simple txt file, with one concept by line, and "
 "tabulations to indicate the hierarchic level."
@@ -677,43 +717,87 @@ msgstr ""
 "Le thésaurus est un simple fichier texte avec un concept par ligne et des "
 "tabulations pour indiquer le niveau hiérarchique."
 
-#: src/Form/ConvertForm.php:32
+#: src/Form/ConvertForm.php:33
 msgid "Input format"
 msgstr "Format de saisie"
 
-#: src/Form/ConvertForm.php:34
+#: src/Form/ConvertForm.php:35
 msgid "Tabulation offsets"
 msgstr "Arborescence avec des tabulations"
 
-#: src/Form/ConvertForm.php:35
+#: src/Form/ConvertForm.php:36
+msgid "Tabulation offsets with prepended codes"
+msgstr "Arborescence avec des tabulations et des codes préfixés"
+
+#: src/Form/ConvertForm.php:37
+msgid "Tabulation offsets with appended codes"
+msgstr "Arborescence avec des tabulations et des codes suffixés"
+
+#: src/Form/ConvertForm.php:38
 msgid "Structure and label (01-02-03 xxx)"
 msgstr "Structure et libellé (01-02-03 xxx)"
 
-#: src/Form/ConvertForm.php:48
-msgid "Output"
-msgstr "Sortie"
-
-#: src/Form/ConvertForm.php:50
-msgid "As text to copy paste"
-msgstr "En texte à copier-coller"
-
 #: src/Form/ConvertForm.php:51
-msgid "As file"
-msgstr "En fichier"
+msgid "Property mapping for prepended or appended codes"
+msgstr "Alignement des codes préfixés ou suffixés et des propriétés"
 
 #: src/Form/ConvertForm.php:52
-msgid "As a new thesaurus (check as text first)"
-msgstr "Comme nouveau thésaurus (vérifier d’abord en texte)"
+msgid ""
+"Set codes mapped with the property. A property can be set directly when used "
+"in input table."
+msgstr ""
+"Aligner les codes avec une propriété. Une propriété peut aussi être indiquée "
+"directement quand elle utilisée dans le tableau d’entrée."
 
-#: src/Form/ConvertForm.php:65
+#: src/Form/ConvertForm.php:98
+msgid "Skip first line"
+msgstr "Ignorer la première ligne"
+
+#: src/Form/ConvertForm.php:109
 msgid "Clean input"
 msgstr "Nettoyer les données"
 
-#: src/Form/ConvertForm.php:67
+#: src/Form/ConvertForm.php:111
 msgid "Remove trailing punctuation"
 msgstr "Suppression de la ponctuation finale"
 
-#: src/Form/ConvertForm.php:82
+#: src/Form/ConvertForm.php:112
+msgid "Lower case for string"
+msgstr "Mise en minuscule"
+
+#: src/Form/ConvertForm.php:113
+msgid "Lower case for string and upper case for first letter"
+msgstr "Mise en minuscule et majuscule pour la première lettre"
+
+#: src/Form/ConvertForm.php:114
+msgid "Lower case for string and upper case for each word"
+msgstr "Mise en minuscule et majuscule pour la première lettre de chaque mot"
+
+#: src/Form/ConvertForm.php:115
+msgid "Upper case for string"
+msgstr "Mise en majuscule"
+
+#: src/Form/ConvertForm.php:130
+msgid "Output"
+msgstr "Sortie"
+
+#: src/Form/ConvertForm.php:135
+msgid "As text to copy paste"
+msgstr "En texte à copier-coller"
+
+#: src/Form/ConvertForm.php:136
+msgid "As file"
+msgstr "En fichier"
+
+#: src/Form/ConvertForm.php:137
+msgid "As a new thesaurus (check as text first)"
+msgstr "Comme nouveau thésaurus (vérifier d’abord en texte)"
+
+#: src/Form/ConvertForm.php:143
+msgid "As a new thesaurus"
+msgstr "Dans un nouveau thésaurus"
+
+#: src/Form/ConvertForm.php:158
 msgid "Upload thesaurus"
 msgstr "Chargement du thésaurus"
 
@@ -839,28 +923,36 @@ msgstr "Fichier manquant."
 msgid "Wrong request for file."
 msgstr "Requête du fichier incorrecte."
 
-#: src/Controller/Admin/ThesaurusController.php:371
+#: src/Controller/Admin/ThesaurusController.php:381
+msgid ""
+"The process to import a thesaurus with codes is useful only when codes are "
+"prepended/appended to descriptors."
+msgstr ""
+"Le traitement pour importer un thésaurus avec des codes est utiles seulement "
+"quand des codes sont préfixés ou suffixés aux valeurs."
+
+#: src/Controller/Admin/ThesaurusController.php:391
 msgid "An error occurred when uploading the file."
 msgstr "Une erreur est survenue lors du chargement du fichier."
 
-#: src/Controller/Admin/ThesaurusController.php:375
+#: src/Controller/Admin/ThesaurusController.php:395
 msgid "Wrong media type (\"{type}\") for file."
 msgstr "Média-type incorrect (« {type} ») pour le fichier."
 
-#: src/Controller/Admin/ThesaurusController.php:380
-#: src/Controller/Admin/ThesaurusController.php:612
+#: src/Controller/Admin/ThesaurusController.php:400
+#: src/Controller/Admin/ThesaurusController.php:687
 msgid "The file is empty."
 msgstr "Le fichier est vide."
 
-#: src/Controller/Admin/ThesaurusController.php:387
+#: src/Controller/Admin/ThesaurusController.php:407
 msgid "Unable to convert the file."
 msgstr "Impossible de convertir le fichier."
 
-#: src/Controller/Admin/ThesaurusController.php:397
+#: src/Controller/Admin/ThesaurusController.php:416
 msgid "The file is successfully converted."
 msgstr "Le fichier a été converti avec succès."
 
-#: src/Controller/Admin/ThesaurusController.php:405
+#: src/Controller/Admin/ThesaurusController.php:424
 msgid ""
 "The file is successfully converted. You can now copy-paste below data into a "
 "custom vocab."
@@ -868,11 +960,11 @@ msgstr ""
 "Le fichier est converti avec succès. Vous pouvez maintenant copier-coller "
 "les données ci-dessous dans un vocabulaire personnalisé."
 
-#: src/Controller/Admin/ThesaurusController.php:423
+#: src/Controller/Admin/ThesaurusController.php:442
 msgid "Convert first a file to get the flat thesaurus."
 msgstr "Convertir d’abord un fichier pour obtenir un thésaurus plat."
 
-#: src/Controller/Admin/ThesaurusController.php:457
+#: src/Controller/Admin/ThesaurusController.php:476
 msgid ""
 "Structure saved and reindexed ({link}job #{job_id}{link_end}, {link_log}"
 "logs{link_end})."
@@ -880,7 +972,7 @@ msgstr ""
 "Structure enregistrée et ré-indexée ({link}tâche #{job_id}{link_end}, "
 "{link_log}journaux{link_end})."
 
-#: src/Controller/Admin/ThesaurusController.php:461
+#: src/Controller/Admin/ThesaurusController.php:480
 msgid ""
 "Indexing structure in background. Do not display structure while indexing, "
 "else errors may occur ({link}job #{job_id}{link_end}, {link_log}"
@@ -890,19 +982,19 @@ msgstr ""
 "l’indexation, sinon des erreurs peuvent apparaître ({link}tâche #{job_id}"
 "{link_end}, {link_log}journaux{link_end})."
 
-#: src/Controller/Admin/ThesaurusController.php:630
+#: src/Controller/Admin/ThesaurusController.php:711
 msgid "The thesaurus \"{title}\" is created."
 msgstr "Le thésaurus « {title} » a été créé."
 
-#: src/Controller/Admin/ThesaurusController.php:638
+#: src/Controller/Admin/ThesaurusController.php:718
 msgid ""
-"Creation of thesaurus \"{title}\" with {total} concepts started ({link}job "
+"Creation of thesaurus \"{title}\" with {total} lines started ({link}job "
 "#{job_id}{link_end}, {link_log}logs{link_end})"
 msgstr ""
-"Création du thésaurus « {title} » avec {total} concepts démarée ({link}tâche "
+"Création du thésaurus « {title} » avec {total} lignes démarrée ({link}tâche "
 "#{job_id}{link_end}, {link_log}journaux{link_end})"
 
-#: src/Controller/Admin/ThesaurusController.php:674
+#: src/Controller/Admin/ThesaurusController.php:754
 msgid ""
 "Updating concepts in background ({link}job #{job_id}{link_end}, {link_log}"
 "logs{link_end})."
@@ -1221,6 +1313,22 @@ msgstr ""
 "de deux schémas conceptuels, skos:closeMatch n’est pas déclaré comme étant "
 "une propriété transitive."
 
+#~ msgid "Collection"
+#~ msgstr "Collection"
+
+#~ msgid "propertyDescriptor"
+#~ msgstr "propertyDescriptor"
+
+#~ msgid "propertyPath"
+#~ msgstr "propertyPath"
+
+#~ msgid "propertyAscendance"
+#~ msgstr "propertyAscendance"
+
+#, php-format
+#~ msgid "Thesaurus #%d not found."
+#~ msgstr "Le thésaurus #%d n’a pas été trouvé."
+
 #~ msgid "Block title"
 #~ msgstr "Titre du bloc"
 
@@ -1233,9 +1341,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Les gabarits sont dans le dossier « common/block-layout » du thème et "
 #~ "doivent commencer avec « thesaurus »."
-
-#~ msgid "Collection"
-#~ msgstr "Collection"
 
 #, php-format
 #~ msgid "This module requires the module \"%s\"."
