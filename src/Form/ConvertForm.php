@@ -42,19 +42,13 @@ class ConvertForm extends Form
             ])
 
             ->add([
-                'name' => 'output',
-                'type' => Element\Radio::class,
+                'name' => 'skip_first_line',
+                'type' => Element\Checkbox::class,
                 'options' => [
-                    'label' => 'Output', // @translate
-                    'value_options' => [
-                        'text' => 'As text to copy paste', // @translate
-                        'file' => 'As file', // @translate
-                        'thesaurus' => 'As a new thesaurus (check as text first)', // @translate
-                    ],
+                    'label' => 'Skip first line', // @translate
                 ],
                 'attributes' => [
-                    'id' => 'output',
-                    'value' => 'text',
+                    'id' => 'skip_first_line',
                 ],
             ])
 
@@ -72,6 +66,23 @@ class ConvertForm extends Form
                     'value' => [
                         'trim_punctuation',
                     ],
+                ],
+            ])
+
+            ->add([
+                'name' => 'output',
+                'type' => Element\Radio::class,
+                'options' => [
+                    'label' => 'Output', // @translate
+                    'value_options' => [
+                        'text' => 'As text to copy paste', // @translate
+                        'file' => 'As file', // @translate
+                        'thesaurus' => 'As a new thesaurus (check as text first)', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'output',
+                    'value' => 'text',
                 ],
             ])
 
@@ -96,6 +107,10 @@ class ConvertForm extends Form
             ])
             ->add([
                 'name' => 'format',
+                'required' => false,
+            ])
+            ->add([
+                'name' => 'skip_first_line',
                 'required' => false,
             ])
             ->add([

@@ -58,6 +58,9 @@ class CreateThesaurus extends AbstractJob
         }
 
         $input = $this->getArg('input');
+        if ($input && $this->getArg('skip_first_line')) {
+            unset($input[key($input)]);
+        }
         if (!$input) {
             $this->logger->err('A list of concepts is required to create a thesaurus.'); // @translate
         }

@@ -360,6 +360,7 @@ class ThesaurusController extends ItemController
             'clean' => $data['clean'] ?? [
                 'trim_punctuation',
             ],
+            'skip_first_line' => !empty($data['skip_first_line']),
         ];
 
         // TODO Check the file during validation inside the form.
@@ -489,6 +490,9 @@ class ThesaurusController extends ItemController
         // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
         $text = @mb_convert_encoding($text, 'HTML-ENTITIES', 'UTF-8');
         $lines = $this->stringToList($text, false);
+        if (count($lines) && !empty($options['skip_first_line'])) {
+            unset($lines[0]);
+        }
         $format = $options['format'] ?? '';
         if ($format === 'tab_offset') {
             return $this->convertThesaurusTabOffset($lines, $options);
