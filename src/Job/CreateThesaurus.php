@@ -44,17 +44,30 @@ class CreateThesaurus extends AbstractJob
         $this->logger = $services->get('Omeka\Logger');
         $this->logger->addProcessor($referenceIdProcessor);
 
+        $this->api = $services->get('Omeka\ApiManager');
+        $this->settings = $services->get('Omeka\Settings');
         $this->entityManager = $services->get('Omeka\EntityManager');
+
+        $hasError = false;
 
         $name = $this->getArg('name');
         if (!$name) {
             $this->logger->err('A name is required to create a thesaurus.'); // @translate
+            $hasError = true;
         }
 
+        $formats = [
+            'tab_offset',
+            'tab_offset_code_prepended',
+            'tab_offset_code_appended',
+            'structure_label',
+        ];
+
         $format = $this->getArg('format');
-        $format = in_array($format, ['tab_offset', 'structure_label']) ? $format : null;
+        $format = in_array($format, $formats) ? $format : null;
         if (!$format) {
             $this->logger->err('The format of the file is undetermined.'); // @translate
+            $hasError = true;
         }
 
         $input = $this->getArg('input');
@@ -63,11 +76,7 @@ class CreateThesaurus extends AbstractJob
         }
         if (!$input) {
             $this->logger->err('A list of concepts is required to create a thesaurus.'); // @translate
-        }
-
-        if (!$name || !$format || !$input) {
-            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
-            return;
+            $hasError = true;
         }
 
         // The descriptor is required.
@@ -76,6 +85,23 @@ class CreateThesaurus extends AbstractJob
             && empty($fill['path'])
         ) {
             $this->logger->err('A preferred label with the descriptor or the full path is required to fill concepts.'); // @translate
+            $hasError = true;
+        }
+
+        // TODO Copy/Move the checks from the controller to the job.
+        if ($format === 'tab_offset_code_prepended' || $format === 'tab_offset_code_appended') {
+            $valueCodes = $this->getArg('codes') ?: [];
+            if (!$valueCodes) {
+                $this->logger->err(
+                    'The input format is defined as containing codes, but no codes are defined.' // @translate
+                );
+                $hasError = true;
+            } else {
+                // TODO Add a message to warn about managed codes.
+            }
+        }
+
+        if ($hasError) {
             $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
             return;
         }
@@ -85,9 +111,6 @@ class CreateThesaurus extends AbstractJob
         $clean = $this->getArg('clean') ?? [
             'trim_punctuation',
         ];
-
-        $this->api = $services->get('Omeka\ApiManager');
-        $this->settings = $services->get('Omeka\Settings');
 
         // Prepare resource classes and templates.
         $ownerId = $this->job->getOwner()->getId();
@@ -194,6 +217,8 @@ class CreateThesaurus extends AbstractJob
 
         // Third, create each item one by one to set tree.
 
+        // TODO Ideally, do one or two loops to get ids and data and set temp ids for relations and to append data and a last loop for api in order to avoid the updates.
+
         $this->logger->notice(
             'Step 1/3: creation of {count} descriptors.', // @translate
             ['count' => count($input)]
@@ -219,6 +244,8 @@ class CreateThesaurus extends AbstractJob
             $result = $this->convertThesaurusTabOffset($input, $baseConcept, $skosIds, $fill, $separator, $clean);
         } elseif ($format === 'structure_label') {
             $result = $this->convertThesaurusStructureLabel($input, $baseConcept, $skosIds, $fill, $separator, $clean);
+        } elseif ($format === 'tab_offset_code_prepended' || $format === 'tab_offset_code_appended') {
+            $result = $this->convertThesaurusTabOffset($input, $baseConcept, $skosIds, $fill, $separator, $clean, $format === 'tab_offset_code_appended' ? 'appended' : 'prepended');
         }
 
         // Even if the job is stopped, fill the other data.
@@ -289,7 +316,7 @@ class CreateThesaurus extends AbstractJob
     }
 
     /**
-     * Convert a flat list into a flat thesaurus from format "tab offset".
+     * Convert a structured list into a flat thesaurus from format "tab offset".
      */
     protected function convertThesaurusTabOffset(
         array $lines,
@@ -297,7 +324,8 @@ class CreateThesaurus extends AbstractJob
         array $skosIds,
         array $fill,
         string $separator,
-        array $clean
+        array $clean,
+        ?string $isCodePrependedOrAppended = null
     ): array {
         $schemeId = $baseConcept['skos:inScheme'][0]['value_resource_id'];
         $ownerId = $baseConcept['o:owner']['o:id'];
@@ -305,15 +333,159 @@ class CreateThesaurus extends AbstractJob
         $topIds = [];
         $narrowers = [];
 
+        $fillPropertyIds = [
+            'descriptor' => !empty($fill['descriptor']) && !empty($skosIds[$fill['descriptor']]) ? $skosIds[$fill['descriptor']] : null,
+            'path' => !empty($fill['path']) && !empty($skosIds[$fill['path']]) ? $skosIds[$fill['path']] : null,
+            'ascendance' => !empty($fill['ascendance']) && !empty($skosIds[$fill['ascendance']]) ? $skosIds[$fill['ascendance']] : null,
+        ];
+
         $trimPunctuation = in_array('trim_punctuation', $clean);
+
+        $isCodePrepended = $isCodePrependedOrAppended === 'prepended';
+        $isCodeAppended = $isCodePrependedOrAppended === 'appended';
+        $hasCode = $isCodePrepended || $isCodeAppended;
+
+        $codesToProperties = [
+            'UF' => 'skos:altLabel',
+            'SN' => 'skos:scopeNote',
+            'CC' => 'skos:notation',
+        ];
+
+        if ($hasCode) {
+            // The codes are already checked.
+            $valueCodes = $this->getArg('codes') ?: [];
+            // TODO Add a message to warn about managed codes.
+        } else {
+            $valueCodes = [];
+        }
+
+        // First loop to build descriptors with additional data and second loop to save.
+        // This is a quick step, there is no api call.
+        $initialData = [];
+
+        /** @var \Omeka\Api\Representation\ItemRepresentation $previousConcept */
 
         $levels = [];
         $ascendance = [];
         $totalProcessed = 0;
+        $conceptIndex = null;
+        $previousConceptIndex = null;
+        $levelConcepts = [];
         foreach ($lines as $line) {
+            $descriptor = trim($line);
+            // Replace entities first to avoid to break html entities.
+            // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
+            $descriptor = @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
+            if ($trimPunctuation) {
+                $descriptor = trim($descriptor, self::TRIM_PUNCTUATION);
+            }
+
+            $descriptor = trim($descriptor);
+            if (!strlen($descriptor)) {
+                continue;
+            }
+
+            $propertyTerm = 'descriptor';
+            if ($hasCode) {
+                if ($isCodeAppended) {
+                    $codeToCheck = mb_strpos($descriptor, ' ') === false? null : trim(mb_strrchr($descriptor, ' '));
+                } else {
+                    $codeToCheck = mb_strpos($descriptor, ' ') === false? null : strtok(trim($descriptor), ' ');
+                }
+                if (isset($valueCodes[$codeToCheck])) {
+                    if (!isset($codesToProperties[$valueCodes[$codeToCheck]])) {
+                        $this->logger->warn(
+                            'The line "{string} has the code "{code}" that is not managed currently. It is skipped.', // @translate
+                            ['string' => trim($line), 'code' => $codeToCheck]
+                        );
+                        continue;
+                    }
+                    $propertyTerm = $codesToProperties[$valueCodes[$codeToCheck]];
+                    $descriptor = $isCodeAppended
+                        ? trim(mb_substr($descriptor, 0, - mb_strlen($codeToCheck)))
+                        : trim(mb_substr($descriptor,  mb_strlen($codeToCheck)));
+                }
+            }
+
+            // Data about the previous descriptor.
+            if ($propertyTerm !== 'descriptor') {
+                if (!$previousConceptIndex) {
+                    $this->logger->warn(
+                        'The line "{string} has the code "{code}", but there is no previous descriptor to apply to it. It is skipped.', // @translate
+                        ['string' => trim($line), 'code' => $codeToCheck]
+                    );
+                    continue;
+                }
+                $initialData[$previousConceptIndex][$propertyTerm][] = [
+                    'type' => 'literal',
+                    'property_id' => $skosIds[$propertyTerm],
+                    '@value' => $descriptor,
+                ];
+                continue;
+            }
+
+            $data = $baseConcept;
+
+            $line = rtrim($line);
+            $level = strrpos($line, "\t");
+            $level = $level === false ? 0 : ++$level;
+            if (!$level) {
+                $ascendance = [];
+            }
+
+            if ($fillPropertyIds['descriptor']) {
+                $data[$fill['descriptor']][] = [
+                    'type' => 'literal',
+                    'property_id' => $fillPropertyIds['descriptor'],
+                    '@value' => $descriptor,
+                ];
+            }
+
+            if ($fillPropertyIds['path']) {
+                $data[$fill['path']][] = [
+                    'type' => 'literal',
+                    'property_id' => $fillPropertyIds['path'],
+                    '@value' => $level && count($ascendance)
+                        ? implode($separator, array_slice($ascendance, 0, $level)) . $separator . $descriptor
+                        : $descriptor,
+                ];
+            }
+
+            if ($level && count($ascendance) && $fillPropertyIds['ascendance']) {
+                $data[$fill['ascendance']][] = [
+                    'type' => 'literal',
+                    'property_id' => $fillPropertyIds['ascendance'],
+                    '@value' => implode($separator, array_slice($ascendance, 0, $level)),
+                ];
+            }
+
+            if (!$level) {
+                $levels = [];
+                $ascendance = [];
+            }
+
+            // Prepend a letter to make a clear distinction with concept id.
+            $newConceptIndex = 'c' . ++$conceptIndex;
+            $previousConceptIndex = $newConceptIndex;
+
+            // Store the current concept, except relations.
+            $initialData[$newConceptIndex] = $data;
+            $levelConcepts[$newConceptIndex] = $level;
+
+            // Store the data to create path and ascendance when needed.
+            $levels[$level] = $newConceptIndex;
+            $ascendance[$level] = $descriptor;
+        }
+
+        // Second loop to save descriptors, updating relations with real id.
+        // The input thesaurus must be in right order.
+        $levels = [];
+        $ascendance = [];
+        $totalProcessed = 0;
+        foreach ($initialData as $conceptIndex => $data) {
             if ($this->shouldStop()) {
                 $this->logger->warn(
-                    'The job  was stopped. {count}/{total} descriptors processed.', // @translate
+                    'The job was stopped. {count}/{total} lines processed.', // @translate
                     ['count' => $totalProcessed, 'total' => count($lines)]
                 );
                 return [
@@ -332,53 +504,10 @@ class CreateThesaurus extends AbstractJob
                 $this->entityManager->getRepository(\Omeka\Entity\User::class)->find($ownerId);
             }
 
-            $descriptor = trim($line);
-            // Replace entities first to avoid to break html entities.
-            // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
-            $descriptor = @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
-            if ($trimPunctuation) {
-                $descriptor = trim($descriptor, self::TRIM_PUNCTUATION);
-            }
-
-            $descriptor = trim($descriptor);
-            if (!strlen($descriptor)) {
-                continue;
-            }
-
-            $line = rtrim($line);
-            $level = strrpos($line, "\t");
-            $level = $level === false ? 0 : ++$level;
+            $level = $levelConcepts[$conceptIndex];
             $parentLevel = $level ? $level - 1 : false;
             if (!$level) {
                 $ascendance = [];
-            }
-
-            $data = $baseConcept;
-
-            if (!empty($fill['descriptor']) && !empty($skosIds[$fill['descriptor']])) {
-                $data[$fill['descriptor']][] = [
-                    'type' => 'literal',
-                    'property_id' => $skosIds[$fill['descriptor']],
-                    '@value' => $descriptor,
-                ];
-            }
-
-            if (!empty($fill['path'])) {
-                $data[$fill['path']][] = [
-                    'type' => 'literal',
-                    'property_id' => $skosIds[$fill['path']],
-                    '@value' => $level && count($ascendance)
-                        ? implode($separator, array_slice($ascendance, 0, $level)) . $separator . $descriptor
-                        : $descriptor,
-                ];
-            }
-
-            if ($level && count($ascendance) && !empty($fill['ascendance'])) {
-                $data[$fill['ascendance']][] = [
-                    'type' => 'literal',
-                    'property_id' => $skosIds[$fill['ascendance']],
-                    '@value' => implode($separator, array_slice($ascendance, 0, $level)),
-                ];
             }
 
             if ($level) {

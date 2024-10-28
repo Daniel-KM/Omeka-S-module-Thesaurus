@@ -374,6 +374,14 @@ class ThesaurusController extends ItemController
             $options['position_code'] = $outputType === 'tab_offset_code_appended' ? 'appended' : 'prepended';
         }
 
+        if ($outputType === 'thesaurus_full'
+            && !in_array($inputFormat, ['tab_offset_code_prepended', 'tab_offset_code_appended'])
+        ) {
+            $this->messenger()->addNotice(
+                'The process to import a thesaurus with codes is useful only when codes are prepended/appended to descriptors.' // @translate
+            );
+        }
+
         // TODO Check the file during validation inside the form.
 
         $file = $files['file'];
@@ -399,12 +407,11 @@ class ThesaurusController extends ItemController
                     'Unable to convert the file.' // @translate
                 );
             } else {
-                if ($outputType === 'thesaurus') {
+                if ($outputType === 'thesaurus' || $outputType === 'thesaurus_full') {
                     // Message are included.
                     $this->importThesaurus($file['tmp_name'], $file['name'], $options, $file['type']);
                     return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'browse'], true);
-                }
-                if ($outputType === 'file') {
+                } elseif ($outputType === 'file') {
                     $this->messenger()->addSuccess(
                         'The file is successfully converted.' // @translate
                     );
@@ -702,9 +709,15 @@ class ThesaurusController extends ItemController
             'input' => $lines,
         ] + $options;
 
+        // Use synchronous dispatcher when the thesaurus is small.
         $small = count($lines) <= 100;
+        $strategy = $small
+            ? $this->api()->read('vocabularies', 1)->getContent()->getServiceLocator()
+                ->get(\Omeka\Job\DispatchStrategy\Synchronous::class)
+            : null;
+        $job = $dispatcher->dispatch(\Thesaurus\Job\CreateThesaurus::class, $params, $strategy);
+
         if ($small) {
-            $dispatcher->dispatch(\Thesaurus\Job\CreateThesaurus::class, $params, $this->api()->read('vocabularies', 1)->getContent()->getServiceLocator()->get('Omeka\Job\DispatchStrategy\Synchronous'));
             $this->messenger()->addSuccess(new PsrMessage(
                 'The thesaurus "{title}" is created.', // @translate
                 ['title' => ucfirst($name)]
@@ -712,12 +725,11 @@ class ThesaurusController extends ItemController
             return;
         }
 
-        $job = $dispatcher->dispatch(\Thesaurus\Job\CreateThesaurus::class, $params);
         $message = new PsrMessage(
-            'Creation of thesaurus "{title}" with {total} concepts started ({link}job #{job_id}{link_end}, {link_log}logs{link_end})', // @translate
+            'Creation of thesaurus "{title}" with {total} lines started ({link}job #{job_id}{link_end}, {link_log}logs{link_end})', // @translate
             [
                 'title' => ucfirst($name),
-                'count' => count($lines),
+                'total' => count($lines),
                 'link' => sprintf('<a href="%s">', htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))),
                 'job_id' => $job->getId(),
                 'link_end' => '</a>',

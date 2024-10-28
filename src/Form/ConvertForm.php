@@ -119,13 +119,24 @@ class ConvertForm extends Form
 
             ->add([
                 'name' => 'output',
-                'type' => Element\Radio::class,
+                'type' => Element\Select::class,
                 'options' => [
                     'label' => 'Output', // @translate
                     'value_options' => [
-                        'text' => 'As text to copy paste', // @translate
-                        'file' => 'As file', // @translate
-                        'thesaurus' => 'As a new thesaurus (check as text first)', // @translate
+                        'structure' => [
+                            'label' => 'Structure only (flat list for custom vocabulary)',
+                            'options' => [
+                                'text' => 'As text to copy paste', // @translate
+                                'file' => 'As file', // @translate
+                                'thesaurus' => 'As a new thesaurus (check as text first)', // @translate
+                            ],
+                        ],
+                        'thesaurus' => [
+                            'label' => 'Structure and semantical relations (when there are coded relations)',
+                            'options' => [
+                                'thesaurus_full' => 'As a new thesaurus', // @translate
+                            ],
+                        ],
                     ],
                 ],
                 'attributes' => [
