@@ -347,9 +347,10 @@ class ThesaurusController extends ItemController
         $settings = $this->settings();
 
         $data = $form->getData();
+        $inputFormat = $data['format'] ?? 'tab_offset';
         $outputType = $data['output'] ?? 'text';
         $options = [
-            'format' => $data['format'] ?? 'tab_offset',
+            'format' => $inputFormat,
             // A preferred label is required.
             'fill' => [
                 'descriptor' => $settings->get('thesaurus_property_descriptor', 'skos:prefLabel'),
@@ -362,6 +363,16 @@ class ThesaurusController extends ItemController
             ],
             'skip_first_line' => !empty($data['skip_first_line']),
         ];
+
+        if (in_array($inputFormat, ['tab_offset_code_prepended', 'tab_offset_code_appended'])) {
+            if (empty($data['codes'])) {
+                $this->messenger()->addWarning(
+                    'The input format is defined as containing codes, but no codes are defined.' // @translate
+                );
+            }
+            $options['codes'] = $data['codes'];
+            $options['position_code'] = $outputType === 'tab_offset_code_appended' ? 'appended' : 'prepended';
+        }
 
         // TODO Check the file during validation inside the form.
 
@@ -493,17 +504,19 @@ class ThesaurusController extends ItemController
         if (count($lines) && !empty($options['skip_first_line'])) {
             unset($lines[0]);
         }
-        $format = $options['format'] ?? '';
-        if ($format === 'tab_offset') {
+        $inputFormat = $options['format'] ?? '';
+        if ($inputFormat === 'tab_offset') {
             return $this->convertThesaurusTabOffset($lines, $options);
-        } elseif ($format === 'structure_label') {
+        } elseif ($inputFormat === 'tab_offset_code_prepended' || $inputFormat === 'tab_offset_code_appended') {
+            return $this->convertThesaurusTabOffsetCodes($lines, $options);
+        } elseif ($inputFormat === 'structure_label') {
             return $this->convertThesaurusStructureLabel($lines, $options);
         }
         return '';
     }
 
     /**
-     * Convert a flat list into a flat thesaurus from format "tab offset".
+     * Convert a structured list into a flat thesaurus from format "tab offset".
      */
     protected function convertThesaurusTabOffset(array $lines, array $options): string
     {
@@ -516,6 +529,9 @@ class ThesaurusController extends ItemController
 
         foreach ($lines as $line) {
             $descriptor = trim($line);
+            if (!strlen($descriptor)) {
+                continue;
+            }
             // Replace entities first to avoid to break html entities.
             // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
             $descriptor = @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
@@ -540,6 +556,57 @@ class ThesaurusController extends ItemController
             $output .= $row . "\n";
         }
         return $output;
+    }
+
+    /**
+     * Convert a structured list into a flat thesaurus from format tabs/codes.
+     *
+     * So mainly for checks.
+     *
+     * Here, there are three descriptors and the two "used for" are lost.
+     *
+     * Europa
+     * UF Europe
+     *      France
+     *      United Kingdom
+     *      UF England
+     *
+     * @uses self::convertThesaurusTabOffset()
+     */
+    protected function convertThesaurusTabOffsetCodes(array $lines, array $options): string
+    {
+        $trimPunctuation = in_array('trim_punctuation', $options['clean']);
+
+        $isCodeAppended = ($options['position_code'] ?? null) === 'appended';
+
+        $valueCodes = $options['codes'] ?? [];
+        $newLines = [];
+        foreach ($lines as $line) {
+            $descriptor = trim($line);
+            if (!strlen($descriptor)) {
+                continue;
+            }
+            // Replace entities first to avoid to break html entities.
+            // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
+            $descriptor = @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES');
+            if ($trimPunctuation) {
+                $descriptor = trim($descriptor, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
+            }
+            $descriptor = trim($descriptor);
+            if (!strlen($descriptor)) {
+                continue;
+            }
+            if ($isCodeAppended) {
+                $codeToCheck = mb_strpos($descriptor, ' ') === false? null : trim(mb_strrchr($descriptor, ' '));
+            } else {
+                $codeToCheck = mb_strpos($descriptor, ' ') === false? null : strtok(trim($descriptor), ' ');
+            }
+            if (isset($valueCodes[$codeToCheck])) {
+                continue;
+            }
+            $newLines[] = $line;
+        }
+        return $this->convertThesaurusTabOffset($newLines, $options);
     }
 
     /**

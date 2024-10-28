@@ -4,6 +4,7 @@ namespace Thesaurus\Form;
 
 use Laminas\Form\Element;
 use Laminas\Form\Form;
+use Omeka\Form\Element as OmekaElement;
 
 class ConvertForm extends Form
 {
@@ -32,12 +33,59 @@ class ConvertForm extends Form
                     'label' => 'Input format', // @translate
                     'value_options' => [
                         'tab_offset' => 'Tabulation offsets', // @translate
+                        'tab_offset_code_prepended' => 'Tabulation offsets with prepended codes', // @translate
+                        'tab_offset_code_appended' => 'Tabulation offsets with appended codes', // @translate
                         'structure_label' => 'Structure and label (01-02-03 xxx)', // @translate
                     ],
                 ],
                 'attributes' => [
                     'id' => 'format',
                     'value' => 'tab_offset',
+                ],
+            ])
+
+            ->add([
+                'name' => 'codes',
+                'type' => OmekaElement\ArrayTextarea::class,
+                'options' => [
+                    'label' => 'Prepended or appended codes', // @translate
+                    'info' => 'Set supported codes (only UF, SN, and CC for now), mapped with their English equivalent. Any string can be set, according to input table.', // @translate
+                    'as_key_value' => true,
+                ],
+                'attributes' => [
+                    'id' => 'codes',
+                    'rows' => 12,
+                    'value' => [
+                        /** @see https://opentheso.hypotheses.org/67 */
+                        'UF' => 'UF',
+                        // 'BT' => 'BT',
+                        // 'NT' => 'NT',
+                        // 'RT' => 'RT',
+                        'SN' => 'SN',
+                        'CC' => 'CC',
+                        // French.
+                        // Equivalence: Used for / Employé pour.
+                        'EP' => 'UF',
+                        // HIerarchy: Broader term / Terme générique.
+                        // 'TG' => 'BT',
+                        // Hierarchy: Narrower term / Terme spécifique.
+                        // 'TS' => 'NT',
+                        // Association: Related Term / Terme associé.
+                        // 'TA' => 'RT',
+                        // Scope: Scope note / Note d’application (ou champ/domaine d’application).
+                        'NA' => 'SN',
+                        // Classification code / code de classification (notation).
+                        'CC' => 'CC',
+                        // TODO Other codes: TT = Top term, MT = Microthesaurus, CC = Classification code, HN = History note, etc.
+                        // TODO USE = EM / employer: main descriptor.
+                    ],
+                    'placeholder' => <<<'TXT'
+                        UF = UF
+                        SN = SN
+                        CC = CC
+                        EP = UF
+                        NA = SN
+                        TXT,
                 ],
             ])
 
@@ -107,6 +155,10 @@ class ConvertForm extends Form
             ])
             ->add([
                 'name' => 'format',
+                'required' => false,
+            ])
+            ->add([
+                'name' => 'codes',
                 'required' => false,
             ])
             ->add([
