@@ -63,6 +63,7 @@ class CreateThesaurus extends AbstractJob
         }
 
         if (!$name || !$format || !$input) {
+            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
             return;
         }
 
@@ -72,6 +73,7 @@ class CreateThesaurus extends AbstractJob
             && empty($fill['path'])
         ) {
             $this->logger->err('A preferred label with the descriptor or the full path is required to fill concepts.'); // @translate
+            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
             return;
         }
 
@@ -113,6 +115,7 @@ class CreateThesaurus extends AbstractJob
                 'The property {property} for descriptor is not managed.', // @translate
                 ['property' => $fill['descriptor']]
             );
+            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
             return;
         }
         if (!empty($fill['path']) && empty($skosIds[$fill['path']])) {
@@ -120,6 +123,7 @@ class CreateThesaurus extends AbstractJob
                 'The property "{property}" for path is not managed.', // @translate
                 ['property' => $fill['path']]
             );
+            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
             return;
         }
         if (!empty($fill['ascendance']) && empty($skosIds[$fill['ascendance']])) {
@@ -127,6 +131,7 @@ class CreateThesaurus extends AbstractJob
                 'The property "{property}" for ascendance is not managed.', // @translate
                 ['property' => $fill['ascendance']]
             );
+            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
             return;
         }
 
