@@ -851,6 +851,12 @@ class ThesaurusController extends ItemController
         if (in_array('trim_punctuation', $params)) {
             $string = trim($string, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
         }
+        if (in_array('apostrophe', $params)) {
+            $string = str_replace("'", '’', $string);
+        }
+        if (in_array('single_quote', $params)) {
+            $string = str_replace('’', "'", $string);
+        }
         if (in_array('lowercase', $params)) {
             $string = mb_strtolower($string);
         }

@@ -109,6 +109,8 @@ class ConvertForm extends Form
                     'label' => 'Clean input', // @translate
                     'value_options' => [
                         'trim_punctuation' => 'Remove trailing punctuation', // @translate
+                        'apostrophe' => 'Replace single quote by apostrophe', // @translate
+                        'single_quote' => 'Replace apostrophe by single quote', // @translate
                         'lowercase' => 'Lower case for string', // @translate
                         'ucfirst' => 'Lower case for string and upper case for first letter', // @translate
                         'ucwords' => 'Lower case for string and upper case for each word', // @translate
