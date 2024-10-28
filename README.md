@@ -101,6 +101,26 @@ Asia
                Tokyo
 ```
 
+#### Hierarchical text with tabulation offset with code prepended/appended
+
+This is a variant of previous mode, that allows to import metadata about each
+descriptors. You can use any code or even property terms. UF (Used for), CC
+(classification code), and SN (Scope Note) are commonly used in thesaurus.
+Codes are case sensitive. Take care not to use real words used in the thesaurus.
+
+```
+Europe
+UF Europa
+CC EU
+       France
+       CC FRA
+       United Kingdom
+       UF United Kingdom of Great Britain and Northern Ireland
+       CC UK
+               England
+               UF ENG
+```
+
 #### Structure with label
 
 In this mode, the first column is the structure and the second, after spaces, is
@@ -230,6 +250,7 @@ TODO
 * [ ] Uninstall vocabulary and resources templates if not used.
 * [ ] Create a data type to store the ascendance or the full path with resource ids and display with multiple links.
 * [ ] Update ascendance of descendants with a single job after batch edit.
+* [ ] Remove the process with pref label / alt label to build select. Add an intermediate process.
 
 
 Warning
