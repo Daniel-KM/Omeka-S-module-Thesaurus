@@ -182,8 +182,8 @@ class IndexThesaurus extends AbstractJob
         */
 
         $this->logger->notice(
-            'Thesaurus "{title}" (#{item_id}) indexed.', // @translate
-            ['title' => $scheme->displayTitle(), 'item_id' => $schemeId]
+            'Thesaurus "{title}" (#{item_id}) indexed (full thesaurus: #{thesaurus_id}).', // @translate
+            ['title' => $scheme->displayTitle(), 'item_id' => $schemeId, 'thesaurus_id' => $schemeId]
         );
 
         return true;

@@ -710,7 +710,7 @@ class ThesaurusController extends ItemController
         ] + $options;
 
         // Use synchronous dispatcher when the thesaurus is small.
-        $small = count($lines) <= 100;
+        $small = count($lines) <= 50;
         $strategy = $small
             ? $this->api()->read('vocabularies', 1)->getContent()->getServiceLocator()
                 ->get(\Omeka\Job\DispatchStrategy\Synchronous::class)

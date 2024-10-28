@@ -19,6 +19,11 @@ class CreateThesaurus extends AbstractJob
     protected $api;
 
     /**
+     * @var \Common\Stdlib\EasyMeta
+     */
+    protected $easyMeta;
+
+    /**
      * @var \Doctrine\ORM\EntityManager
      */
     protected $entityManager;
@@ -46,6 +51,7 @@ class CreateThesaurus extends AbstractJob
 
         $this->api = $services->get('Omeka\ApiManager');
         $this->settings = $services->get('Omeka\Settings');
+        $this->easyMeta = $services->get('Common\EasyMeta');
         $this->entityManager = $services->get('Omeka\EntityManager');
 
         $hasError = false;
@@ -96,8 +102,6 @@ class CreateThesaurus extends AbstractJob
                     'The input format is defined as containing codes, but no codes are defined.' // @translate
                 );
                 $hasError = true;
-            } else {
-                // TODO Add a message to warn about managed codes.
             }
         }
 
@@ -127,16 +131,10 @@ class CreateThesaurus extends AbstractJob
             : $this->api->read('resource_templates', ['label' => 'Thesaurus Concept'])->getContent();
         $collectionClass = $this->api->read('resource_classes', ['vocabulary' => $skosVocabulary->id(), 'localName' => 'Collection'])->getContent();
 
-        // Scalar fields cannot be returned < v4.1.
-        $skosIds = [];
-        /** @var \Omeka\Api\Representation\PropertyRepresentation[] $properties */
-        $properties = $this->api->search('properties', ['vocabulary_prefix' => 'skos'])->getContent();
-        foreach ($properties as $property) {
-            $skosIds[$property->term()] = $property->id();
-        }
+        $properties = $this->easyMeta->propertyIds();
 
         // Check properties in options one time.
-        if (!empty($fill['descriptor']) && empty($skosIds[$fill['descriptor']])) {
+        if (!empty($fill['descriptor']) && !isset($properties[$fill['descriptor']])) {
             $this->logger->err(
                 'The property {property} for descriptor is not managed.', // @translate
                 ['property' => $fill['descriptor']]
@@ -144,7 +142,7 @@ class CreateThesaurus extends AbstractJob
             $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
             return;
         }
-        if (!empty($fill['path']) && empty($skosIds[$fill['path']])) {
+        if (!empty($fill['path']) && empty($properties[$fill['path']])) {
             $this->logger->err(
                 'The property "{property}" for path is not managed.', // @translate
                 ['property' => $fill['path']]
@@ -152,7 +150,7 @@ class CreateThesaurus extends AbstractJob
             $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
             return;
         }
-        if (!empty($fill['ascendance']) && empty($skosIds[$fill['ascendance']])) {
+        if (!empty($fill['ascendance']) && empty($properties[$fill['ascendance']])) {
             $this->logger->err(
                 'The property "{property}" for ascendance is not managed.', // @translate
                 ['property' => $fill['ascendance']]
@@ -199,7 +197,7 @@ class CreateThesaurus extends AbstractJob
             'skos:prefLabel' => [
                 [
                     'type' => 'literal',
-                    'property_id' => $skosIds['skos:prefLabel'],
+                    'property_id' => $properties['skos:prefLabel'],
                     '@value' => ucfirst($name),
                 ],
             ],
@@ -234,18 +232,18 @@ class CreateThesaurus extends AbstractJob
             'skos:inScheme' => [
                 [
                     'type' => 'resource:item',
-                    'property_id' => $skosIds['skos:inScheme'],
+                    'property_id' => $properties['skos:inScheme'],
                     'value_resource_id' => $schemeId,
                 ],
             ],
         ];
 
         if ($format === 'tab_offset') {
-            $result = $this->convertThesaurusTabOffset($input, $baseConcept, $skosIds, $fill, $separator, $clean);
+            $result = $this->convertThesaurusTabOffset($input, $baseConcept, $fill, $separator, $clean);
         } elseif ($format === 'structure_label') {
-            $result = $this->convertThesaurusStructureLabel($input, $baseConcept, $skosIds, $fill, $separator, $clean);
+            $result = $this->convertThesaurusStructureLabel($input, $baseConcept, $fill, $separator, $clean);
         } elseif ($format === 'tab_offset_code_prepended' || $format === 'tab_offset_code_appended') {
-            $result = $this->convertThesaurusTabOffset($input, $baseConcept, $skosIds, $fill, $separator, $clean, $format === 'tab_offset_code_appended' ? 'appended' : 'prepended');
+            $result = $this->convertThesaurusTabOffset($input, $baseConcept, $fill, $separator, $clean, $format === 'tab_offset_code_appended' ? 'appended' : 'prepended');
         }
 
         // Even if the job is stopped, fill the other data.
@@ -276,7 +274,7 @@ class CreateThesaurus extends AbstractJob
             foreach ($narrowerIds as $narrowerId) {
                 $conceptJson['skos:narrower'][] = [
                     'type' => 'resource:item',
-                    'property_id' => $skosIds['skos:narrower'],
+                    'property_id' => $properties['skos:narrower'],
                     'value_resource_id' => $narrowerId,
                 ];
             }
@@ -291,7 +289,7 @@ class CreateThesaurus extends AbstractJob
             foreach ($topIds as $topId) {
                 $schemeJson['skos:hasTopConcept'][] = [
                     'type' => 'resource:item',
-                    'property_id' => $skosIds['skos:hasTopConcept'],
+                    'property_id' => $properties['skos:hasTopConcept'],
                     'value_resource_id' => $topId,
                 ];
             }
@@ -321,7 +319,6 @@ class CreateThesaurus extends AbstractJob
     protected function convertThesaurusTabOffset(
         array $lines,
         array $baseConcept,
-        array $skosIds,
         array $fill,
         string $separator,
         array $clean,
@@ -334,9 +331,9 @@ class CreateThesaurus extends AbstractJob
         $narrowers = [];
 
         $fillPropertyIds = [
-            'descriptor' => !empty($fill['descriptor']) && !empty($skosIds[$fill['descriptor']]) ? $skosIds[$fill['descriptor']] : null,
-            'path' => !empty($fill['path']) && !empty($skosIds[$fill['path']]) ? $skosIds[$fill['path']] : null,
-            'ascendance' => !empty($fill['ascendance']) && !empty($skosIds[$fill['ascendance']]) ? $skosIds[$fill['ascendance']] : null,
+            'descriptor' => empty($fill['descriptor']) ? null : $this->easyMeta->propertyId($fill['descriptor']),
+            'path' => empty($fill['path']) ? null : $this->easyMeta->propertyId($fill['path']),
+            'ascendance' => empty($fill['ascendance']) ? null : $this->easyMeta->propertyId($fill['ascendance']),
         ];
 
         $trimPunctuation = in_array('trim_punctuation', $clean);
@@ -345,18 +342,12 @@ class CreateThesaurus extends AbstractJob
         $isCodeAppended = $isCodePrependedOrAppended === 'appended';
         $hasCode = $isCodePrepended || $isCodeAppended;
 
-        $codesToProperties = [
-            'UF' => 'skos:altLabel',
-            'SN' => 'skos:scopeNote',
-            'CC' => 'skos:notation',
-        ];
-
+        $codesToProperties = [];
         if ($hasCode) {
-            // The codes are already checked.
-            $valueCodes = $this->getArg('codes') ?: [];
-            // TODO Add a message to warn about managed codes.
-        } else {
-            $valueCodes = [];
+            // Fill missing terms with the code.
+            foreach ($this->getArg('codes') ?: [] as $code => $term) {
+                $codesToProperties[$code] = $term ?: $code;
+            }
         }
 
         // First loop to build descriptors with additional data and second loop to save.
@@ -392,15 +383,8 @@ class CreateThesaurus extends AbstractJob
                 } else {
                     $codeToCheck = mb_strpos($descriptor, ' ') === false? null : strtok(trim($descriptor), ' ');
                 }
-                if (isset($valueCodes[$codeToCheck])) {
-                    if (!isset($codesToProperties[$valueCodes[$codeToCheck]])) {
-                        $this->logger->warn(
-                            'The line "{string} has the code "{code}" that is not managed currently. It is skipped.', // @translate
-                            ['string' => trim($line), 'code' => $codeToCheck]
-                        );
-                        continue;
-                    }
-                    $propertyTerm = $codesToProperties[$valueCodes[$codeToCheck]];
+                if (isset($codesToProperties[$codeToCheck])) {
+                    $propertyTerm = $codesToProperties[$codeToCheck];
                     $descriptor = $isCodeAppended
                         ? trim(mb_substr($descriptor, 0, - mb_strlen($codeToCheck)))
                         : trim(mb_substr($descriptor,  mb_strlen($codeToCheck)));
@@ -418,7 +402,7 @@ class CreateThesaurus extends AbstractJob
                 }
                 $initialData[$previousConceptIndex][$propertyTerm][] = [
                     'type' => 'literal',
-                    'property_id' => $skosIds[$propertyTerm],
+                    'property_id' => $this->easyMeta->propertyId($propertyTerm),
                     '@value' => $descriptor,
                 ];
                 continue;
@@ -514,7 +498,7 @@ class CreateThesaurus extends AbstractJob
                 $data['skos:broader'] = [
                     [
                         'type' => 'resource:item',
-                        'property_id' => $skosIds['skos:broader'],
+                        'property_id' => $this->easyMeta->propertyId('skos:broader'),
                         'value_resource_id' => $levels[$parentLevel],
                     ],
                 ];
@@ -524,7 +508,7 @@ class CreateThesaurus extends AbstractJob
                 $data['skos:topConceptOf'] = [
                     [
                         'type' => 'resource:item',
-                        'property_id' => $skosIds['skos:topConceptOf'],
+                        'property_id' => $this->easyMeta->propertyId('skos:topConceptOf'),
                         'value_resource_id' => $schemeId,
                     ],
                 ];
@@ -571,7 +555,6 @@ class CreateThesaurus extends AbstractJob
     protected function convertThesaurusStructureLabel(
         array $lines,
         array $baseConcept,
-        array $skosIds,
         array $fill,
         string $separator,
         array $clean
@@ -581,6 +564,12 @@ class CreateThesaurus extends AbstractJob
 
         $topIds = [];
         $narrowers = [];
+
+        $fillPropertyIds = [
+            'descriptor' => empty($fill['descriptor']) ? null : $this->easyMeta->propertyId($fill['descriptor']),
+            'path' => empty($fill['path']) ? null : $this->easyMeta->propertyId($fill['path']),
+            'ascendance' => empty($fill['ascendance']) ? null : $this->easyMeta->propertyId($fill['ascendance']),
+        ];
 
         $trimPunctuation = in_array('trim_punctuation', $clean);
 
@@ -646,35 +635,33 @@ class CreateThesaurus extends AbstractJob
 
             $data = $baseConcept;
 
-            if (!empty($fill['descriptor']) && !empty($skosIds[$fill['descriptor']])) {
+            if ($fillPropertyIds['descriptor']) {
                 $data[$fill['descriptor']][] = [
                     'type' => 'literal',
-                    'property_id' => $skosIds[$fill['descriptor']],
+                    'property_id' => $fillPropertyIds['descriptor'],
                     '@value' => $descriptor,
                 ];
             }
-            if (!empty($fill['path'])) {
+            if ($fillPropertyIds['path']) {
                 $data[$fill['path']][] = [
                     'type' => 'literal',
-                    'property_id' => $skosIds[$fill['path']],
+                    'property_id' => $fillPropertyIds['path'],
                     '@value' => $level && count($ascendance)
                         ? implode($separator, array_slice($ascendance, 0, $level)) . $separator . $descriptor
                         : $descriptor,
                 ];
             }
-            if ($level && count($ascendance)) {
-                if (!empty($fill['ascendance'])) {
-                    $data[$fill['ascendance']][] = [
-                        'type' => 'literal',
-                        'property_id' => $skosIds[$fill['ascendance']],
-                        '@value' => implode($separator, array_slice($ascendance, 0, $level)),
-                    ];
-                }
+            if ($level && count($ascendance) && $fillPropertyIds['ascendance']) {
+                $data[$fill['ascendance']][] = [
+                    'type' => 'literal',
+                    'property_id' => $fillPropertyIds['ascendance'],
+                    '@value' => implode($separator, array_slice($ascendance, 0, $level)),
+                ];
             }
 
             $data['skos:notation'][] = [
                 'type' => 'literal',
-                'property_id' => $skosIds['skos:notation'],
+                'property_id' => $this->easyMeta->propertyId('skos:notation'),
                 '@value' => $structure,
             ];
 
@@ -682,7 +669,7 @@ class CreateThesaurus extends AbstractJob
                 $data['skos:broader'] = [
                     [
                         'type' => 'resource:item',
-                        'property_id' => $skosIds['skos:broader'],
+                        'property_id' => $this->easyMeta->propertyId('skos:broader'),
                         'value_resource_id' => $levels[$parentLevel],
                     ],
                 ];
@@ -692,7 +679,7 @@ class CreateThesaurus extends AbstractJob
                 $data['skos:topConceptOf'] = [
                     [
                         'type' => 'resource:item',
-                        'property_id' => $skosIds['skos:topConceptOf'],
+                        'property_id' => $this->easyMeta->propertyId('skos:topConceptOf'),
                         'value_resource_id' => $schemeId,
                     ],
                 ];

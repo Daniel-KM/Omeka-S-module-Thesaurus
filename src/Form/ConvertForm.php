@@ -48,8 +48,8 @@ class ConvertForm extends Form
                 'name' => 'codes',
                 'type' => OmekaElement\ArrayTextarea::class,
                 'options' => [
-                    'label' => 'Prepended or appended codes', // @translate
-                    'info' => 'Set supported codes (only UF, SN, and CC for now), mapped with their English equivalent. Any string can be set, according to input table.', // @translate
+                    'label' => 'Property mapping for prepended or appended codes', // @translate
+                    'info' => 'Set codes mapped with the property. A property can be set directly when used in input table.', // @translate
                     'as_key_value' => true,
                 ],
                 'attributes' => [
@@ -57,34 +57,36 @@ class ConvertForm extends Form
                     'rows' => 12,
                     'value' => [
                         /** @see https://opentheso.hypotheses.org/67 */
-                        'UF' => 'UF',
-                        // 'BT' => 'BT',
-                        // 'NT' => 'NT',
-                        // 'RT' => 'RT',
-                        'SN' => 'SN',
-                        'CC' => 'CC',
+                        'UF' => 'skos:altLabel',
+                        // 'BT' => 'skos:broader',
+                        // 'NT' => 'skos:narrower',
+                        // 'RT' => 'skos:related',
+                        'SN' => 'skos:scopeNote',
+                        'CC' => 'skos:notation',
                         // French.
                         // Equivalence: Used for / Employé pour.
-                        'EP' => 'UF',
+                        'EP' => 'skos:altLabel',
                         // HIerarchy: Broader term / Terme générique.
-                        // 'TG' => 'BT',
+                        // 'TG' => 'skos:broader',
                         // Hierarchy: Narrower term / Terme spécifique.
-                        // 'TS' => 'NT',
+                        // 'TS' => 'skos:narrower',
                         // Association: Related Term / Terme associé.
-                        // 'TA' => 'RT',
+                        // 'TA' => 'skos:related',
                         // Scope: Scope note / Note d’application (ou champ/domaine d’application).
-                        'NA' => 'SN',
+                        'NA' => 'skos:scopeNote',
                         // Classification code / code de classification (notation).
-                        'CC' => 'CC',
+                        'CC' => 'skos:notation',
                         // TODO Other codes: TT = Top term, MT = Microthesaurus, CC = Classification code, HN = History note, etc.
                         // TODO USE = EM / employer: main descriptor.
+                        'dcterms:identifier' => null,
                     ],
                     'placeholder' => <<<'TXT'
-                        UF = UF
-                        SN = SN
-                        CC = CC
-                        EP = UF
-                        NA = SN
+                        UF = skos:altLabel
+                        SN = skos:scopeNote
+                        CC = skos:notation
+                        EP = skos:altLabel
+                        NA = skos:scopeNote
+                        dcterms:identifier
                         TXT,
                 ],
             ])
