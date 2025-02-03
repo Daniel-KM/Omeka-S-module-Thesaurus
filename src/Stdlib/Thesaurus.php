@@ -2,6 +2,7 @@
 
 namespace Thesaurus\Stdlib;
 
+use Common\Stdlib\EasyMeta;
 use Common\Stdlib\PsrMessage;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\ParameterType;
@@ -30,6 +31,36 @@ class Thesaurus
     const ITEM_CLASS = 'skos:Concept';
     const PARENT_TERM = 'skos:broader';
     const CHILD_TERM = 'skos:narrower';
+
+    /**
+     * @var \Omeka\Api\Manager
+     */
+    protected $api;
+
+    /**
+     * @var \Common\Stdlib\EasyMeta
+     */
+    protected $easyMeta;
+
+    /**
+     * @var \Doctrine\ORM\EntityManager
+     */
+    protected $entityManager;
+
+    /**
+     * @var \Omeka\Api\Adapter\ItemAdapter
+     */
+    protected $itemAdapter;
+
+    /**
+     * @var \Laminas\Log\Logger
+     */
+    protected $logger;
+
+    /**
+     * @var \Omeka\Entity\User|null
+     */
+    protected $user;
 
     /**
      * @var bool
@@ -122,33 +153,9 @@ class Thesaurus
      */
     protected $templateConceptId;
 
-    /**
-     * @var \Doctrine\ORM\EntityManager
-     */
-    protected $entityManager;
-
-    /**
-     * @var \Omeka\Api\Adapter\ItemAdapter
-     */
-    protected $itemAdapter;
-
-    /**
-     * @var \Omeka\Api\Manager
-     */
-    protected $api;
-
-    /**
-     * @var \Laminas\Log\Logger
-     */
-    protected $logger;
-
-    /**
-     * @var \Omeka\Entity\User|null
-     */
-    protected $user;
-
     public function __construct(
         ApiManager $api,
+        EasyMeta $easyMeta,
         EntityManager $entityManager,
         ItemAdapter $itemAdapter,
         Logger $logger,
@@ -157,6 +164,7 @@ class Thesaurus
         int $templateConceptId
     ) {
         $this->api = $api;
+        $this->easyMeta = $easyMeta;
         $this->entityManager = $entityManager;
         $this->itemAdapter = $itemAdapter;
         $this->logger = $logger;
@@ -1359,62 +1367,26 @@ class Thesaurus
     /**
      * Get all property ids by term.
      *
-     * @return array Associative array of ids by term.
+     * @return array Associative array of property ids by term.
      */
     protected function getPropertyIds(): array
     {
-        if (isset($this->terms['property'])) {
-            return $this->terms['property'];
+        if (!isset($this->terms['property'])) {
+            $this->terms['property'] = $this->easyMeta->propertyIds();
         }
-
-        $connection = $this->entityManager->getConnection();
-        $qb = $connection->createQueryBuilder();
-        $qb
-            ->select(
-                'DISTINCT CONCAT(vocabulary.prefix, ":", property.local_name) AS term',
-                'property.id AS id',
-                // Only the two first selects are needed, but some databases
-                // require "order by" or "group by" value to be in the select.
-                'vocabulary.id'
-            )
-            ->from('property', 'property')
-            ->innerJoin('property', 'vocabulary', 'vocabulary', 'property.vocabulary_id = vocabulary.id')
-            ->orderBy('vocabulary.id', 'asc')
-            ->addOrderBy('property.id', 'asc')
-            ->addGroupBy('property.id')
-        ;
-        $this->terms['property'] = array_map('intval', $connection->executeQuery($qb)->fetchAllKeyValue());
         return $this->terms['property'];
     }
 
     /**
      * Get all class ids by term.
      *
-     * @return array Associative array of ids by term.
+     * @return array Associative array of resource class ids by term.
      */
     protected function getResourceClassIds(): array
     {
-        if (isset($this->terms['class'])) {
-            return $this->terms['class'];
+        if (!isset($this->terms['class'])) {
+            $this->terms['class'] = $this->easyMeta->resourceClassIds();
         }
-
-        $connection = $this->entityManager->getConnection();
-        $qb = $connection->createQueryBuilder();
-        $qb
-            ->select(
-                'DISTINCT CONCAT(vocabulary.prefix, ":", resource_class.local_name) AS term',
-                'resource_class.id AS id',
-                // Only the two first selects are needed, but some databases
-                // require "order by" or "group by" value to be in the select.
-                'vocabulary.id'
-            )
-            ->from('resource_class', 'resource_class')
-            ->innerJoin('resource_class', 'vocabulary', 'vocabulary', 'resource_class.vocabulary_id = vocabulary.id')
-            ->orderBy('vocabulary.id', 'asc')
-            ->addOrderBy('resource_class.id', 'asc')
-            ->addGroupBy('resource_class.id')
-        ;
-        $this->terms['class'] = array_map('intval', $connection->executeQuery($qb)->fetchAllKeyValue());
         return $this->terms['class'];
     }
 
@@ -1472,7 +1444,7 @@ class Thesaurus
         if (count($this->terms) === 2) {
             return $this;
         }
-        // Only skos is useful for now, but speed is same with all terms.
+        // Only skos is useful for now, but speed is the same with all terms.
         $this->getResourceClassIds();
         $this->getPropertyIds();
         return $this;
