@@ -1,4 +1,4 @@
-@media screen {
+@media all {
     header nav .thesaurus::before,
     .thesaurus .subhead::before,
     .thesaurus .no-resources:before {
