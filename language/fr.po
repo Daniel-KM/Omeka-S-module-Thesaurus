@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-28 00:00+0000\n"
+"POT-Creation-Date: 2025-02-03 00:00+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Daniel Berthereau <Daniel.fr@Berthereau.net>\n"
 "Language-Team: \n"
@@ -762,42 +762,50 @@ msgid "Remove trailing punctuation"
 msgstr "Suppression de la ponctuation finale"
 
 #: src/Form/ConvertForm.php:112
+msgid "Replace single quote by apostrophe"
+msgstr "Remplacer l’apostrophe droite par une apostrophe"
+
+#: src/Form/ConvertForm.php:113
+msgid "Replace apostrophe by single quote"
+msgstr "Remplacer l’apostrophe par une apostrophe droite"
+
+#: src/Form/ConvertForm.php:114
 msgid "Lower case for string"
 msgstr "Mise en minuscule"
 
-#: src/Form/ConvertForm.php:113
+#: src/Form/ConvertForm.php:115
 msgid "Lower case for string and upper case for first letter"
 msgstr "Mise en minuscule et majuscule pour la première lettre"
 
-#: src/Form/ConvertForm.php:114
+#: src/Form/ConvertForm.php:116
 msgid "Lower case for string and upper case for each word"
 msgstr "Mise en minuscule et majuscule pour la première lettre de chaque mot"
 
-#: src/Form/ConvertForm.php:115
+#: src/Form/ConvertForm.php:117
 msgid "Upper case for string"
 msgstr "Mise en majuscule"
 
-#: src/Form/ConvertForm.php:130
+#: src/Form/ConvertForm.php:132
 msgid "Output"
 msgstr "Sortie"
 
-#: src/Form/ConvertForm.php:135
+#: src/Form/ConvertForm.php:137
 msgid "As text to copy paste"
 msgstr "En texte à copier-coller"
 
-#: src/Form/ConvertForm.php:136
+#: src/Form/ConvertForm.php:138
 msgid "As file"
 msgstr "En fichier"
 
-#: src/Form/ConvertForm.php:137
+#: src/Form/ConvertForm.php:139
 msgid "As a new thesaurus (check as text first)"
 msgstr "Comme nouveau thésaurus (vérifier d’abord en texte)"
 
-#: src/Form/ConvertForm.php:143
+#: src/Form/ConvertForm.php:145
 msgid "As a new thesaurus"
 msgstr "Dans un nouveau thésaurus"
 
-#: src/Form/ConvertForm.php:158
+#: src/Form/ConvertForm.php:160
 msgid "Upload thesaurus"
 msgstr "Chargement du thésaurus"
 
@@ -854,8 +862,8 @@ msgid ""
 "The thesaurus has no item set with class \"skos:Collection\" or \"skos:"
 "OrderedCollection\"."
 msgstr ""
-"Le thésaurus n’a pas d’élément de classe « skos:Collection » ou « skos:"
-"OrderedCollection »."
+"Le thésaurus n’a pas de collection avec la classe « skos:Collection » ou "
+"« skos:OrderedCollection »."
 
 #: src/Controller/Admin/ThesaurusController.php:73
 msgid "thesaurus"

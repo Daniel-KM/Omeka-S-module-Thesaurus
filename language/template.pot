@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-28 00:00+0000\n"
+"POT-Creation-Date: 2025-02-03 00:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -698,42 +698,50 @@ msgid "Remove trailing punctuation"
 msgstr ""
 
 #: src/Form/ConvertForm.php:112
-msgid "Lower case for string"
+msgid "Replace single quote by apostrophe"
 msgstr ""
 
 #: src/Form/ConvertForm.php:113
-msgid "Lower case for string and upper case for first letter"
+msgid "Replace apostrophe by single quote"
 msgstr ""
 
 #: src/Form/ConvertForm.php:114
-msgid "Lower case for string and upper case for each word"
+msgid "Lower case for string"
 msgstr ""
 
 #: src/Form/ConvertForm.php:115
+msgid "Lower case for string and upper case for first letter"
+msgstr ""
+
+#: src/Form/ConvertForm.php:116
+msgid "Lower case for string and upper case for each word"
+msgstr ""
+
+#: src/Form/ConvertForm.php:117
 msgid "Upper case for string"
 msgstr ""
 
-#: src/Form/ConvertForm.php:130
+#: src/Form/ConvertForm.php:132
 msgid "Output"
 msgstr ""
 
-#: src/Form/ConvertForm.php:135
+#: src/Form/ConvertForm.php:137
 msgid "As text to copy paste"
 msgstr ""
 
-#: src/Form/ConvertForm.php:136
+#: src/Form/ConvertForm.php:138
 msgid "As file"
 msgstr ""
 
-#: src/Form/ConvertForm.php:137
+#: src/Form/ConvertForm.php:139
 msgid "As a new thesaurus (check as text first)"
 msgstr ""
 
-#: src/Form/ConvertForm.php:143
+#: src/Form/ConvertForm.php:145
 msgid "As a new thesaurus"
 msgstr ""
 
-#: src/Form/ConvertForm.php:158
+#: src/Form/ConvertForm.php:160
 msgid "Upload thesaurus"
 msgstr ""
 
