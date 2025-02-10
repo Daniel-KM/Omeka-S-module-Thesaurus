@@ -23,6 +23,14 @@ class CustomVocabSelect extends \CustomVocab\Form\Element\CustomVocabSelect
 
     public function getValueOptions() : array
     {
+        // Set a flag to fix recursive methods when a validator is set.
+        /** @see \Laminas\Form\Element\Select::setValueOptions() */
+        static $flag = false;
+
+        if ($flag) {
+            return $this->valueOptions;
+        }
+
         $customVocabId = $this->getOption('custom_vocab_id');
 
         try {
@@ -48,7 +56,9 @@ class CustomVocabSelect extends \CustomVocab\Form\Element\CustomVocabSelect
             $valueOptions = $prependValueOptions + $valueOptions;
         }
 
+        $flag = true;
         $this->setValueOptions($valueOptions);
+        $flag = false;
         return $valueOptions;
     }
 
