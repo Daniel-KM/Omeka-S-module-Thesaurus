@@ -38,6 +38,7 @@ class UpdateConceptsForm extends Form
                     'id' => 'submit',
                     'type' => 'submit',
                     'title' => 'Submit',
+                    'class' => 'button',
                 ],
             ]);
     }

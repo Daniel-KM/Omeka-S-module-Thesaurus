@@ -163,6 +163,7 @@ class ConvertForm extends Form
                     'id' => 'submit-upload',
                     'type' => 'submit',
                     'title' => 'Submit',
+                    'class' => 'button',
                 ],
             ]);
 
