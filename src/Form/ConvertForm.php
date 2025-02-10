@@ -120,7 +120,7 @@ class ConvertForm extends Form
                 'attributes' => [
                     'id' => 'clean',
                     'value' => [
-                        'trim_punctuation',
+                        // 'trim_punctuation',
                     ],
                 ],
             ])
