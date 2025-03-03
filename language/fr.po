@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-03 00:00+0000\n"
+"POT-Creation-Date: 2025-03-03 00:00+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Daniel Berthereau <Daniel.fr@Berthereau.net>\n"
 "Language-Team: \n"
@@ -229,7 +229,7 @@ msgstr "Concepts liés"
 #: view/common/thesaurus-list.phtml:28 view/common/thesaurus-list.phtml:29
 #: src/Form/ThesaurusFieldset.php:40
 msgid "Sibling concepts"
-msgstr "Concepts équivalents"
+msgstr "Concepts frères"
 
 #: view/common/thesaurus-list.phtml:30 view/common/thesaurus-list.phtml:31
 msgid "Ascendant concepts"
@@ -601,7 +601,7 @@ msgstr "Concepts liés ou lui-même"
 
 #: src/Form/ThesaurusFieldset.php:41
 msgid "Sibling concepts or self"
-msgstr "Concepts équivalents ou lui--même"
+msgstr "Concepts frères ou lui-même"
 
 #: src/Form/ThesaurusFieldset.php:42
 msgid "Ascendants as list"
@@ -1010,7 +1010,7 @@ msgstr ""
 "Mise à jour des concepts en arrière-plan ({link}tâche #{job_id}{link_end}, "
 "{link_log}journaux{link_end})."
 
-#: src/Stdlib/Thesaurus.php:312
+#: src/Stdlib/Thesaurus.php:320
 msgid ""
 "Thesaurus based on item #{item_id} does not exist or is not available to "
 "current user."
@@ -1018,13 +1018,13 @@ msgstr ""
 "Le thésaurus basé sur l’article #{item_id} n’existe pas ou n’est pas "
 "disponible pour l’utilisateur actuel."
 
-#: src/Stdlib/Thesaurus.php:904 src/Stdlib/Thesaurus.php:1255
-#: src/Stdlib/Thesaurus.php:1283 src/Stdlib/Thesaurus.php:1310
-#: src/Stdlib/Thesaurus.php:1342
+#: src/Stdlib/Thesaurus.php:912 src/Stdlib/Thesaurus.php:1263
+#: src/Stdlib/Thesaurus.php:1291 src/Stdlib/Thesaurus.php:1318
+#: src/Stdlib/Thesaurus.php:1350
 msgid "There cannot be more than {total} levels of descendants."
 msgstr "Il ne peut pas y avoir plus de {total} niveaux de descendants."
 
-#: src/Stdlib/Thesaurus.php:1028
+#: src/Stdlib/Thesaurus.php:1036
 msgid ""
 "At least one descriptor (\"{title}\") contains the separator \"{value}\". "
 "You must change it."
@@ -1032,7 +1032,7 @@ msgstr ""
 "Au moins un descripteur (« {title} ») contient le séparateur « {value} ». "
 "Vous devez le modifier."
 
-#: src/Stdlib/Thesaurus.php:1204 src/Stdlib/Thesaurus.php:1228
+#: src/Stdlib/Thesaurus.php:1212 src/Stdlib/Thesaurus.php:1236
 msgid "There cannot be more than {total} ancestors."
 msgstr "Il ne peut pas y avoir plus de {total} ancêtres."
 
