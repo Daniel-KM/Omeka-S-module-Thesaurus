@@ -1645,17 +1645,22 @@ class Thesaurus
      * This method is the same than calling api with a list of ids, but it is
      * quicker and without events.
      *
-     * @return array|null|ItemRepresentation
+     * @param array|null If array, may be a single concept or an array of
+     *   concepts indexed by their id.
+     * @return array|null|ItemRepresentation When multiple, items are listed
+     *   with their id.
      */
     protected function returnFromData(?array $data)
     {
+        // When data is an empty array, it is not possible to determine if it is
+        // a single data or a list of data, so output array in any case.
         if (!$this->returnItem || is_null($data) || !count($data)) {
             return $data;
         }
 
         $isSingle = isset($data['id']);
         if ($isSingle) {
-            $data = [$data];
+            $data = [$data['id'] => $data];
         }
 
         $qb = $this->entityManager->createQueryBuilder();
@@ -1666,12 +1671,14 @@ class Thesaurus
             ->setParameter('ids', array_keys($data), \Doctrine\DBAL\Connection::PARAM_INT_ARRAY)
         ;
         $result = $qb->getQuery()->getResult();
-        foreach ($result as &$itemData) {
-            $itemData = $this->adapter->getRepresentation($itemData);
+
+        $representations = [];
+        foreach ($result as $itemData) {
+            $representations[$itemData->getId()] = $this->adapter->getRepresentation($itemData);
         }
 
         return $isSingle
-            ? reset($result)
-            : $result;
+            ? reset($representations)
+            : $representations;
     }
 }
