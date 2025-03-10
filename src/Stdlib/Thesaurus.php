@@ -795,25 +795,9 @@ class Thesaurus
     }
 
     /**
-     * Get the flat hierarchy branch of this item, self included.
-     */
-    public function flatBranch(): array
-    {
-        if (!$this->isSkos || $this->isScheme()) {
-            return [];
-        }
-        $result = [];
-        $result[$this->itemId] = [
-            'self' => $this->returnItem ? $this->item : $this->structure[$this->itemId] ?? null,
-            'level' => 0,
-        ];
-        return $this->recursiveFlatBranch($this->structure[$this->itemId] ?? null, $result, 1);
-    }
-
-    /**
      * Get the flat hierarchy branch of this item from top to self descendants.
      */
-    public function flatBranchFromTop(): array
+    public function flatBranch(): array
     {
         if (!$this->isSkos || $this->isScheme()) {
             return [];
@@ -847,6 +831,22 @@ class Thesaurus
         $key = key($branch);
         unset($branch[$key]);
         return $branch;
+    }
+
+    /**
+     * Get the flat hierarchy branch from this item, self included.
+     */
+    public function flatBranchFromItem(): array
+    {
+        if (!$this->isSkos || $this->isScheme()) {
+            return [];
+        }
+        $result = [];
+        $result[$this->itemId] = [
+            'self' => $this->returnItem ? $this->item : $this->structure[$this->itemId] ?? null,
+            'level' => 0,
+        ];
+        return $this->recursiveFlatBranch($this->structure[$this->itemId] ?? null, $result, 1);
     }
 
     /**

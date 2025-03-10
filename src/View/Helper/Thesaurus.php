@@ -425,23 +425,13 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
-     * Get the flat hierarchy branch of this item, self included.
+     * Get the flat hierarchy branch of this item from top to self descendants.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::flatBranch()
      */
     public function flatBranch(): array
     {
         return $this->thesaurus->flatBranch();
-    }
-
-    /**
-     * Get the flat hierarchy branch of this item from top to self descendants.
-     *
-     * @uses \Thesaurus\Stdlib\Thesaurus::flatBranchFromTop()
-     */
-    public function flatBranchFromTop(): array
-    {
-        return $this->thesaurus->flatBranchFromTop();
     }
 
     /**
@@ -453,6 +443,16 @@ class Thesaurus extends AbstractHelper
     public function flatBranchNoTop(): array
     {
         return $this->thesaurus->flatBranchNoTop();
+    }
+
+    /**
+     * Get the flat hierarchy branch from this item, self included.
+     *
+     * @uses \Thesaurus\Stdlib\Thesaurus::flatBranchFromItem()
+     */
+    public function flatBranchFromItem(): array
+    {
+        return $this->thesaurus->flatBranchFromItem();
     }
 
     /**
