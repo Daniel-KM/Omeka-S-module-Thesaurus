@@ -255,6 +255,17 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
+     * Get the broader concept of this item, with self last.
+     *
+     * @uses \Thesaurus\Stdlib\Thesaurus::broaderOrSelf()
+     * @return ItemRepresentation[]|array
+     */
+    public function broaderOrSelf()
+    {
+        return $this->thesaurus->broaderOrSelf();
+    }
+
+    /**
      * Get the narrower concepts of this item.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::narrowers()

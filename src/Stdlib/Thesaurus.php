@@ -513,6 +513,27 @@ class Thesaurus
     }
 
     /**
+     * Get the broader concept of this item, with self last.
+     *
+     * @return ItemRepresentation[]|array
+     */
+    public function broaderOrSelf()
+    {
+        if (!$this->isSkos || $this->isScheme()) {
+            return [];
+        }
+        $broader = $this->broader();
+        if (!$broader) {
+            return $this->selfItem();
+        }
+        $broaders = $this->returnItem
+            ? [$broader->id() => $broader]
+            : [$broader['id'] => $broader];
+        return $broaders
+            + $this->selfItem();
+    }
+
+    /**
      * Get the narrower concepts of this item.
      *
      * @return ItemRepresentation[]|array
