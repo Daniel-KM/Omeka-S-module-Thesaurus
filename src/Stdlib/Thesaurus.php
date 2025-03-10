@@ -1107,7 +1107,7 @@ class Thesaurus
     }
 
     /**
-     * Get a linked resource of this item for a term.
+     * Get first linked resource of this item for a term.
      *
      * @param ItemRepresentation $item
      * @param string $term
@@ -1118,8 +1118,12 @@ class Thesaurus
         if (isset($values[$term])) {
             /** @var \Omeka\Api\Representation\ValueRepresentation $value */
             foreach ($values[$term]['values'] as $value) {
-                if (in_array($value->type(), ['resource', 'resource:item'])) {
-                    return $value->valueResource();
+                // Check if the value is a resource (type "resource" and
+                // "resource:item", but may be a custom vocab resource.
+                // Check for private resources too.
+                $vr = $value->valueResource();
+                if ($vr instanceof ItemRepresentation) {
+                    return $vr;
                 }
             }
         }
@@ -1146,7 +1150,7 @@ class Thesaurus
      *
      * @param ItemRepresentation $item
      * @param string $term
-     * @return ItemRepresentation[]
+     * @return ItemRepresentation[] Items are indexed by id.
      */
     protected function resourcesItemsFromValue(ItemRepresentation $item, $term): array
     {
@@ -1155,12 +1159,13 @@ class Thesaurus
         if (isset($values[$term])) {
             /** @var \Omeka\Api\Representation\ValueRepresentation $value */
             foreach ($values[$term]['values'] as $value) {
-                if (in_array($value->type(), ['resource', 'resource:item'])) {
-                    // Manage private resources.
-                    if ($resource = $value->valueResource()) {
-                        // Manage duplicates.
-                        $result[$resource->id()] = $resource;
-                    }
+                // Check if the value is a resource (type "resource" and
+                // "resource:item", but may be a custom vocab resource.
+                // Check for private resources too.
+                $vr = $value->valueResource();
+                if ($vr instanceof ItemRepresentation) {
+                    // The use of id manages duplicates too.
+                    $result[$vr->id()] = $vr;
                 }
             }
         }
