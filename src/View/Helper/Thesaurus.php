@@ -435,6 +435,16 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
+     * Get the flat hierarchy branch of this item from top to self descendants.
+     *
+     * @uses \Thesaurus\Stdlib\Thesaurus::flatBranchFromTop()
+     */
+    public function flatBranchFromTop(): array
+    {
+        return $this->thesaurus->flatBranchFromTop();
+    }
+
+    /**
      * Get the really flat hierarchy of this item from the top concepts.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::simpleTree()

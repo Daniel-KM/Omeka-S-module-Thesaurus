@@ -698,6 +698,9 @@ class Thesaurus
         }
         $result = [];
         $top = $this->top();
+        if (!$top) {
+            return $result;
+        }
         if ($this->returnItem) {
             $result[$top->id()] = [
                 'self' => $top,
@@ -805,6 +808,33 @@ class Thesaurus
             'level' => 0,
         ];
         return $this->recursiveFlatBranch($this->structure[$this->itemId] ?? null, $result, 1);
+    }
+
+    /**
+     * Get the flat hierarchy branch of this item from top to self descendants.
+     */
+    public function flatBranchFromTop(): array
+    {
+        if (!$this->isSkos || $this->isScheme()) {
+            return [];
+        }
+        $result = [];
+        $top = $this->top();
+        if (!$top) {
+            return $result;
+        }
+        if ($this->returnItem) {
+            $result[$top->id()] = [
+                'self' => $top,
+                'level' => 0,
+            ];
+            return $this->recursiveFlat($this->structure[$top->id()], $result, 1);
+        }
+        $result[$top['id']] = [
+            'self' => $top,
+            'level' => 0,
+        ];
+        return $this->recursiveFlatBranch($top, $result, 1);
     }
 
     /**
