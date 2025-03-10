@@ -838,6 +838,18 @@ class Thesaurus
     }
 
     /**
+     * Get the flat branch of this item without top concept, self included,
+     * except if it is the top.
+     */
+    public function flatBranchNoTop(): array
+    {
+        $branch = $this->flatBranchNoTop();
+        $key = key($branch);
+        unset($branch[$key]);
+        return $branch;
+    }
+
+    /**
      * Get the really flat hierarchy of this item from the top concepts.
      */
     public function simpleTree(): array

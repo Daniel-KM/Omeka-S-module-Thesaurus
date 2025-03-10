@@ -445,6 +445,17 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
+     * Get the flat branch of this item without top concept, self included,
+     * except if it is the top.
+     *
+     * @uses \Thesaurus\Stdlib\Thesaurus::flatBranchNoTop()
+     */
+    public function flatBranchNoTop(): array
+    {
+        return $this->thesaurus->flatBranchNoTop();
+    }
+
+    /**
      * Get the really flat hierarchy of this item from the top concepts.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::simpleTree()
