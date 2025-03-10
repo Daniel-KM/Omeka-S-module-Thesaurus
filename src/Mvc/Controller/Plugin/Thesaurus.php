@@ -202,9 +202,10 @@ class Thesaurus extends AbstractPlugin
     }
 
     /**
-     * Get the current item as array (may be empty).
+     * Get the current item as an array with a single element (may be empty).
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::selfItem()
+     * @return ItemRepresentation[]|array
      */
     public function selfItem(): array
     {

@@ -20,6 +20,9 @@ use Omeka\Entity\User;
  * Manage a thesaurus via an item and sub-items.
  *
  * @todo Implement a tree iterator.
+ *
+ * Note: items are not stored statically, because doctrine should manage them
+ * and it is recommended not to use them.
  */
 class Thesaurus
 {
@@ -27,10 +30,11 @@ class Thesaurus
 
     const VOCABULARY_NAMESPACE = 'http://www.w3.org/2004/02/skos/core#';
     const VOCABULARY_PREFIX = 'skos';
-    const ROOT_CLASS = 'skos:ConceptScheme';
-    const ITEM_CLASS = 'skos:Concept';
-    const PARENT_TERM = 'skos:broader';
-    const CHILD_TERM = 'skos:narrower';
+    const CLASS_ROOT = 'skos:ConceptScheme';
+    const CLASS_ELEMENT = 'skos:Concept';
+    const PROPERTY_PARENT = 'skos:broader';
+    const PROPERTY_CHILD = 'skos:narrower';
+    const PROPERTY_RELATED = 'skos:related';
 
     /**
      * @var \Omeka\Api\Manager
@@ -205,7 +209,7 @@ class Thesaurus
                     // TODO Api read with item set.
                     $itemOrItemSetOrId = $this->api->search('items', [
                         'item_set_id' => $itemOrItemSetOrId->id(),
-                        'resource_class_id' => $this->terms['class'][self::ROOT_CLASS],
+                        'resource_class_id' => $this->terms['class'][self::CLASS_ROOT],
                         'limit' => 1,
                     ], ['initialize' => false])->getContent();
                     $itemOrItemSetOrId = count($itemOrItemSetOrId) ? reset($itemOrItemSetOrId) : null;
@@ -379,7 +383,7 @@ class Thesaurus
     public function isScheme(): bool
     {
         if (is_null($this->isScheme)) {
-            $this->isScheme = $this->resourceClassName($this->item) === self::ROOT_CLASS
+            $this->isScheme = $this->resourceClassName($this->item) === self::CLASS_ROOT
                 || isset($this->item->values()['skos:hasTopConcept']);
         }
         return $this->isScheme;
@@ -392,12 +396,12 @@ class Thesaurus
     public function isConcept(): bool
     {
         if (is_null($this->isConcept)) {
-            if ($this->resourceClassName($this->item) === self::ITEM_CLASS) {
+            if ($this->resourceClassName($this->item) === self::CLASS_ELEMENT) {
                 $this->isConcept = true;
             } else {
                 $values = $this->item->values();
-                $this->isConcept = isset($values[self::PARENT_TERM])
-                    || isset($values[self::CHILD_TERM])
+                $this->isConcept = isset($values[self::PROPERTY_PARENT])
+                    || isset($values[self::PROPERTY_CHILD])
                     || isset($values['skos:topConceptOf']);
             }
         }
@@ -450,12 +454,16 @@ class Thesaurus
     }
 
     /**
-     * Get the current item as array (may be empty).
+     * Get the current item as an array with a single element (may be empty).
+     *
+     * @return ItemRepresentation[]|array
      */
     public function selfItem(): array
     {
         if ($this->returnItem) {
-            return $this->item ? [$this->itemId => $this->item] : [];
+            return $this->item
+                ? [$this->itemId => $this->item]
+                : [];
         }
         // Normally it should be always set, but issue may occur.
         return isset($this->structure[$this->itemId])
@@ -483,7 +491,7 @@ class Thesaurus
      */
     public function tops(): array
     {
-        return $this->returnFromData($this->tops);
+        return $this->returnResourcesFromData($this->tops);
     }
 
     /**
@@ -496,7 +504,7 @@ class Thesaurus
     public function top()
     {
         return $this->isSkos && $this->isConcept()
-            ? $this->returnFromData($this->ancestor($this->structure[$this->itemId] ?? null))
+            ? $this->returnResourcesFromData($this->ancestor($this->structure[$this->itemId] ?? null))
             : null;
     }
 
@@ -508,7 +516,7 @@ class Thesaurus
     public function broader()
     {
         return $this->isSkos && $this->isConcept()
-            ? $this->returnFromData($this->parent($this->structure[$this->itemId] ?? null))
+            ? $this->returnResourcesFromData($this->parent($this->structure[$this->itemId] ?? null))
             : null;
     }
 
@@ -541,7 +549,7 @@ class Thesaurus
     public function narrowers(): array
     {
         return $this->isSkos && $this->isConcept()
-            ? $this->returnFromData($this->children($this->structure[$this->itemId] ?? null))
+            ? $this->returnResourcesFromData($this->children($this->structure[$this->itemId] ?? null))
             : [];
     }
 
@@ -570,8 +578,8 @@ class Thesaurus
             return [];
         }
         return $this->returnItem
-            ? $this->resourcesItemsFromValue($this->structure[$this->itemId] ?? null, 'skos:related')
-            : $this->resourcesFromValue($this->structure[$this->itemId] ?? null, 'skos:related');
+            ? $this->resourcesItemsFromValue($this->structure[$this->itemId] ?? null, self::PROPERTY_RELATED)
+            : $this->resourcesFromValue($this->structure[$this->itemId] ?? null, self::PROPERTY_RELATED);
     }
 
     /**
@@ -619,7 +627,7 @@ class Thesaurus
         // Don't use $this->broader() in order to keep data.
         $broader = $this->parent($this->structure[$this->itemId] ?? null);
         return $broader
-            ? $this->returnFromData($this->children($broader))
+            ? $this->returnResourcesFromData($this->children($broader))
             : [];
     }
 
@@ -633,7 +641,7 @@ class Thesaurus
         if (!$this->isSkos || !$this->isConcept()) {
             return [];
         }
-        $result = $this->returnFromData($this->ancestors($this->structure[$this->itemId] ?? null));
+        $result = $this->returnResourcesFromData($this->ancestors($this->structure[$this->itemId] ?? null));
         return $fromTop
             ? array_reverse($result, true)
             : $result;
@@ -662,7 +670,7 @@ class Thesaurus
     public function descendants(): array
     {
         return $this->isSkos && $this->isConcept()
-            ? $this->returnFromData($this->listDescendants($this->structure[$this->itemId] ?? null))
+            ? $this->returnResourcesFromData($this->listDescendants($this->structure[$this->itemId] ?? null))
             : [];
     }
 
@@ -1619,7 +1627,7 @@ class Thesaurus
             // Use array collections is quicker and allows to pass types.
             ->setParameters(new ArrayCollection([
                 // new Parameter('propertyInScheme', $this->terms['property']['skos:inScheme'], ParameterType::INTEGER),
-                new Parameter('propertyBroader', $this->terms['property']['skos:broader'], ParameterType::INTEGER),
+                new Parameter('propertyBroader', $this->terms['property'][self::PROPERTY_PARENT], ParameterType::INTEGER),
                 // new Parameter('concept', $this->terms['class']['skos:Concept'], ParameterType::INTEGER),
                 // new Parameter('scheme', $this->scheme->id(), ParameterType::INTEGER),
                 new Parameter('concepts', $concepts, \Doctrine\DBAL\Connection::PARAM_INT_ARRAY),
@@ -1666,7 +1674,7 @@ class Thesaurus
             ->groupBy('item.id')
             ->addOrderBy('item.id', 'ASC')
             ->setParameters(new ArrayCollection([
-                new Parameter('propertyNarrower', $this->terms['property']['skos:narrower'], ParameterType::INTEGER),
+                new Parameter('propertyNarrower', $this->terms['property'][self::PROPERTY_CHILD], ParameterType::INTEGER),
                 new Parameter('concepts', $concepts, \Doctrine\DBAL\Connection::PARAM_INT_ARRAY),
             ]));
 
@@ -1718,7 +1726,7 @@ class Thesaurus
      * @return array|null|ItemRepresentation When multiple, items are listed
      *   with their id.
      */
-    protected function returnFromData(?array $data)
+    protected function returnResourcesFromData(?array $data)
     {
         // When data is an empty array, it is not possible to determine if it is
         // a single data or a list of data, so output array in any case.
