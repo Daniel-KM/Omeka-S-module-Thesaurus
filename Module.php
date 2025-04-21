@@ -381,7 +381,7 @@ class Module extends AbstractModule
             }
             $valuesAlias = $adapter->createAlias();
             $itemIds = is_array($vals)
-                ? array_filter(array_map('intval', $vals))
+                ? array_values(array_filter(array_map('intval', $vals)))
                 : array_filter([(int) $vals]);
             if (!$itemIds) {
                 // Return no value when error.
