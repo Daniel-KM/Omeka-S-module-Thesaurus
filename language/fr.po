@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-03 00:00+0000\n"
+"POT-Creation-Date: 2025-04-21 00:00+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Daniel Berthereau <Daniel.fr@Berthereau.net>\n"
 "Language-Team: \n"
@@ -169,16 +169,12 @@ msgstr ""
 #: data/scripts/upgrade.php:230
 msgid ""
 "The template files for the block Thesaurus should be moved from \"view/"
-"common/block-layout\" to \"view/common/block-template\" in your themes. This "
-"process can be done automatically via a task of the module Easy Admin before "
-"upgrading the module (important: backup your themes first). You may check "
-"your themes for pages: {json}"
+"common/block-layout\" to \"view/common/block-template\" in your themes. You "
+"may check your themes for pages: {json}"
 msgstr ""
-"Les fichiers de gabarit du bloc Thesaurus doivent être déplacés de should be "
-"moved from \"« view/common/block-layout » à « view/common/block-template » "
-"dans vos thèmes. Ce traitement peut être réalisé automatiquement via une "
-"tâche du module Easy Admin avant la mise à jour du module (important : "
-"sauvegardez vos thèmes d’abord). Vous pouvez vérifier les pages : {json}"
+"Les fichiers de gabarit du bloc Thesaurus doivent être déplacés de « view/"
+"common/block-layout » vers « view/common/block-template » dans vos thèmes. "
+"Vous pouvez vérifier les pages : {json}"
 
 #: Module.php:60
 msgid ""
@@ -1010,7 +1006,7 @@ msgstr ""
 "Mise à jour des concepts en arrière-plan ({link}tâche #{job_id}{link_end}, "
 "{link_log}journaux{link_end})."
 
-#: src/Stdlib/Thesaurus.php:320
+#: src/Stdlib/Thesaurus.php:324
 msgid ""
 "Thesaurus based on item #{item_id} does not exist or is not available to "
 "current user."
@@ -1018,13 +1014,13 @@ msgstr ""
 "Le thésaurus basé sur l’article #{item_id} n’existe pas ou n’est pas "
 "disponible pour l’utilisateur actuel."
 
-#: src/Stdlib/Thesaurus.php:912 src/Stdlib/Thesaurus.php:1263
-#: src/Stdlib/Thesaurus.php:1291 src/Stdlib/Thesaurus.php:1318
-#: src/Stdlib/Thesaurus.php:1350
+#: src/Stdlib/Thesaurus.php:983 src/Stdlib/Thesaurus.php:1339
+#: src/Stdlib/Thesaurus.php:1367 src/Stdlib/Thesaurus.php:1394
+#: src/Stdlib/Thesaurus.php:1426
 msgid "There cannot be more than {total} levels of descendants."
 msgstr "Il ne peut pas y avoir plus de {total} niveaux de descendants."
 
-#: src/Stdlib/Thesaurus.php:1036
+#: src/Stdlib/Thesaurus.php:1107
 msgid ""
 "At least one descriptor (\"{title}\") contains the separator \"{value}\". "
 "You must change it."
@@ -1032,7 +1028,7 @@ msgstr ""
 "Au moins un descripteur (« {title} ») contient le séparateur « {value} ». "
 "Vous devez le modifier."
 
-#: src/Stdlib/Thesaurus.php:1212 src/Stdlib/Thesaurus.php:1236
+#: src/Stdlib/Thesaurus.php:1288 src/Stdlib/Thesaurus.php:1312
 msgid "There cannot be more than {total} ancestors."
 msgstr "Il ne peut pas y avoir plus de {total} ancêtres."
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-03 00:00+0000\n"
+"POT-Creation-Date: 2025-04-21 00:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -151,10 +151,8 @@ msgstr ""
 #: data/scripts/upgrade.php:230
 msgid ""
 "The template files for the block Thesaurus should be moved from \"view/"
-"common/block-layout\" to \"view/common/block-template\" in your themes. This "
-"process can be done automatically via a task of the module Easy Admin before "
-"upgrading the module (important: backup your themes first). You may check "
-"your themes for pages: {json}"
+"common/block-layout\" to \"view/common/block-template\" in your themes. You "
+"may check your themes for pages: {json}"
 msgstr ""
 
 #: Module.php:60
@@ -926,25 +924,25 @@ msgid ""
 "logs{link_end})."
 msgstr ""
 
-#: src/Stdlib/Thesaurus.php:320
+#: src/Stdlib/Thesaurus.php:324
 msgid ""
 "Thesaurus based on item #{item_id} does not exist or is not available to "
 "current user."
 msgstr ""
 
-#: src/Stdlib/Thesaurus.php:912 src/Stdlib/Thesaurus.php:1263
-#: src/Stdlib/Thesaurus.php:1291 src/Stdlib/Thesaurus.php:1318
-#: src/Stdlib/Thesaurus.php:1350
+#: src/Stdlib/Thesaurus.php:983 src/Stdlib/Thesaurus.php:1339
+#: src/Stdlib/Thesaurus.php:1367 src/Stdlib/Thesaurus.php:1394
+#: src/Stdlib/Thesaurus.php:1426
 msgid "There cannot be more than {total} levels of descendants."
 msgstr ""
 
-#: src/Stdlib/Thesaurus.php:1036
+#: src/Stdlib/Thesaurus.php:1107
 msgid ""
 "At least one descriptor (\"{title}\") contains the separator \"{value}\". "
 "You must change it."
 msgstr ""
 
-#: src/Stdlib/Thesaurus.php:1212 src/Stdlib/Thesaurus.php:1236
+#: src/Stdlib/Thesaurus.php:1288 src/Stdlib/Thesaurus.php:1312
 msgid "There cannot be more than {total} ancestors."
 msgstr ""
 
