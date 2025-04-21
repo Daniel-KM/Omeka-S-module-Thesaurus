@@ -59,7 +59,7 @@ class IndexThesaurus extends AbstractJob
         $this->api = $services->get('Omeka\ApiManager');
 
         /** @var \Omeka\Settings\Settings $settings */
-        $settings = $services->get('Omeka\ApiManager');
+        $settings = $services->get('Omeka\Settings');
 
         $schemeIds = $this->getArg('schemes') ?: [];
         $schemeId = (int) $this->getArg('scheme');
