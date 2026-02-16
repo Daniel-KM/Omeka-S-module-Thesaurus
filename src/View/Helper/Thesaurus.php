@@ -557,7 +557,7 @@ class Thesaurus extends AbstractHelper
      */
     public function asSelect(?array $options = null): ?\Thesaurus\Form\Element\ThesaurusSelect
     {
-        if (is_null($options)) {
+        if ($options === null) {
             $options = [];
         }
         /** @var \Thesaurus\Form\Element\ThesaurusSelect $select */

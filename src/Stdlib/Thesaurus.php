@@ -268,7 +268,7 @@ class Thesaurus
             return null;
         }
 
-        if (!is_null($this->itemSet)) {
+        if ($this->itemSet !== null) {
             return $this->itemSet ?: null;
         }
 
@@ -362,7 +362,7 @@ class Thesaurus
      */
     public function isSkos(): bool
     {
-        if (is_null($this->isSkos)) {
+        if ($this->isSkos === null) {
             $class = $this->resourceClassName($this->item);
             $this->isSkos = strpos($class, 'skos:') === 0;
             if (!$this->isSkos) {
@@ -382,7 +382,7 @@ class Thesaurus
      */
     public function isScheme(): bool
     {
-        if (is_null($this->isScheme)) {
+        if ($this->isScheme === null) {
             $this->isScheme = $this->resourceClassName($this->item) === self::CLASS_ROOT
                 || isset($this->item->values()['skos:hasTopConcept']);
         }
@@ -395,7 +395,7 @@ class Thesaurus
      */
     public function isConcept(): bool
     {
-        if (is_null($this->isConcept)) {
+        if ($this->isConcept === null) {
             if ($this->resourceClassName($this->item) === self::CLASS_ELEMENT) {
                 $this->isConcept = true;
             } else {
@@ -425,7 +425,7 @@ class Thesaurus
      */
     public function isCollection(bool $strict = false): bool
     {
-        if (is_null($this->isCollection)) {
+        if ($this->isCollection === null) {
             if ($strict) {
                 $this->isScheme = $this->resourceClassName($this->item) === 'skos:Collection'
                     || isset($this->item->values()['skos:member']);
@@ -446,7 +446,7 @@ class Thesaurus
      */
     public function isOrderedCollection(): bool
     {
-        if (is_null($this->isOrderedCollection)) {
+        if ($this->isOrderedCollection === null) {
             $this->isScheme = $this->resourceClassName($this->item) === 'skos:OrderedCollection'
                 || isset($this->item->values()['skos:memberList']);
         }
@@ -476,7 +476,7 @@ class Thesaurus
      */
     public function scheme(): ?ItemRepresentation
     {
-        if (is_null($this->scheme)) {
+        if ($this->scheme === null) {
             $this->scheme = $this->isScheme()
                 ? $this->item
                 : $this->resourceFromValue($this->item, 'skos:inScheme');
@@ -1740,7 +1740,7 @@ class Thesaurus
     {
         // When data is an empty array, it is not possible to determine if it is
         // a single data or a list of data, so output array in any case.
-        if (!$this->returnItem || is_null($data) || !count($data)) {
+        if (!$this->returnItem || $data === null || !count($data)) {
             return $data;
         }
 

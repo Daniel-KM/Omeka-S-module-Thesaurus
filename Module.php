@@ -647,7 +647,7 @@ SQL;
     {
         static $static;
 
-        if (!is_null($static)) {
+        if ($static !== null) {
             return $static;
         }
 
