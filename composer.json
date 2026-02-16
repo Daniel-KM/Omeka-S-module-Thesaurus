@@ -1,29 +1,33 @@
 {
     "name": "daniel-km/omeka-s-module-thesaurus",
-    "description": "Thesaurus (module for Omeka S)",
-    "type": "library",
+    "type": "omeka-s-module",
+    "description": "Module for Omeka S: Manage a standard thesaurus (ontology skos) to describe documents with a tree structure.",
+    "keywords": [
+        "Omeka S",
+        "Omeka S module",
+        "thesaurus",
+        "taxonomy",
+        "glossary",
+        "lexicon",
+        "tree view",
+        "indexing",
+        "hierarchic list"
+    ],
     "license": "CECILL-2.1",
+    "homepage": "https://gitlab.com/Daniel-KM/Omeka-S-module-Thesaurus",
     "authors": [
         {
             "name": "Daniel Berthereau",
             "email": "Daniel.packagist@Berthereau.net"
         }
     ],
-    "homepage": "https://gitlab.com/Daniel-KM/Omeka-S-module-Thesaurus",
     "support": {
         "issues": "https://gitlab.com/Daniel-KM/Omeka-S-module-Thesaurus/-/issues",
         "forum": "https://forum.omeka.org/"
     },
-    "keywords": [
-        "Omeka S",
-        "module",
-        "indexing",
-        "glossary",
-        "tree view",
-        "lexicon"
-    ],
-    "require-dev": {
-        "biblibre/omeka-s-test-helper": "dev-master"
+    "_require (not set until Omeka S merges PR #2412)": {
+        "omeka/omeka-s": "^4.1",
+        "daniel-km/omeka-s-module-common": "*"
     },
     "autoload": {
         "psr-4": {
@@ -32,7 +36,10 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "ThesaurusTest\\": "test/ThesaurusTest/"
+            "ThesaurusTest\\": "tests/ThesaurusTest/"
         }
+    },
+    "extra": {
+        "installer-name": "Thesaurus"
     }
 }
