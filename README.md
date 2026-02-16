@@ -48,6 +48,15 @@ the module to `Thesaurus`.
 
 Then install it like any other Omeka module and follow the config instructions.
 
+* For test
+
+The module includes a comprehensive test suite with unit and functional tests.
+Run them from the root of Omeka:
+
+```sh
+vendor/bin/phpunit -c modules/Thesaurus/phpunit.xml --testdox
+```
+
 
 Usage
 -----
