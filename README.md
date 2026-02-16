@@ -303,7 +303,7 @@ altered, and that no provisions are either added or removed herefrom.
 Copyright
 ---------
 
-* Copyright Daniel Berthereau, 2018-2025 (see [Daniel-KM] on GitLab)
+* Copyright Daniel Berthereau, 2018-2026 (see [Daniel-KM] on GitLab)
 
 First version of this module was developed for the project [Ontologie du christianisme médiéval en images]
 for the [Institut national d’histoire de l’art] (INHA). Improvements were done
