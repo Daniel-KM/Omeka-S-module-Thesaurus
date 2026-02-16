@@ -1709,6 +1709,7 @@ class Thesaurus
                 $this->tops[$id] = $value;
             }
         }
+        unset($value);
         foreach ($parents as $id => $parent) {
             $this->structure[$id]['parent'] = $parent;
         }
