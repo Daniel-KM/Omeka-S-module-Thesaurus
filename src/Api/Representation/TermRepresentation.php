@@ -18,14 +18,14 @@ class TermRepresentation extends AbstractEntityRepresentation
 
     public function getJsonLd()
     {
-        $scheme = $this->scheme()->getReference();
+        $scheme = $this->scheme()->getReference()->jsonSerialize();
         $json = [
-            'o:item' => $this->item()->getReference(),
+            'o:item' => $this->item()->getReference()->jsonSerialize(),
             'skos:inScheme' => $scheme,
         ];
         $broader = $this->broader();
         if ($broader) {
-            $json['skos:broader'] = $broader->getReference();
+            $json['skos:broader'] = $broader->getReference()->jsonSerialize();
         } else {
             $json['skos:topConceptOf'] = $scheme;
         }
@@ -34,7 +34,7 @@ class TermRepresentation extends AbstractEntityRepresentation
             $json['skos:narrowers'] = [];
             $adapter = $this->getAdapter();
             foreach ($narrowers as $entity) {
-                $json['skos:narrowers'][] = $adapter->getReference($entity);
+                $json['skos:narrowers'][] = $adapter->getReference($entity)->jsonSerialize();
             }
         }
         return $json;
