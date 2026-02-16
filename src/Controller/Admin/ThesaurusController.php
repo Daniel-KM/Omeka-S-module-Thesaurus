@@ -85,7 +85,11 @@ class ThesaurusController extends ItemController
                 /** @var \Omeka\Mvc\Controller\Plugin\Api $api */
                 $api = $this->api($form);
                 $id = (int) $this->params('id');
-                $scheme = $api->searchOne('items', ['id' => $id])->getContent();
+                try {
+                    $scheme = $this->api->read('items', ['id' => $id])->getContent();
+                } catch (\Exception $e) {
+                    $scheme = null;
+                }
                 if (!$scheme) {
                     $this->messenger()->addError(new PsrMessage(
                         'The item #{item_id} is not available.', // @translate

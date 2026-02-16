@@ -150,9 +150,14 @@ class LinkTerm extends AbstractHelper
      */
     public function itemFromData(?array $itemData = null): ?ItemRepresentation
     {
-        return $itemData
-            ? $this->api->searchOne('items', ['id' => $itemData['id']])->getContent()
-            : null;
+        if (!$itemData) {
+            return null;
+        }
+        try {
+            return $this->api->read('items', ['id' => $itemData['id']])->getContent();
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     /**

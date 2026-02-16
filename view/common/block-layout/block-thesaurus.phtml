@@ -9,11 +9,16 @@
 $escape = $this->plugin('escapeHtml');
 
 $params = parse_ini_string($params);
-$item = empty($params['item'])
-    ? null
-    : $this->api()->searchOne('items', ['id' => $params['item']])->getContent();
+if (empty($params['item'])) {
+    $item = null;
+} else {
+    try {
+        $item = $this->api()->read('items', ['id' => $params['item']])->getContent();
+    } catch (\Exception $e) {
+        $item = null;
+    }
+}
 $type = empty($params['type']) ? 'tree' : $params['type'];
-
 ?>
 
 <div class="block-simple">
