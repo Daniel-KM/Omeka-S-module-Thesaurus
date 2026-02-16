@@ -454,6 +454,7 @@ class CreateThesaurus extends AbstractJob
             // Store the data to create path and ascendance when needed.
             $levels[$level] = $newConceptIndex;
             $ascendance[$level] = $descriptor;
+            $ascendance = array_slice($ascendance, 0, $level + 1);
         }
 
         // Second loop to save descriptors, updating relations with real id.
@@ -684,6 +685,7 @@ class CreateThesaurus extends AbstractJob
 
             $levels[$level] = $conceptId;
             $ascendance[$level] = $descriptor;
+            $ascendance = array_slice($ascendance, 0, $level + 1);
 
             if ($level === 0) {
                 $topIds[] = $conceptId;
