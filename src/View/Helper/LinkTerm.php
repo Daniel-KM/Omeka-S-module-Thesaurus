@@ -136,8 +136,8 @@ class LinkTerm extends AbstractHelper
     public function urlBrowse($data): string
     {
         return is_object($data)
-            ? str_replace('__link_term_id__', (string) $data->id(), $this->templateUrl)
-            : str_replace('__link_term_id__', (string) $data['id'], $this->templateUrl);
+            ? strtr($this->templateUrl, ['__link_term_id__' => (string) $data->id()])
+            : strtr($this->templateUrl, ['__link_term_id__' => (string) $data['id']]);
     }
 
     /**
@@ -169,14 +169,14 @@ class LinkTerm extends AbstractHelper
             case 'term':
                 return $this->hyperlink->raw($termData['title'], $this->templateResourceUrl . $termData['id']);
             case 'resource':
-                return $this->hyperlink->raw($termData['title'], str_replace('__link_term_id__', (string) $termData['id'], $this->templateUrl));
+                return $this->hyperlink->raw($termData['title'], strtr($this->templateUrl, ['__link_term_id__' => (string) $termData['id']]));
             case 'none':
                 return $termData['title'];
             case 'both':
             default:
                 return $this->hyperlink->raw($termData['title'], $this->templateResourceUrl . $termData['id'])
                     . ' ('
-                    . $this->hyperlink->raw($this->options['browseString'], str_replace('__link_term_id__', (string) $termData['id'], $this->templateUrl))
+                    . $this->hyperlink->raw($this->options['browseString'], strtr($this->templateUrl, ['__link_term_id__' => (string) $termData['id']]))
                     . ')';
         }
     }
@@ -192,14 +192,14 @@ class LinkTerm extends AbstractHelper
             case 'term':
                 return $item->link($item->displayTitle());
             case 'resource':
-                return $this->hyperlink->raw($item->displayTitle(), str_replace('__link_term_id__', (string) $item->id(), $this->templateUrl));
+                return $this->hyperlink->raw($item->displayTitle(), strtr($this->templateUrl, ['__link_term_id__' => (string) $item->id()]));
             case 'none':
                 return $item->displayTitle();
             case 'both':
             default:
                 return $item->link($item->displayTitle())
                     . ' ('
-                    . $this->hyperlink->raw($this->options['browseString'], str_replace('__link_term_id__', (string) $item->id(), $this->templateUrl))
+                    . $this->hyperlink->raw($this->options['browseString'], strtr($this->templateUrl, ['__link_term_id__' => (string) $item->id()]))
                     . ')';
         }
     }

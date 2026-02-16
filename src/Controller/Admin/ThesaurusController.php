@@ -848,6 +848,8 @@ class ThesaurusController extends ItemController
 
     /**
      * Trim and clean string according to options.
+     *
+     * @todo Factorize the function trimAndCleanString() of ThesaurusController and CreateThesaurus;
      */
     protected function trimAndCleanString($string, array $params): string
     {
@@ -856,10 +858,10 @@ class ThesaurusController extends ItemController
             $string = trim($string, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
         }
         if (in_array('apostrophe', $params)) {
-            $string = str_replace("'", '’', $string);
+            $string = strtr($string, ["'" => '’']);
         }
         if (in_array('single_quote', $params)) {
-            $string = str_replace('’', "'", $string);
+            $string = strtr($string, ['’' => "'"]);
         }
         if (in_array('lowercase', $params)) {
             $string = mb_strtolower($string);
@@ -893,6 +895,6 @@ class ThesaurusController extends ItemController
      */
     protected function fixEndOfLine($string): string
     {
-        return str_replace(["\r\n", "\n\r", "\r"], ["\n", "\n", "\n"], (string) $string);
+        return strtr((string) $string, ["\r\n" => "\n", "\n\r" => "\n", "\r" => "\n"]);
     }
 }

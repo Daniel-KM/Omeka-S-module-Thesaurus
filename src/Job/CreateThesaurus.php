@@ -704,6 +704,8 @@ class CreateThesaurus extends AbstractJob
 
     /**
      * Trim and clean string according to options.
+     *
+     * @todo Factorize the function trimAndCleanString() of ThesaurusController and CreateThesaurus;
      */
     protected function trimAndCleanString($string, array $params): string
     {
@@ -712,10 +714,10 @@ class CreateThesaurus extends AbstractJob
             $string = trim($string, self::TRIM_PUNCTUATION);
         }
         if (in_array('apostrophe', $params)) {
-            $string = str_replace("'", '’', $string);
+            $string = strtr($string, ["'" => '’']);
         }
         if (in_array('single_quote', $params)) {
-            $string = str_replace('’', "'", $string);
+            $string = strtr($string, ['’' => "'"]);
         }
         if (in_array('lowercase', $params)) {
             $string = mb_strtolower($string);
