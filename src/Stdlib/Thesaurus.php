@@ -856,7 +856,7 @@ class Thesaurus
      */
     public function flatBranchNoTop(): array
     {
-        $branch = $this->flatBranchNoTop();
+        $branch = $this->flatBranch();
         $key = key($branch);
         unset($branch[$key]);
         return $branch;
