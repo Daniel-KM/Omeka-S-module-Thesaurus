@@ -1716,6 +1716,23 @@ class Thesaurus
             $this->structure[$id]['children'] = $childs;
         }
 
+        // Reorder tops according to skos:hasTopConcept values.
+        $scheme = $this->scheme();
+        if ($scheme && $this->tops) {
+            $values = $scheme->values();
+            if (isset($values['skos:hasTopConcept'])) {
+                $orderedTops = [];
+                foreach ($values['skos:hasTopConcept']['values'] as $value) {
+                    $vr = $value->valueResource();
+                    if ($vr && isset($this->tops[$vr->id()])) {
+                        $orderedTops[$vr->id()] = $this->tops[$vr->id()];
+                    }
+                }
+                // Preserve any tops not in hasTopConcept (safety).
+                $this->tops = $orderedTops + $this->tops;
+            }
+        }
+
         // Set the value isSkos, because it is used directly in many places.
         $this->isSkos();
 
