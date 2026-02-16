@@ -256,9 +256,9 @@ class ThesaurusController extends ItemController
                 'link' => sprintf('<a href="%s">', htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))),
                 'job_id' => $job->getId(),
                 'link_end' => '</a>',
-                'link_log' => class_exists('Log\Entity\Log')
+                'link_log' => class_exists('Log\Module', false)
                     ? sprintf('<a href="%1$s">', $this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]))
-                    : sprintf('<a href="%1$s">', $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()])),
+                    : sprintf('<a href="%1$s" target="_blank">', $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()])),
             ]
         );
         $message->setEscapeHtml(false);
@@ -490,9 +490,9 @@ class ThesaurusController extends ItemController
                 'link' => sprintf('<a href="%s">', htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))),
                 'job_id' => $job->getId(),
                 'link_end' => '</a>',
-                'link_log' => class_exists('Log\Entity\Log')
+                'link_log' => class_exists('Log\Module', false)
                     ? sprintf('<a href="%1$s">', $this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]))
-                    : sprintf('<a href="%1$s">', $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()])),
+                    : sprintf('<a href="%1$s" target="_blank">', $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()])),
             ]
         );
         $message->setEscapeHtml(false);
@@ -726,9 +726,9 @@ class ThesaurusController extends ItemController
                 'link' => sprintf('<a href="%s">', htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))),
                 'job_id' => $job->getId(),
                 'link_end' => '</a>',
-                'link_log' => class_exists('Log\Entity\Log')
+                'link_log' => class_exists('Log\Module', false)
                     ? sprintf('<a href="%1$s">', $this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]))
-                    : sprintf('<a href="%1$s">', $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()])),
+                    : sprintf('<a href="%1$s" target="_blank">', $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()])),
             ]
         );
         $message->setEscapeHtml(false);
@@ -760,9 +760,9 @@ class ThesaurusController extends ItemController
                 'link' => sprintf('<a href="%s">', htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))),
                 'job_id' => $job->getId(),
                 'link_end' => '</a>',
-                'link_log' => class_exists('Log\Entity\Log')
+                'link_log' => class_exists('Log\Module', false)
                     ? sprintf('<a href="%1$s">', $this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]]))
-                    : sprintf('<a href="%1$s">', $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()])),
+                    : sprintf('<a href="%1$s" target="_blank">', $this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()])),
             ]
         );
         $message->setEscapeHtml(false);

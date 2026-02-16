@@ -8,6 +8,8 @@ use Thesaurus\Stdlib\Thesaurus;
 /**
  * This select should extend CustomVocabSelect to be compliant with CustomVocab
  * representation.
+ *
+ * @todo Use Common vocab select ?
  */
 class CustomVocabSelect extends \CustomVocab\Form\Element\CustomVocabSelect
 {

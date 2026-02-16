@@ -270,6 +270,7 @@ class CreateThesaurus extends AbstractJob
             }
 
             $concept = $this->api->read('items', ['id' => $parentId])->getContent();
+            // TODO Don't use json_decode(json_encode()).
             $conceptJson = json_decode(json_encode($concept), true);
             foreach ($narrowerIds as $narrowerId) {
                 $conceptJson['skos:narrower'][] = [

@@ -2,7 +2,7 @@
 
 namespace Thesaurus;
 
-if (!class_exists(\Common\TraitModule::class)) {
+if (!class_exists('Common\TraitModule', false)) {
     require_once dirname(__DIR__) . '/Common/TraitModule.php';
 }
 
@@ -543,11 +543,11 @@ SQL;
 
         /**
          * @var int $conceptTemplateId
-         * @var ?string $propertyDescriptor
+         * @var string|null $propertyDescriptor
          * @var int $propertyDescriptorId
-         * @var ?string $propertyPath
+         * @var string|null $propertyPath
          * @var int $propertyPathId
-         * @var ?string $propertyAscendance
+         * @var string|null $propertyAscendance
          * @var int $propertyAscendanceId
          * @var string $separator
          */
