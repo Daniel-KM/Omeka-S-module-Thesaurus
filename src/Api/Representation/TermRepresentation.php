@@ -72,7 +72,9 @@ class TermRepresentation extends AbstractEntityRepresentation
         $adapter = $this->getAdapter();
         $entityManager = $adapter->getEntityManager();
         $connection = $entityManager->getConnection();
-        $qb = $entityManager->createQueryBuilder();
+        $qb = version_compare(\Omeka\Module::VERSION, '4.2.0', '<')
+            ? $entityManager->createQueryBuilder()
+            : $adapter->createQueryBuilder();
 
         $expr = $qb->expr();
 

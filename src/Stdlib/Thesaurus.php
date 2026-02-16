@@ -1515,6 +1515,16 @@ class Thesaurus
             ->cacheStructure();
     }
 
+    /**
+     * Create a query builder from adapter when possible (Omeka 4.2+).
+     */
+    protected function createQueryBuilder(): \Doctrine\ORM\QueryBuilder
+    {
+        return version_compare(\Omeka\Module::VERSION, '4.2.0', '<')
+            ? $this->entityManager->createQueryBuilder()
+            : $this->itemAdapter->createQueryBuilder();
+    }
+
     protected function cacheTerms(): self
     {
         if (count($this->terms) === 2) {
@@ -1585,11 +1595,11 @@ class Thesaurus
             'children' => [],
         ]);
 
-        $qb = $this->entityManager->createQueryBuilder();
+        $qb = $this->createQueryBuilder();
         $expr = $qb->expr();
 
         // Get all parents. Does not get items without parent (top).
-        $qb = $this->entityManager->createQueryBuilder()
+        $qb = $this->createQueryBuilder()
             ->select(
                 'item.id',
                 // There is only zero or one parent, but this is a grouped query.
@@ -1654,7 +1664,7 @@ class Thesaurus
 
         // Get all children.
         // See previous commits for full old query.
-        $qb = $this->entityManager->createQueryBuilder()
+        $qb = $this->createQueryBuilder()
             ->select(
                 'item.id',
                 'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource) ORDER BY value_list.id ASC) AS ids'
@@ -1739,7 +1749,7 @@ class Thesaurus
             $data = [$data['id'] => $data];
         }
 
-        $qb = $this->entityManager->createQueryBuilder();
+        $qb = $this->createQueryBuilder();
         $qb
             ->select('item')
             ->from(\Omeka\Entity\Item::class, 'item')
