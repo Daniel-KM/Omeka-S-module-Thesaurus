@@ -410,6 +410,9 @@ class ThesaurusController extends ItemController
 
         // TODO Check the file during validation inside the form.
 
+        // Decompress gzipped files (for example a GEMET ".rdf.gz" export).
+        $file = $this->decompressIfGzip($file);
+
         $fileCheck = $this->checkFile($file);
         if ($fileCheck === false) {
             $this->messenger()->addError(new PsrMessage(
@@ -1222,6 +1225,73 @@ class ThesaurusController extends ItemController
             'size' => strlen($content),
             'error' => \UPLOAD_ERR_OK,
         ];
+    }
+
+    /**
+     * Decompress a gzipped file into a new temporary file.
+     *
+     * The file is detected by its magic bytes, so the extension is not
+     * required. The ".gz" suffix is removed from the name, so the real
+     * extension can be detected. The original file is returned unchanged when
+     * it is not gzipped or when the decompression fails.
+     */
+    protected function decompressIfGzip(array $file): array
+    {
+        if (empty($file['tmp_name'])) {
+            return $file;
+        }
+
+        $handle = fopen($file['tmp_name'], 'rb');
+        if (!$handle) {
+            return $file;
+        }
+        $magic = fread($handle, 2);
+        fclose($handle);
+        if ($magic !== "\x1f\x8b") {
+            return $file;
+        }
+
+        // The zlib extension is bundled with php but not guaranteed (and not
+        // required by Omeka), so the gzipped file is left as is when missing.
+        if (!function_exists('gzopen')) {
+            $this->messenger()->addError(
+                'The php extension "zlib" is required to import a gzipped file.' // @translate
+            );
+            return $file;
+        }
+
+        $gz = gzopen($file['tmp_name'], 'rb');
+        if (!$gz) {
+            return $file;
+        }
+        $temp = tempnam(sys_get_temp_dir(), 'omk_theso_');
+        $out = fopen($temp, 'wb');
+        if (!$out) {
+            gzclose($gz);
+            return $file;
+        }
+        $size = 0;
+        while (!gzeof($gz)) {
+            $chunk = gzread($gz, 8192);
+            if ($chunk === false) {
+                break;
+            }
+            $size += fwrite($out, $chunk);
+        }
+        gzclose($gz);
+        fclose($out);
+
+        $name = (string) ($file['name'] ?? '');
+        if (substr(strtolower($name), -3) === '.gz') {
+            $name = substr($name, 0, -3);
+        }
+
+        $file['tmp_name'] = $temp;
+        $file['name'] = strlen($name) ? $name : 'thesaurus';
+        $file['type'] = '';
+        $file['size'] = $size;
+
+        return $file;
     }
 
     /**
