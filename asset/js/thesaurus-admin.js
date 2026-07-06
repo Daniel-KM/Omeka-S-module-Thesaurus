@@ -122,12 +122,15 @@ $(document).ready( function() {
             }).appendTo('#thesaurus-tree-form');
         }, this));
 
-    $('#tree-open-all').on('click', function () {
-        tree.jstree(true).open_all();
-    });
-
-    $('#tree-close-all').on('click', function () {
-        tree.jstree(true).close_all();
+    $('#tree-toggle-all').on('click', function () {
+        var $button = $(this);
+        if ($button.attr('data-state') === 'open') {
+            tree.jstree(true).close_all();
+            $button.attr('data-state', 'closed').text($button.attr('data-label-open'));
+        } else {
+            tree.jstree(true).open_all();
+            $button.attr('data-state', 'open').text($button.attr('data-label-close'));
+        }
     });
 
 });
