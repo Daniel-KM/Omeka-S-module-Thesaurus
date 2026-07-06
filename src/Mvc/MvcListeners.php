@@ -15,15 +15,22 @@ class MvcListeners extends AbstractListenerAggregate
 
     public function attach(EventManagerInterface $events, $priority = 1): void
     {
+        // Low priority: the route match is set by the core RouteListener at
+        // priority 1, so it must be read after it, else it may be null.
         $this->listeners[] = $events->attach(
             MvcEvent::EVENT_ROUTE,
-            [$this, 'handleThesaurus']
+            [$this, 'handleThesaurus'],
+            -100
         );
     }
 
     public function handleThesaurus(MvcEvent $event): void
     {
         $routeMatch = $event->getRouteMatch();
+        if (!$routeMatch) {
+            return;
+        }
+
         $matchedRouteName = $routeMatch->getMatchedRouteName();
         if (!in_array($matchedRouteName, ['admin/thesaurus', 'admin/thesaurus/default'])) {
             return;
@@ -37,6 +44,11 @@ class MvcListeners extends AbstractListenerAggregate
         /** @var \Omeka\Settings\Settings $settings */
         $settings = $event->getApplication()->getServiceManager()->get('Omeka\Settings');
         $classId = (int) $settings->get('thesaurus_skos_scheme_class_id');
+        // Without a scheme class, don't filter by resource_class_id = [0],
+        // which would return an empty list.
+        if (!$classId) {
+            return;
+        }
 
         $request = $event->getRequest();
         /** @var \Laminas\Stdlib\Parameters $query */
