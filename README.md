@@ -13,15 +13,15 @@ or a filing plan (_plan de classement_):
 - two resource templates are included to set the thesaurus scheme and each
   concept to allow to build the thesaurus as a list of items;
 - an admin view to manage the tree structure;
+- an import tool to build a thesaurus from a standard SKOS file (Unesco,
+  OpenTheso…) or a structured text file, by upload or by url;
 - a view helper to display the tree of concepts in the theme, or part of it;
-- a block template to display the thesaurus as a tree (via module [Block Plus]).
+- a site block to display the thesaurus as a tree, or part of it.
 
 The view helper can be used for any purpose, for example to build a hierarchical
 list of item sets, but this is not the main purpose.
 
 The thesaurus can be used to fill resources via the module [Custom Vocab].
-
-The thesaurus is available as a endpoint for [Value Suggest], through module [Value Suggest: Any].
 
 A future version may rely on ISO 25964 (Thesauri and interoperability with
 other vocabularies).
@@ -34,7 +34,7 @@ See general end user documentation for [installing a module].
 
 This module requires the module [Common], that should be installed first.
 
-Optional modules are [Custom Vocab] or [Value Suggest: Any], and [Block Plus].
+An optional module is [Custom Vocab].
 
 * From the zip
 
@@ -66,6 +66,60 @@ directly the terms of the ontology [skos].
 
 You can create a thesaurus in various ways.
 
+### Import a thesaurus (by file or url)
+
+The page "Thesaurus" in the admin has an "Import" button (route
+`/admin/thesaurus/convert`) that builds a thesaurus from a standard SKOS file or
+a structured text file.
+
+#### Source
+
+The source may be:
+
+- an uploaded file;
+- a remote url, for example an [OpenTheso] export (see below) or any published
+  SKOS file. The file is fetched by the server, so the server must be able to
+  reach it.
+
+Gzipped files (`.gz`, for example a [GEMET] export) are decompressed
+automatically when the php extension `zlib` is available. The maximum size of an
+uploaded file depends on the php settings `upload_max_filesize` and
+`post_max_size`; increase them to import a big thesaurus.
+
+All labels are normalized to Unicode NFC on import, so identical-looking labels
+are stored identically (no duplicates, reliable matching and truncation).
+
+#### Destination
+
+- **Preview**: display the flat list, to check it or to copy-paste it into a
+  custom vocab. From the same screen, the list can also be downloaded, or
+  imported as a custom vocab or a thesaurus (what you see is what is imported).
+- **Custom vocabulary**: create a custom vocab of type "terms". The terms can be
+  the full path ("Europe :: France :: Paris"), the indented label, or the leaf
+  label only.
+- **Thesaurus**: create the item set (skos:Collection), the scheme
+  (skos:ConceptScheme) and one item by concept (skos:Concept) with the
+  broader/narrower relations and the positions. Optionally, the linked custom
+  vocab (type "item set") can be created too.
+
+The properties used to fill the concepts (descriptor, path, ascendance) and the
+ascendance separator are set in the main settings of Omeka (tab "Thesaurus").
+
+#### Standard SKOS
+
+A standard SKOS file in RDF/XML, Turtle, JSON-LD or N-Triples, for example the
+[thesaurus of Unesco] or a thesaurus managed with [OpenTheso].
+
+For OpenTheso, the url of the rest api is built as
+`https://{host}/opentheso/openapi/v1/thesaurus/{idTheso}`. The list of the
+thesaurus of an instance (with their `idTheso`) is available at
+`https://{host}/opentheso/openapi/v1/thesaurus`. For example, the "Pactols
+Lieux" thesaurus of Frantiq is
+`https://pactols.frantiq.fr/opentheso/openapi/v1/thesaurus/th17`.
+
+Only the preferred labels and the hierarchy (broader/narrower) are imported for
+now (alternative labels and notes are skipped).
+
 ### Manual creation of a thesaurus
 
 Create first an item set with class "skos:Collection" or "skos:orderedCollection".
@@ -85,18 +139,14 @@ You can create your own thesaurus (or import it via module such [Bulk Import]).
 For that, use the integrated ontology `skos`, that contains the classes and the
 properties to manage items as concepts.
 
-### Create a thesaurus via the convert tool
+### Input file formats
 
-A button on the thesaurus page allows to convert a hierarchical list of
-descriptors into a flat list that can be used via a [Custom vocab] or into a
-list of concept items (recommended, because normalized and manageable).
-
-The input file may have various formats. Following tables can be created easily
-with a text editor or [LibreOffice] Calc.
+In addition to the standard SKOS above, the import tool supports structured text
+formats. They can be created easily with a text editor or [LibreOffice] Calc.
 
 #### Hierarchical text with tabulation offset
 
-In this mode, the tabulations indicate the hierarchy (see example for [countries](data/examples/countries.md)):
+In this mode, the tabulations indicate the hierarchy (see example for [countries](data/examples/countries.txt)):
 
 ```
 Europe
@@ -167,8 +217,11 @@ Asia :: Japan :: Tokyo
 A site block "Thesaurus" is available to include the thesaurus on any page, or a
 part of it (branch, narrowers, ascendants, descendants, etc.).
 
-A template is added for the simple block of module [Block Plus] too. Just set
-`item = id` where id is the thesaurus you want to display.
+
+French translation
+------------------
+
+The French translation of SKOS conforms to the [official translation].
 
 
 Development
@@ -220,13 +273,17 @@ where xxx is the thesaurus item id.
 It is possible to sort a query according to thesaurus items order with `sort_by=thesaurus&sort_thesaurus=xxx`,
 where xxx is the item id of the thesaurus.
 
-### Use with the module Collecting (old version)
+### Use with the module Collecting
 
-For the module Collecting, the select can be created manually too. You may need
-to use a [fork of the module Collecting], which commits will be integrated
-upstream soon.
+The module [Collecting] can collect a concept of a thesaurus directly. The
+simplest way is a prompt with the input type "Custom vocab" pointing to the
+custom vocab of the thesaurus.
 
-Then choose a property to fill, the input type "resource item", then the query:
+The old [fork of the module Collecting] is no more needed.
+
+A prompt with the input type "Item resource" and a resource query can be used
+too, in order to limit and to sort the proposed concepts. Choose a property to
+fill, the input type "Item resource", then the query:
 `resource_class_id[0]=xxx&property[0][joiner]=and&property[0][property]=skos:inScheme&property[0][type]=res&property[0][text]=yyy&sort_by=thesaurus&sort_thesaurus=yyy`.
 or in php:
 
@@ -315,12 +372,18 @@ of the French higher administrative court [Conseil d’État].
 [Thesaurus]: https://gitlab.com/Daniel-KM/Omeka-S-module-Thesaurus
 [skos]: https://www.w3.org/2004/02/skos
 [installing a module]: https://omeka.org/s/docs/user-manual/modules/#installing-modules
+[Thesaurus.zip]: https://gitlab.com/Daniel-KM/Omeka-S-module-Thesaurus/-/releases
 [Common]: https://gitlab.com/Daniel-KM/Omeka-S-module-Common
+[Bulk Import]: https://gitlab.com/Daniel-KM/Omeka-S-module-BulkImport
 [Custom Vocab]: https://github.com/omeka-s-modules/CustomVocab
 [Value Suggest]: https://github.com/omeka-s-modules/ValueSuggest
 [Value Suggest: Any]: https://gitlab.com/Daniel-KM/Omeka-S-module-ValueSuggestAny
-[Block Plus]: https://gitlab.com/Daniel-KM/Omeka-S-module-BlockPlus
+[official translation]: https://www.sparna.fr/skos/SKOS-traduction-francais.html
 [LibreOffice]: https://libreoffice.org
+[thesaurus of Unesco]: https://vocabularies.unesco.org/browser/thesaurus/
+[OpenTheso]: https://opentheso.hypotheses.org
+[GEMET]: https://www.eionet.europa.eu/gemet/
+[Collecting]: https://github.com/omeka-s-modules/Collecting
 [fork of the module Collecting]: https://gitlab.com/Daniel-KM/Omeka-S-module-Collecting
 [module issues]: https://gitlab.com/Daniel-KM/Omeka-S-module-Thesaurus/-/issues
 [CeCILL v2.1]: https://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html
