@@ -2,6 +2,7 @@
 
 namespace Thesaurus\Form;
 
+use Common\Form\Element as CommonElement;
 use Laminas\Form\Element;
 use Laminas\Form\Form;
 use Omeka\Form\Element as OmekaElement;
@@ -17,8 +18,8 @@ class ConvertForm extends Form
                 'name' => 'file',
                 'type' => Element\File::class,
                 'options' => [
-                    'label' => 'Thesaurus text file', // @translate
-                    'info' => 'The thesaurus is a simple txt file, with one concept by line, and tabulations to indicate the hierarchic level.', //@translate
+                    'label' => 'Source file', // @translate
+                    'info' => 'Standard SKOS (rdf, ttl, jsonld, nt), or a simple text file with one concept by line and tabulations or codes to indicate the hierarchic level (txt, csv, tsv).', // @translate
                 ],
                 'attributes' => [
                     'id' => 'file',
@@ -28,7 +29,7 @@ class ConvertForm extends Form
 
             ->add([
                 'name' => 'format',
-                'type' => Element\Radio::class,
+                'type' => CommonElement\OptionalRadio::class,
                 'options' => [
                     'label' => 'Input format', // @translate
                     'value_options' => [
@@ -41,7 +42,7 @@ class ConvertForm extends Form
                 ],
                 'attributes' => [
                     'id' => 'format',
-                    'value' => 'tab_offset',
+                    'value' => 'skos',
                 ],
             ])
 
@@ -67,7 +68,7 @@ class ConvertForm extends Form
                         // French.
                         // Equivalence: Used for / Employé pour.
                         'EP' => 'skos:altLabel',
-                        // HIerarchy: Broader term / Terme générique.
+                        // Hierarchy: Broader term / Terme générique.
                         // 'TG' => 'skos:broader',
                         // Hierarchy: Narrower term / Terme spécifique.
                         // 'TS' => 'skos:narrower',
@@ -105,7 +106,7 @@ class ConvertForm extends Form
 
             ->add([
                 'name' => 'clean',
-                'type' => Element\MultiCheckbox::class,
+                'type' => CommonElement\OptionalMultiCheckbox::class,
                 'options' => [
                     'label' => 'Clean input', // @translate
                     'value_options' => [
@@ -127,72 +128,60 @@ class ConvertForm extends Form
             ])
 
             ->add([
-                'name' => 'output',
-                'type' => Element\Select::class,
+                'name' => 'destination',
+                'type' => CommonElement\OptionalRadio::class,
                 'options' => [
-                    'label' => 'Output', // @translate
+                    'label' => 'Destination', // @translate
                     'value_options' => [
-                        'structure' => [
-                            'label' => 'Structure only (flat list for custom vocabulary)',
-                            'options' => [
-                                'text' => 'As text to copy paste', // @translate
-                                'file' => 'As file', // @translate
-                                'thesaurus' => 'As a new thesaurus (check as text first)', // @translate
-                            ],
-                        ],
-                        'thesaurus' => [
-                            'label' => 'Structure and semantical relations (when there are coded relations)',
-                            'options' => [
-                                'thesaurus_full' => 'As a new thesaurus', // @translate
-                            ],
-                        ],
+                        'preview' => 'Preview the flat list (to check or copy-paste)', // @translate
+                        'customvocab' => 'Custom vocabulary (list of terms)', // @translate
+                        'thesaurus' => 'Thesaurus (items with relations)', // @translate
                     ],
                 ],
                 'attributes' => [
-                    'id' => 'output',
-                    'value' => 'text',
+                    'id' => 'destination',
+                    'value' => 'preview',
                 ],
             ])
 
             ->add([
-                'name' => 'submit-upload',
-                'type' => Element\Button::class,
+                'name' => 'customvocab_label',
+                'type' => Element\Text::class,
                 'options' => [
-                    'label' => 'Upload thesaurus', // @translate
+                    'label' => 'Custom vocabulary label', // @translate
+                    'info' => 'Leave empty to use the file name.', // @translate
                 ],
                 'attributes' => [
-                    'id' => 'submit-upload',
-                    'type' => 'submit',
-                    'title' => 'Submit',
-                    'class' => 'button',
+                    'id' => 'customvocab_label',
                 ],
-            ]);
+            ])
 
-        $inputFilter = $this->getInputFilter();
-        $inputFilter
             ->add([
-                'name' => 'file',
-                'required' => true,
+                'name' => 'customvocab_format',
+                'type' => CommonElement\OptionalRadio::class,
+                'options' => [
+                    'label' => 'Custom vocabulary terms format', // @translate
+                    'value_options' => [
+                        'path' => 'Full path (Europe :: France :: Paris)', // @translate
+                        'indent' => 'Indented label', // @translate
+                        'label' => 'Leaf label only (may create duplicates)', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'customvocab_format',
+                    'value' => 'path',
+                ],
             ])
+
             ->add([
-                'name' => 'format',
-                'required' => false,
-            ])
-            ->add([
-                'name' => 'codes',
-                'required' => false,
-            ])
-            ->add([
-                'name' => 'skip_first_line',
-                'required' => false,
-            ])
-            ->add([
-                'name' => 'clean',
-                'required' => false,
-            ])
-            ->add([
-                'name' => 'output',
-                'required' => false,
+                'name' => 'create_customvocab',
+                'type' => CommonElement\OptionalCheckbox::class,
+                'options' => [
+                    'label' => 'Create the linked custom vocabulary (item set)', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'create_customvocab',
+                ],
             ]);
     }
 }

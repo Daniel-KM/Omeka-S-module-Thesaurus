@@ -1,7 +1,10 @@
 <?php
 /**
  * @var \Laminas\View\Renderer\PhpRenderer $this
- * @var array $result
+ * @var array $result Flat list as an array of lines.
+ * @var string $resultString Flat list as a string.
+ * @var string $name
+ * @var bool $hasCustomVocab
  */
 
 $plugins = $this->getHelperPluginManager();
@@ -11,19 +14,58 @@ $translate = $plugins->get('translate');
 $hyperlink = $plugins->get('hyperlink');
 
 $this->htmlElement('body')->appendAttribute('class', 'thesaurus tree convert');
+
+$canCreate = $this->userIsAllowed('Omeka\Api\Adapter\ItemAdapter', 'create');
+$action = $url('admin/thesaurus/default', ['action' => 'upload']);
 ?>
 
-<?= $this->pageTitle($translate('Flat'), 1, $translate('Thesaurus')) ?>
+<?= $this->pageTitle($translate('Preview'), 1, $translate('Thesaurus')) ?>
 
 <div id="page-actions">
-    <?php if ($this->userIsAllowed('Omeka\Api\Adapter\ItemAdapter', 'create')): ?>
-    <?= $hyperlink($translate('Convert'), $url('admin/thesaurus/default', ['action' => 'convert'], true), ['class' => 'button', 'title' => $translate('Convert a file into a thesaurus')]) ?>
-    <?= $hyperlink($translate('Add new item'), $url('admin/thesaurus/default', ['action' => 'add'], true), ['class' => 'button']) ?>
-    <?php endif; ?>
+    <?= $hyperlink($translate('Back to import'), $url('admin/thesaurus/default', ['action' => 'convert'], true), ['class' => 'button']) ?>
 </div>
 
-<ul>
+<p class="explanation">
+    <?= $translate('Preview of the flat list. Copy-paste it into a custom vocabulary, download it, or import it directly. What you see is what is imported.') ?>
+</p>
+
+<ul class="thesaurus-flat-list">
     <?php foreach ($result as $row): ?>
     <li><?= $escape($row) ?></li>
     <?php endforeach; ?>
 </ul>
+
+<?php if ($canCreate): ?>
+<form method="post" action="<?= $escape($action) ?>">
+    <input type="hidden" name="result" value="<?= $escape($resultString) ?>"/>
+    <input type="hidden" name="name" value="<?= $escape($name) ?>"/>
+
+    <div class="field">
+        <div class="field-meta">
+            <label for="preview-customvocab-label"><?= $translate('Custom vocabulary label') ?></label>
+        </div>
+        <div class="inputs">
+            <input type="text" id="preview-customvocab-label" name="customvocab_label" value="<?= $escape($name) ?>"/>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="field-meta">
+            <label for="preview-customvocab-format"><?= $translate('Custom vocabulary terms format') ?></label>
+        </div>
+        <div class="inputs">
+            <select id="preview-customvocab-format" name="customvocab_format">
+                <option value="path"><?= $translate('Full path (Europe :: France :: Paris)') ?></option>
+                <option value="indent"><?= $translate('Indented label') ?></option>
+                <option value="label"><?= $translate('Leaf label only (may create duplicates)') ?></option>
+            </select>
+        </div>
+    </div>
+
+    <button type="submit" name="submit-download" class="button"><?= $translate('Download the list') ?></button>
+    <?php if ($hasCustomVocab): ?>
+    <button type="submit" name="submit-customvocab" class="button"><?= $translate('Create the custom vocabulary') ?></button>
+    <?php endif; ?>
+    <button type="submit" name="submit-thesaurus" class="button"><?= $translate('Create the thesaurus') ?></button>
+</form>
+<?php endif; ?>

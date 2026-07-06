@@ -6,31 +6,47 @@
 
 $plugins = $this->getHelperPluginManager();
 $url = $plugins->get('url');
+$setting = $plugins->get('setting');
+$escape = $plugins->get('escapeHtml');
 $assetUrl = $plugins->get('assetUrl');
 $translate = $plugins->get('translate');
 
 $this->headLink()
     ->appendStylesheet($assetUrl('css/thesaurus-admin.css', 'Thesaurus'));
+$this->headScript()
+    ->appendFile($assetUrl('js/thesaurus-convert.js', 'Thesaurus'), 'text/javascript', ['defer' => 'defer']);
 
 $this->htmlElement('body')->appendAttribute('class', 'thesaurus tree convert');
 
 $form->prepare();
+
+$separator = $setting('thesaurus_separator', \Thesaurus\Module::SEPARATOR);
+$descriptor = $setting('thesaurus_property_descriptor', 'skos:prefLabel');
 ?>
 
-<?= $this->pageTitle($translate('Convert'), 1, $translate('Thesaurus')) ?>
+<?= $this->pageTitle($translate('Import a thesaurus'), 1, $translate('Thesaurus')) ?>
 
 <p class="explanation">
-    <?= $translate('Convert a list into a thesaurus.') ?>
-    <?= (new \Common\Stdlib\PsrMessage(
-        'Properties and separator should be set in {link}main settings{link_end}.', // @translate
-        [
-            'link' => sprintf('<a href="%s">', $url('admin/default', ['controller' => 'setting'], ['fragment' => 'thesaurus'])),
-            'link_end' => '</a>'
-        ]
-    ))->setTranslator($this->translator()) ?>
+    <?= $translate('Import a hierarchic list of concepts from a standard SKOS file or a structured text file. According to the chosen destination, the result can be previewed, imported as a custom vocabulary (list of terms), or imported as a thesaurus (items with relations).') ?>
 </p>
-<p>
-    <?= $this->form()->openTag($form) ?>
-    <?= $this->formCollection($form, false) ?>
-    <?= $this->form()->closeTag($form) ?>
-</p>
+
+<div class="thesaurus-general-options">
+    <p>
+        <?= (new \Common\Stdlib\PsrMessage(
+            'General options: separator "{separator}", descriptor "{descriptor}". {link}Edit settings{link_end}.', // @translate
+            [
+                'separator' => $separator,
+                'descriptor' => $descriptor,
+                'link' => sprintf('<a href="%s">', $escape($url('admin/default', ['controller' => 'setting'], ['fragment' => 'thesaurus']))),
+                'link_end' => '</a>',
+            ]
+        ))->setTranslator($this->translator()) ?>
+    </p>
+</div>
+
+<?= $this->form()->openTag($form) ?>
+<div id="page-actions">
+    <button type="submit" class="button"><?= $translate('Submit') ?></button>
+</div>
+<?= $this->formCollection($form, false) ?>
+<?= $this->form()->closeTag($form) ?>

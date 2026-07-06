@@ -308,6 +308,27 @@ class CreateThesaurus extends AbstractJob
         $indexing = new \Thesaurus\Job\IndexThesaurus($this->job, $services);
         $indexing->perform();
 
+        if ($this->getArg('create_customvocab')
+            && class_exists('CustomVocab\Module', false)
+        ) {
+            $label = mb_strtoupper(mb_substr($name, 0, 1)) . mb_substr($name, 1);
+            try {
+                $this->api->create('custom_vocabs', [
+                    'o:label' => $label,
+                    'o:item_set' => ['o:id' => $itemSet->id()],
+                ]);
+                $this->logger->notice(
+                    'The linked custom vocabulary "{label}" was created.', // @translate
+                    ['label' => $label]
+                );
+            } catch (\Exception $e) {
+                $this->logger->err(
+                    'Unable to create the linked custom vocabulary "{label}": {message}', // @translate
+                    ['label' => $label, 'message' => $e->getMessage()]
+                );
+            }
+        }
+
         $this->logger->notice(
             'The thesaurus "{name}" is ready, with {count} descriptors.', // @translate
             ['name' => ucfirst($name), 'count' => count($input)]

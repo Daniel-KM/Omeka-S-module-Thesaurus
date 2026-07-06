@@ -323,27 +323,34 @@ class ThesaurusController extends ItemController
         $request = $this->getRequest();
         if (!$request->isPost()) {
             $this->messenger()->addError(
-                sprintf('Unallowed request.') // @translate
+                'Unallowed request.' // @translate
             );
             return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'browse'], true);
+        }
+
+        $post = $this->params()->fromPost();
+
+        // Re-submission from the preview screen: the previewed flat list is the
+        // single source for the download and the imports, so what is seen is
+        // what is imported.
+        if (isset($post['result']) && trim((string) $post['result']) !== '') {
+            return $this->processPreview($post);
         }
 
         $files = $request->getFiles()->toArray();
         if (empty($files)) {
             $this->messenger()->addError(
-                sprintf('Missing file.') // @translate
+                'Missing file.' // @translate
             );
             return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert'], true);
         }
 
         /** @var \Thesaurus\Form\ConvertForm $form */
-        $post = $this->params()->fromPost() + $files;
-
         $form = $this->getForm(ConvertForm::class);
-        $form->setData($post);
+        $form->setData($post + $files);
         if (!$form->isValid()) {
             $this->messenger()->addError(
-                sprintf('Wrong request for file.') // @translate
+                'Wrong request for file.' // @translate
             );
             return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert'], true);
         }
@@ -351,8 +358,9 @@ class ThesaurusController extends ItemController
         $settings = $this->settings();
 
         $data = $form->getData();
-        $inputFormat = $data['format'] ?? 'tab_offset';
-        $outputType = $data['output'] ?? 'text';
+        $inputFormat = $data['format'] ?? 'skos';
+        $destination = $data['destination'] ?? 'preview';
+        $separator = $settings->get('thesaurus_separator', \Thesaurus\Module::SEPARATOR);
         $options = [
             'format' => $inputFormat,
             // A preferred label is required.
@@ -361,7 +369,7 @@ class ThesaurusController extends ItemController
                 'path' => $settings->get('thesaurus_property_path', ''),
                 'ascendance' => $settings->get('thesaurus_property_ascendance', ''),
             ],
-            'separator' => $settings->get('thesaurus_separator', \Thesaurus\Module::SEPARATOR),
+            'separator' => $separator,
             'clean' => $data['clean'] ?? [
                 'trim_punctuation',
             ],
@@ -375,15 +383,7 @@ class ThesaurusController extends ItemController
                 );
             }
             $options['codes'] = $data['codes'];
-            $options['position_code'] = $outputType === 'tab_offset_code_appended' ? 'appended' : 'prepended';
-        }
-
-        if ($outputType === 'thesaurus_full'
-            && !in_array($inputFormat, ['tab_offset_code_prepended', 'tab_offset_code_appended'])
-        ) {
-            $this->messenger()->addNotice(
-                'The process to import a thesaurus with codes is useful only when codes are prepended/appended to descriptors.' // @translate
-            );
+            $options['position_code'] = $inputFormat === 'tab_offset_code_appended' ? 'appended' : 'prepended';
         }
 
         // TODO Check the file during validation inside the form.
@@ -392,47 +392,80 @@ class ThesaurusController extends ItemController
         $fileCheck = $this->checkFile($file);
         if (!empty($file['error'])) {
             $this->messenger()->addError(
-                sprintf('An error occurred when uploading the file.') // @translate
+                'An error occurred when uploading the file.' // @translate
             );
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
         } elseif ($fileCheck === false) {
             $this->messenger()->addError(new PsrMessage(
                 'Wrong media type ("{type}") for file.', // @translate
                 ['type' => $file['type']]
             ));
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
         } elseif (empty($file['size'])) {
             $this->messenger()->addError(
                 'The file is empty.' // @translate
             );
-        } else {
-            $file = $fileCheck;
-            $converted = $this->convertThesaurus($file['tmp_name'], $options, $file['type']);
-            if (empty($converted)) {
-                $this->messenger()->addError(
-                    'Unable to convert the file.' // @translate
-                );
-            } else {
-                if ($outputType === 'thesaurus' || $outputType === 'thesaurus_full') {
-                    // Message are included.
-                    $this->importThesaurus($file['tmp_name'], $file['name'], $options, $file['type']);
-                    return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'browse'], true);
-                } elseif ($outputType === 'file') {
-                    $this->messenger()->addSuccess(
-                        'The file is successfully converted.' // @translate
-                    );
-                    $filename = pathinfo($file['name'], PATHINFO_FILENAME)
-                        . '.output'
-                        . (strlen($file['extension']) ? '.' . $file['extension'] : '');
-                    return $this->outputStringAsFile($converted, $filename);
-                }
-                $this->messenger()->addSuccess(
-                    'The file is successfully converted. You can now copy-paste below data into a custom vocab.' // @translate
-                );
-                // return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'flat'], ['query' => ['file' => pathinfo($file['name'], PATHINFO_FILENAME)]], true);
-                $params = $this->params()->fromRoute();
-                $params['action'] = 'flat';
-                $params['result'] = $converted;
-                return $this->forward()->dispatch(__CLASS__, $params);
-            }
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
+        }
+
+        $file = $fileCheck;
+        $converted = $this->convertThesaurus($file['tmp_name'], $options, $file['type']);
+        if (trim($converted) === '') {
+            $this->messenger()->addError(
+                'Unable to convert the file.' // @translate
+            );
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
+        }
+
+        $name = pathinfo($file['name'], PATHINFO_FILENAME);
+
+        if ($destination === 'thesaurus') {
+            $options['create_customvocab'] = !empty($data['create_customvocab']);
+            // Messages are included.
+            $this->importThesaurus($file['tmp_name'], $file['name'], $options, $file['type']);
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'browse'], true);
+        }
+
+        if ($destination === 'customvocab') {
+            $label = trim((string) ($data['customvocab_label'] ?? ''));
+            $label = strlen($label) ? $label : (mb_strtoupper(mb_substr($name, 0, 1)) . mb_substr($name, 1));
+            $this->createCustomVocabFromFlatList($converted, $label, $data['customvocab_format'] ?? 'path', $separator);
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'browse'], true);
+        }
+
+        // Default: preview the flat list, with shortcuts to both imports.
+        $params = $this->params()->fromRoute();
+        $params['action'] = 'flat';
+        $params['result'] = $converted;
+        $params['name'] = $name;
+        return $this->forward()->dispatch(__CLASS__, $params);
+    }
+
+    /**
+     * Process an action triggered from the preview screen (download, custom
+     * vocabulary or thesaurus), using the previewed flat list as the source.
+     */
+    protected function processPreview(array $post)
+    {
+        $result = (string) $post['result'];
+        $name = trim((string) ($post['name'] ?? ''));
+        $name = strlen($name) ? $name : 'thesaurus';
+        $separator = $this->settings()->get('thesaurus_separator', \Thesaurus\Module::SEPARATOR);
+
+        if (isset($post['submit-download'])) {
+            return $this->outputStringAsFile($result, $name . '.txt');
+        }
+
+        if (isset($post['submit-customvocab'])) {
+            $label = trim((string) ($post['customvocab_label'] ?? ''));
+            $label = strlen($label) ? $label : (mb_strtoupper(mb_substr($name, 0, 1)) . mb_substr($name, 1));
+            $this->createCustomVocabFromFlatList($result, $label, $post['customvocab_format'] ?? 'path', $separator);
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'browse'], true);
+        }
+
+        if (isset($post['submit-thesaurus'])) {
+            $this->importFlatListAsThesaurus($result, $name, $separator);
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'browse'], true);
         }
 
         return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
@@ -443,13 +476,120 @@ class ThesaurusController extends ItemController
         $result = $this->params('result');
         if (!$result) {
             $this->messenger()->addWarning(
-                'Convert first a file to get the flat thesaurus.' // @translate
+                'Convert first a file to get the flat list.' // @translate
             );
             return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
         }
         return new ViewModel([
             'result' => $this->stringToList($result, true),
+            'resultString' => $result,
+            'name' => (string) $this->params('name'),
+            'hasCustomVocab' => class_exists('CustomVocab\Module', false),
         ]);
+    }
+
+    /**
+     * Convert a flat list of full paths into a list of custom vocab terms.
+     */
+    protected function flatListToTerms(string $flatList, string $format, string $separator): array
+    {
+        $terms = [];
+        foreach ($this->stringToList($flatList, true) as $line) {
+            if ($format === 'label' || $format === 'indent') {
+                $segments = array_map('trim', explode($separator, $line));
+                $label = (string) end($segments);
+                if ($label === '') {
+                    continue;
+                }
+                $terms[] = $format === 'indent'
+                    ? str_repeat("\t", count($segments) - 1) . $label
+                    : $label;
+            } else {
+                $terms[] = $line;
+            }
+        }
+        // Keep the order but drop exact duplicates.
+        return array_values(array_unique($terms));
+    }
+
+    /**
+     * Create a custom vocabulary of type "terms" from a flat list.
+     */
+    protected function createCustomVocabFromFlatList(string $flatList, string $label, string $format, string $separator): void
+    {
+        if (!class_exists('CustomVocab\Module', false)) {
+            $this->messenger()->addError(
+                'The module Custom Vocab is required to create a custom vocabulary.' // @translate
+            );
+            return;
+        }
+
+        $terms = $this->flatListToTerms($flatList, $format, $separator);
+        if (!$terms) {
+            $this->messenger()->addError(
+                'There is no term to create the custom vocabulary.' // @translate
+            );
+            return;
+        }
+
+        try {
+            $this->api()->create('custom_vocabs', [
+                'o:label' => $label,
+                'o:terms' => $terms,
+            ]);
+        } catch (\Exception $e) {
+            $this->messenger()->addError(new PsrMessage(
+                'Unable to create the custom vocabulary "{label}": {message}', // @translate
+                ['label' => $label, 'message' => $e->getMessage()]
+            ));
+            return;
+        }
+
+        $this->messenger()->addSuccess(new PsrMessage(
+            'The custom vocabulary "{label}" was created with {count} terms.', // @translate
+            ['label' => $label, 'count' => count($terms)]
+        ));
+    }
+
+    /**
+     * Import a flat list of full paths as a thesaurus of items.
+     *
+     * The flat list is serialized as a tabulation offset list, then imported
+     * through the standard engine.
+     */
+    protected function importFlatListAsThesaurus(string $flatList, string $name, string $separator): void
+    {
+        $lines = [];
+        foreach ($this->stringToList($flatList, true) as $line) {
+            $segments = explode($separator, $line);
+            $label = trim((string) end($segments));
+            if ($label === '') {
+                continue;
+            }
+            $lines[] = str_repeat("\t", count($segments) - 1) . $label;
+        }
+
+        if (!$lines) {
+            $this->messenger()->addError(
+                'The list is empty.' // @translate
+            );
+            return;
+        }
+
+        $settings = $this->settings();
+        $options = [
+            'format' => 'tab_offset',
+            'fill' => [
+                'descriptor' => $settings->get('thesaurus_property_descriptor', 'skos:prefLabel'),
+                'path' => $settings->get('thesaurus_property_path', ''),
+                'ascendance' => $settings->get('thesaurus_property_ascendance', ''),
+            ],
+            'separator' => $separator,
+            'clean' => [],
+            'skip_first_line' => false,
+        ];
+
+        $this->dispatchCreateThesaurus($lines, mb_strtolower($name), $options);
     }
 
     /**
@@ -851,10 +991,17 @@ class ThesaurusController extends ItemController
             return;
         }
 
+        $this->dispatchCreateThesaurus($lines, mb_strtolower(pathinfo($filename, PATHINFO_FILENAME)), $options);
+    }
+
+    /**
+     * Dispatch the job that creates a thesaurus from a list of input lines.
+     */
+    protected function dispatchCreateThesaurus(array $lines, string $name, array $options): void
+    {
         /** @var \Omeka\Mvc\Controller\Plugin\JobDispatcher $dispatcher */
         $dispatcher = $this->jobDispatcher();
 
-        $name = mb_strtolower(pathinfo($filename, PATHINFO_FILENAME));
         $params = [
             'name' => $name,
             'input' => $lines,
