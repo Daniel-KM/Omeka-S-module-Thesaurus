@@ -338,26 +338,15 @@ class ThesaurusController extends ItemController
         }
 
         $files = $request->getFiles()->toArray();
-        if (empty($files)) {
-            $this->messenger()->addError(
-                'Missing file.' // @translate
-            );
-            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert'], true);
-        }
-
-        // Detect upload errors before the form validation, so the message is
-        // explicit, in particular when the file exceeds the server upload size.
         $uploadError = (int) ($files['file']['error'] ?? \UPLOAD_ERR_NO_FILE);
+
+        // Detect the upload size error before the form validation, so the
+        // message is explicit when the file exceeds the server upload size.
         if (in_array($uploadError, [\UPLOAD_ERR_INI_SIZE, \UPLOAD_ERR_FORM_SIZE], true)) {
             $this->messenger()->addError(new PsrMessage(
                 'The file exceeds the maximum upload size allowed by the server ({size}).', // @translate
                 ['size' => ini_get('upload_max_filesize')]
             ));
-            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert'], true);
-        } elseif ($uploadError !== \UPLOAD_ERR_OK) {
-            $this->messenger()->addError(
-                'An error occurred when uploading the file.' // @translate
-            );
             return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert'], true);
         }
 
@@ -374,6 +363,23 @@ class ThesaurusController extends ItemController
         $settings = $this->settings();
 
         $data = $form->getData();
+
+        // The source is either an uploaded file or a remote URL.
+        $url = trim((string) ($data['url'] ?? ''));
+        if ($uploadError === \UPLOAD_ERR_OK) {
+            $file = $files['file'];
+        } elseif ($url !== '') {
+            $file = $this->fetchUrl($url);
+            if (!$file) {
+                return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert'], true);
+            }
+        } else {
+            $this->messenger()->addError(
+                'A file or a URL is required.' // @translate
+            );
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert'], true);
+        }
+
         $inputFormat = $data['format'] ?? 'skos';
         $destination = $data['destination'] ?? 'preview';
         $separator = $settings->get('thesaurus_separator', \Thesaurus\Module::SEPARATOR);
@@ -404,14 +410,8 @@ class ThesaurusController extends ItemController
 
         // TODO Check the file during validation inside the form.
 
-        $file = $files['file'];
         $fileCheck = $this->checkFile($file);
-        if (!empty($file['error'])) {
-            $this->messenger()->addError(
-                'An error occurred when uploading the file.' // @translate
-            );
-            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert']);
-        } elseif ($fileCheck === false) {
+        if ($fileCheck === false) {
             $this->messenger()->addError(new PsrMessage(
                 'Wrong media type ("{type}") for file.', // @translate
                 ['type' => $file['type']]
@@ -1145,16 +1145,83 @@ class ThesaurusController extends ItemController
             'text/plain' => true,
             'text/tab-separated-values' => true,
             'application/rdf+xml' => true,
+            // A remote SKOS file without extension is often detected as xml or
+            // json by fileinfo (in particular for an Opentheso export).
+            'application/xml' => true,
+            'text/xml' => true,
             'text/turtle' => true,
             'text/n3' => true,
             'application/n-triples' => true,
             'application/ld+json' => true,
+            'application/json' => true,
         ];
         if (!isset($supporteds[$mediaType])) {
             return false;
         }
 
+        $fileData['type'] = $mediaType;
+
         return $fileData;
+    }
+
+    /**
+     * Fetch a remote file into a temporary file, similar to an uploaded file.
+     *
+     * @return array|null File data (tmp_name, name, type, size, error), or null.
+     */
+    protected function fetchUrl(string $url): ?array
+    {
+        $services = $this->getEvent()->getApplication()->getServiceManager();
+        /** @var \Laminas\Http\Client $client */
+        $client = $services->get('Omeka\HttpClient');
+        $client
+            ->reset()
+            ->setUri($url)
+            ->setMethod('GET')
+            ->setOptions(['timeout' => 30, 'maxredirects' => 5])
+            ->setHeaders([
+                'Accept' => 'application/rdf+xml, text/turtle, application/ld+json, application/n-triples, text/plain, */*',
+            ]);
+
+        try {
+            $response = $client->send();
+        } catch (\Exception $e) {
+            $this->messenger()->addError(new PsrMessage(
+                'Unable to fetch the URL: {message}', // @translate
+                ['message' => $e->getMessage()]
+            ));
+            return null;
+        }
+
+        if (!$response->isSuccess()) {
+            $this->messenger()->addError(new PsrMessage(
+                'Unable to fetch the URL (status {status}).', // @translate
+                ['status' => $response->getStatusCode()]
+            ));
+            return null;
+        }
+
+        $content = $response->getBody();
+        if (trim((string) $content) === '') {
+            $this->messenger()->addError(
+                'The fetched URL is empty.' // @translate
+            );
+            return null;
+        }
+
+        $temp = tempnam(sys_get_temp_dir(), 'omk_theso_');
+        file_put_contents($temp, $content);
+
+        $name = basename((string) parse_url($url, PHP_URL_PATH));
+        $name = strlen($name) ? $name : 'thesaurus';
+
+        return [
+            'tmp_name' => $temp,
+            'name' => $name,
+            'type' => '',
+            'size' => strlen($content),
+            'error' => \UPLOAD_ERR_OK,
+        ];
     }
 
     /**

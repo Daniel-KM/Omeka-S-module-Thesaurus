@@ -19,11 +19,20 @@ class ConvertForm extends Form
                 'type' => Element\File::class,
                 'options' => [
                     'label' => 'Source file', // @translate
-                    'info' => 'Standard SKOS (rdf, ttl, jsonld, nt), or a simple text file with one concept by line and tabulations or codes to indicate the hierarchic level (txt, csv, tsv).', // @translate
                 ],
                 'attributes' => [
                     'id' => 'file',
-                    'required' => 'required',
+                ],
+            ])
+
+            ->add([
+                'name' => 'url',
+                'type' => Element\Url::class,
+                'options' => [
+                    'label' => 'Or import from a URL', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'url',
                 ],
             ])
 
@@ -182,6 +191,17 @@ class ConvertForm extends Form
                 'attributes' => [
                     'id' => 'create_customvocab',
                 ],
+            ]);
+
+        // The source may be a file or a url, so neither is required.
+        $this->getInputFilter()
+            ->add([
+                'name' => 'file',
+                'required' => false,
+            ])
+            ->add([
+                'name' => 'url',
+                'required' => false,
             ]);
     }
 }
