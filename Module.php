@@ -634,6 +634,18 @@ SQL;
         $valueOptions = $process->getValueOptions();
         $valueOptions['db_thesaurus_index'] = 'Thesaurus: Index thesaurus'; // @translate
         $process->setValueOptions($valueOptions);
+
+        if (method_exists($form, 'addTaskSubjects')) {
+            $form->addTaskSubjects([
+                'db_thesaurus_index' => [
+                    'name' => 'Thesaurus index', // @translate
+                    'description' => 'Index the thesaurus terms and their relations.', // @translate
+                    'actions' => [
+                        'db_thesaurus_index' => 'Index', // @translate
+                    ],
+                ],
+            ]);
+        }
     }
 
     public function handleEasyAdminJobs(Event $event): void
