@@ -87,7 +87,7 @@ class ThesaurusController extends ItemController
                 $id = (int) $this->params('id');
                 try {
                     $scheme = $this->api->read('items', ['id' => $id])->getContent();
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     $scheme = null;
                 }
                 if (!$scheme) {

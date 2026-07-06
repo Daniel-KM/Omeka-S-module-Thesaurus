@@ -703,7 +703,7 @@ SQL;
             $static['conceptTemplateId'] = $conceptTemplateId
                 ? $api->read('resource_templates', ['id' => $conceptTemplateId], [], ['responseContent' => 'resource'])->getContent()->getId()
                 : $api->read('resource_templates', ['label' => 'Thesaurus Concept'], [], ['responseContent' => 'resource'])->getContent()->getId();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $logger->err('Unable to find resource template "Thesaurus Concept".'); // @translate
             $static = [];
             return $static;
@@ -711,7 +711,7 @@ SQL;
 
         try {
             $skosVocabularyId = $api->read('vocabularies', ['prefix' => 'skos'], [], ['responseContent' => 'resource'])->getContent()->getId();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $logger->err('Unable to find vocabulary Skos.'); // @translate
             $static = [];
             return $static;
@@ -721,7 +721,7 @@ SQL;
         $static['propertyDescriptor'] = $settings->get('thesaurus_property_descriptor') ?: 'skos:prefLabel';
         try {
             $static['propertyDescriptorId'] = $api->read('properties', ['vocabulary' => $skosVocabularyId, 'localName' => substr($static['propertyDescriptor'], strpos($static['propertyDescriptor'], ':') + 1)], [], ['responseContent' => 'resource'])->getContent()->getId();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $logger->err(
                 'Unable to find property {term} for descriptor.', // @translate
                 ['term' => $static['propertyDescriptor']]
@@ -734,7 +734,7 @@ SQL;
         if ($static['propertyPath']) {
             try {
                 $static['propertyPathId'] = $api->read('properties', ['vocabulary' => $skosVocabularyId, 'localName' => substr($static['propertyPath'], strpos($static['propertyPath'], ':') + 1)], [], ['responseContent' => 'resource'])->getContent()->getId();
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $logger->err(
                     'Unable to find property {term} for path.', // @translate
                     ['term' => $static['propertyPath']]
@@ -748,7 +748,7 @@ SQL;
         if ($static['propertyAscendance']) {
             try {
                 $static['propertyAscendanceId'] = $api->read('properties', ['vocabulary' => $skosVocabularyId, 'localName' => substr($static['propertyAscendance'], strpos($static['propertyAscendance'], ':') + 1)], [], ['responseContent' => 'resource'])->getContent()->getId();
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $logger->err(
                     'Unable to find property {term} for ascendance.', // @translate
                     ['term' => $static['propertyAscendance']]

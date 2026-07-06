@@ -14,7 +14,7 @@ if (empty($params['item'])) {
 } else {
     try {
         $item = $this->api()->read('items', ['id' => $params['item']])->getContent();
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         $item = null;
     }
 }

@@ -155,7 +155,7 @@ class LinkTerm extends AbstractHelper
         }
         try {
             return $this->api->read('items', ['id' => $itemData['id']])->getContent();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return null;
         }
     }

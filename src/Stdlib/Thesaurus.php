@@ -196,7 +196,7 @@ class Thesaurus
         if (is_numeric($itemOrItemSetOrId)) {
             try {
                 $itemOrItemSetOrId = $this->api->read('resources', ['id' => $itemOrItemSetOrId], ['initialize' => false])->getContent();
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $itemOrItemSetOrId = null;
             }
         }
@@ -319,7 +319,7 @@ class Thesaurus
         if ($id) {
             try {
                 return $this->api->read('items', ['id' => $id])->getContent();
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $this->logger->err(
                     'Thesaurus based on item #{item_id} does not exist or is not available to current user.', // @translate
                     ['item_id' => $id]
