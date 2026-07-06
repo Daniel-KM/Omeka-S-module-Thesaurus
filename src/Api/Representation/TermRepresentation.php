@@ -88,7 +88,7 @@ class TermRepresentation extends AbstractEntityRepresentation
             // ->andWhere($expr->eq('id', 'root'))
             ->orderBy('position')
         ;
-        $result = $connection->executeQuery($qb, $qb->getParameters())->fetchAll();
+        $result = $connection->executeQuery($qb->getSQL(), $qb->getParameters())->fetchAllAssociative();
 
         $tops = [];
         foreach ($result as $entity) {

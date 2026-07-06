@@ -520,7 +520,7 @@ SQL;
             ->where($expr->isNotNull('custom_vocab.item_set_id'))
             ->andWhere($expr->in('custom_vocab.item_set_id', $subQb->getSQL()))
         ;
-        $cvThesaurus = array_map('intval', $connection->executeQuery($qb)->fetchFirstColumn());
+        $cvThesaurus = array_map('intval', $connection->executeQuery($qb->getSQL(), $qb->getParameters())->fetchFirstColumn());
         if (!$cvThesaurus) {
             return;
         }
