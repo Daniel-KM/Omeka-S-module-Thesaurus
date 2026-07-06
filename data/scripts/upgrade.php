@@ -237,3 +237,40 @@ if (version_compare($oldVersion, '3.4.17', '<')) {
         $logger->warn($message->getMessage(), $message->getContext());
     }
 }
+
+if (version_compare($oldVersion, '3.4.24', '<')) {
+    // Normalize all literal labels of thesaurus concepts and schemes to Unicode
+    // NFC, so identical-looking labels become identical byte-wise (avoids
+    // duplicates, failed lookups and broken truncation with decomposed input,
+    // typically from macOS or some SKOS/CSV exports).
+    $sql = <<<'SQL'
+        SELECT v.id, v.value
+        FROM value v
+        WHERE (v.type IS NULL OR v.type = 'literal')
+            AND v.value IS NOT NULL
+            AND v.resource_id IN (
+                SELECT item_id FROM term
+                UNION
+                SELECT scheme_id FROM term
+            )
+        SQL;
+    $values = $connection->executeQuery($sql)->fetchAllKeyValue();
+    $sqlUpdate = 'UPDATE value SET value = :value WHERE id = :id';
+    $count = 0;
+    foreach ($values as $id => $value) {
+        $normalized = \Normalizer::normalize($value, \Normalizer::FORM_C);
+        if ($normalized === false || $normalized === $value) {
+            continue;
+        }
+        $connection->executeStatement($sqlUpdate, ['value' => $normalized, 'id' => (int) $id]);
+        ++$count;
+    }
+
+    if ($count) {
+        $message = new PsrMessage(
+            '{count} thesaurus labels were normalized to Unicode NFC.', // @translate
+            ['count' => $count]
+        );
+        $messenger->addSuccess($message);
+    }
+}
