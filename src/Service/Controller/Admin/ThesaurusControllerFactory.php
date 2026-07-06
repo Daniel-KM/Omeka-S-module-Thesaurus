@@ -2,7 +2,7 @@
 
 namespace Thesaurus\Service\Controller\Admin;
 
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Thesaurus\Controller\Admin\ThesaurusController;
 

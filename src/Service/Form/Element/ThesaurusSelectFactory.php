@@ -2,7 +2,7 @@
 
 namespace Thesaurus\Service\Form\Element;
 
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Thesaurus\Form\Element\ThesaurusSelect;
 
