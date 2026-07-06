@@ -143,6 +143,16 @@ class Module extends AbstractModule
             'Omeka\Controller\Site\ItemSet',
             'Omeka\Controller\Site\Media',
         ];
+        // Optional module DigitalObject: resources are searchable by concept.
+        if (class_exists('DigitalObject\Module', false)) {
+            $sharedEventManager->attach(
+                \DigitalObject\Api\Adapter\DigitalObjectAdapter::class,
+                'api.search.query',
+                [$this, 'handleApiSearchQuery']
+            );
+            $controllers[] = 'DigitalObject\Controller\Admin\DigitalObject';
+            $controllers[] = 'DigitalObject\Controller\Site\DigitalObject';
+        }
         foreach ($controllers as $controller) {
             // foreach ($controllers as $controller) {
             //     // Add the search field to the advanced search pages.
