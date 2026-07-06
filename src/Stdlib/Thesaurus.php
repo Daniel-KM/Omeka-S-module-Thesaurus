@@ -195,7 +195,7 @@ class Thesaurus
     {
         if (is_numeric($itemOrItemSetOrId)) {
             try {
-                $itemOrItemSetOrId = $this->api->read('resources', ['id' => $itemOrItemSetOrId], ['initialize' => false])->getContent();
+                $itemOrItemSetOrId = $this->api->read('resources', ['id' => $itemOrItemSetOrId], [], ['initialize' => false])->getContent();
             } catch (\Throwable $e) {
                 $itemOrItemSetOrId = null;
             }

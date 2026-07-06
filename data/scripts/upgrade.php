@@ -93,7 +93,7 @@ if (version_compare($oldVersion, '3.4.9', '<')) {
     $message = new PsrMessage(
         '{link}New settings{link_end} allow to store the path or the ascendance of each concept automatically or via the update button of the thesaurus.', // @translate
         [
-            'link' => sprintf('<a href="%s">', $url('admin/default', ['controller' => 'setting'], ['fragment' => 'thesaurus'])),
+            'link' => sprintf('<a href="%s">', htmlspecialchars($url('admin/default', ['controller' => 'setting'], ['fragment' => 'thesaurus']))),
             'link_end' => '</a>',
         ]
     );
