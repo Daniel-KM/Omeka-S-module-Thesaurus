@@ -673,7 +673,7 @@ class ThesaurusController extends ItemController
         }
         $text = file_get_contents($filepath);
         // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
-        $text = @mb_convert_encoding($text, 'HTML-ENTITIES', 'UTF-8');
+        $text = mb_encode_numericentity($text, [0x80, 0x10FFFF, 0, 0x1FFFFF], 'UTF-8');
         $lines = $this->stringToList($text, false);
         if (count($lines) && !empty($options['skip_first_line'])) {
             unset($lines[0]);
@@ -704,8 +704,7 @@ class ThesaurusController extends ItemController
                 continue;
             }
             // Replace entities first to avoid to break html entities.
-            // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
-            $descriptor = trim((string) @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES'));
+            $descriptor = trim((string) mb_decode_numericentity($descriptor, [0x80, 0x10FFFF, 0, 0x1FFFFF], 'UTF-8'));
             $descriptor = $this->trimAndCleanString($descriptor, $options['clean']);
             if (!strlen($descriptor)) {
                 continue;
@@ -753,8 +752,7 @@ class ThesaurusController extends ItemController
                 continue;
             }
             // Replace entities first to avoid to break html entities.
-            // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
-            $descriptor = trim((string) @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES'));
+            $descriptor = trim((string) mb_decode_numericentity($descriptor, [0x80, 0x10FFFF, 0, 0x1FFFFF], 'UTF-8'));
             if ($isCodeAppended) {
                 $codeToCheck = mb_strpos($descriptor, ' ') === false? null : trim(mb_strrchr($descriptor, ' '));
             } else {
@@ -801,9 +799,8 @@ class ThesaurusController extends ItemController
         foreach ($lines as $line) {
             [$structure, $descriptor] = array_map('trim', (explode(' ', $line . ' ', 2)));
             // Replace entities first to avoid to break html entities.
-            // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
-            $structure = trim((string) @mb_convert_encoding($structure, 'UTF-8', 'HTML-ENTITIES'));
-            $descriptor = trim((string) @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES'));
+            $structure = trim((string) mb_decode_numericentity($structure, [0x80, 0x10FFFF, 0, 0x1FFFFF], 'UTF-8'));
+            $descriptor = trim((string) mb_decode_numericentity($descriptor, [0x80, 0x10FFFF, 0, 0x1FFFFF], 'UTF-8'));
             if ($trimPunctuation) {
                 $structure = trim($structure, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
             }
@@ -998,8 +995,7 @@ class ThesaurusController extends ItemController
             $options['format'] = 'tab_offset';
         } else {
             $text = file_get_contents($filepath);
-            // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
-            $text = @mb_convert_encoding($text, 'HTML-ENTITIES', 'UTF-8');
+            $text = mb_encode_numericentity($text, [0x80, 0x10FFFF, 0, 0x1FFFFF], 'UTF-8');
             $lines = $this->stringToList($text, false);
         }
 
@@ -1037,7 +1033,7 @@ class ThesaurusController extends ItemController
         if ($small) {
             $this->messenger()->addSuccess(new PsrMessage(
                 'The thesaurus "{title}" is created.', // @translate
-                ['title' => ucfirst($name)]
+                ['title' => mb_strtoupper(mb_substr($name, 0, 1)) . mb_substr($name, 1)]
             ));
             return;
         }
@@ -1045,7 +1041,7 @@ class ThesaurusController extends ItemController
         $message = new PsrMessage(
             'Creation of thesaurus "{title}" with {total} lines started ({link}job #{job_id}{link_end}, {link_log}logs{link_end})', // @translate
             [
-                'title' => ucfirst($name),
+                'title' => mb_strtoupper(mb_substr($name, 0, 1)) . mb_substr($name, 1),
                 'total' => count($lines),
                 'link' => sprintf('<a href="%s">', htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))),
                 'job_id' => $job->getId(),
@@ -1334,6 +1330,14 @@ class ThesaurusController extends ItemController
     protected function trimAndCleanString($string, array $params): string
     {
         $string = trim((string) $string);
+        // Normalize to Unicode NFC so identical-looking strings are identical
+        // byte-wise (avoids duplicates, failed lookups and broken truncation
+        // with decomposed input, typically from macOS or some SKOS/CSV
+        // exports).
+        $normalized = \Normalizer::normalize($string, \Normalizer::FORM_C);
+        if ($normalized !== false) {
+            $string = $normalized;
+        }
         if (in_array('trim_punctuation', $params)) {
             $string = trim($string, \Thesaurus\Job\CreateThesaurus::TRIM_PUNCTUATION);
         }
@@ -1347,10 +1351,10 @@ class ThesaurusController extends ItemController
             $string = mb_strtolower($string);
         }
         if (in_array('ucfirst', $params)) {
-            $string = ucfirst(mb_strtolower($string));
+            $string = mb_strtoupper(mb_substr($string, 0, 1)) . mb_strtolower(mb_substr($string, 1));
         }
         if (in_array('ucwords', $params)) {
-            $string = ucwords(mb_strtolower($string));
+            $string = mb_convert_case($string, MB_CASE_TITLE, 'UTF-8');
         }
         if (in_array('uppercase', $params)) {
             $string = mb_strtoupper($string);

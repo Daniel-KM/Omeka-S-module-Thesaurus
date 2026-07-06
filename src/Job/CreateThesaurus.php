@@ -172,7 +172,7 @@ class CreateThesaurus extends AbstractJob
                 [
                     'type' => 'literal',
                     'property_id' => 1,
-                    '@value' => ucfirst($name),
+                    '@value' => mb_strtoupper(mb_substr($name, 0, 1)) . mb_substr($name, 1),
                 ],
             ],
             'dcterms:identifier' => [
@@ -198,7 +198,7 @@ class CreateThesaurus extends AbstractJob
                 [
                     'type' => 'literal',
                     'property_id' => $properties['skos:prefLabel'],
-                    '@value' => ucfirst($name),
+                    '@value' => mb_strtoupper(mb_substr($name, 0, 1)) . mb_substr($name, 1),
                 ],
             ],
             'dcterms:identifier' => [
@@ -331,7 +331,7 @@ class CreateThesaurus extends AbstractJob
 
         $this->logger->notice(
             'The thesaurus "{name}" is ready, with {count} descriptors.', // @translate
-            ['name' => ucfirst($name), 'count' => count($input)]
+            ['name' => mb_strtoupper(mb_substr($name, 0, 1)) . mb_substr($name, 1), 'count' => count($input)]
         );
     }
 
@@ -385,8 +385,7 @@ class CreateThesaurus extends AbstractJob
         foreach ($lines as $line) {
             $descriptor = trim($line);
             // Replace entities first to avoid to break html entities.
-            // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
-            $descriptor = trim((string) @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES'));
+            $descriptor = trim((string) mb_decode_numericentity($descriptor, [0x80, 0x10FFFF, 0, 0x1FFFFF], 'UTF-8'));
 
             $propertyTerm = 'descriptor';
             if ($hasCode) {
@@ -598,8 +597,8 @@ class CreateThesaurus extends AbstractJob
         foreach ($lines as $line) {
             [$structure, $descriptor] = array_map('trim', (explode(' ', $line . ' ', 2)));
             // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
-            $structure = trim((string) @mb_convert_encoding($structure, 'UTF-8', 'HTML-ENTITIES'));
-            $descriptor = trim((string) @mb_convert_encoding($descriptor, 'UTF-8', 'HTML-ENTITIES'));
+            $structure = trim((string) mb_decode_numericentity($structure, [0x80, 0x10FFFF, 0, 0x1FFFFF], 'UTF-8'));
+            $descriptor = trim((string) mb_decode_numericentity($descriptor, [0x80, 0x10FFFF, 0, 0x1FFFFF], 'UTF-8'));
             if ($trimPunctuation) {
                 $structure = trim($structure, self::TRIM_PUNCTUATION);
             }
@@ -732,6 +731,14 @@ class CreateThesaurus extends AbstractJob
     protected function trimAndCleanString($string, array $params): string
     {
         $string = trim((string) $string);
+        // Normalize to Unicode NFC so identical-looking strings are identical
+        // byte-wise (avoids duplicates, failed lookups and broken truncation
+        // with decomposed input, typically from macOS or some SKOS/CSV
+        // exports).
+        $normalized = \Normalizer::normalize($string, \Normalizer::FORM_C);
+        if ($normalized !== false) {
+            $string = $normalized;
+        }
         if (in_array('trim_punctuation', $params)) {
             $string = trim($string, self::TRIM_PUNCTUATION);
         }
@@ -745,10 +752,10 @@ class CreateThesaurus extends AbstractJob
             $string = mb_strtolower($string);
         }
         if (in_array('ucfirst', $params)) {
-            $string = ucfirst(mb_strtolower($string));
+            $string = mb_strtoupper(mb_substr($string, 0, 1)) . mb_strtolower(mb_substr($string, 1));
         }
         if (in_array('ucwords', $params)) {
-            $string = ucwords(mb_strtolower($string));
+            $string = mb_convert_case($string, MB_CASE_TITLE, 'UTF-8');
         }
         if (in_array('uppercase', $params)) {
             $string = mb_strtoupper($string);
