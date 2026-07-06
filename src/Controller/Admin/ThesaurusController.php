@@ -345,6 +345,22 @@ class ThesaurusController extends ItemController
             return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert'], true);
         }
 
+        // Detect upload errors before the form validation, so the message is
+        // explicit, in particular when the file exceeds the server upload size.
+        $uploadError = (int) ($files['file']['error'] ?? \UPLOAD_ERR_NO_FILE);
+        if (in_array($uploadError, [\UPLOAD_ERR_INI_SIZE, \UPLOAD_ERR_FORM_SIZE], true)) {
+            $this->messenger()->addError(new PsrMessage(
+                'The file exceeds the maximum upload size allowed by the server ({size}).', // @translate
+                ['size' => ini_get('upload_max_filesize')]
+            ));
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert'], true);
+        } elseif ($uploadError !== \UPLOAD_ERR_OK) {
+            $this->messenger()->addError(
+                'An error occurred when uploading the file.' // @translate
+            );
+            return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert'], true);
+        }
+
         /** @var \Thesaurus\Form\ConvertForm $form */
         $form = $this->getForm(ConvertForm::class);
         $form->setData($post + $files);
