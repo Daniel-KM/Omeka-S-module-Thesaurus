@@ -8,7 +8,7 @@ use Thesaurus\Mvc\Controller\Plugin\Thesaurus;
 
 class ThesaurusFactory implements FactoryInterface
 {
-    public function __invoke(ContainerInterface $services, $name, array $options = null)
+    public function __invoke(ContainerInterface $services, $name, ?array $options = null)
     {
         return new Thesaurus(
             $services->get('Thesaurus\Thesaurus')

@@ -8,7 +8,7 @@ use Thesaurus\Stdlib\Thesaurus;
 
 class ThesaurusFactory implements FactoryInterface
 {
-    public function __invoke(ContainerInterface $services, $name, array $options = null)
+    public function __invoke(ContainerInterface $services, $name, ?array $options = null)
     {
         $plugins = $services->get('ControllerPluginManager');
         $settings = $services->get('Omeka\Settings');

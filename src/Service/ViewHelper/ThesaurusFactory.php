@@ -16,7 +16,7 @@ class ThesaurusFactory implements FactoryInterface
      *
      * @return Thesaurus
      */
-    public function __invoke(ContainerInterface $services, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $services, $requestedName, ?array $options = null)
     {
         return new Thesaurus(
             $services->get('Thesaurus\Thesaurus'),

@@ -174,7 +174,7 @@ class Term extends AbstractEntity
      * @param Term $root
      * @return self
      */
-    public function setRoot(Term $root = null)
+    public function setRoot(?Term $root = null)
     {
         $this->root = $root;
         return $this;
@@ -192,7 +192,7 @@ class Term extends AbstractEntity
      * @param Term $broader
      * @return self
      */
-    public function setBroader(Term $broader = null)
+    public function setBroader(?Term $broader = null)
     {
         $this->broader = $broader;
         return $this;
