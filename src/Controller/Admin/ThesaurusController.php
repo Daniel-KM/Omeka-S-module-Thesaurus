@@ -508,6 +508,10 @@ class ThesaurusController extends ItemController
         array $options,
         ?string $mediaType = 'text/plain'
     ): string {
+        $inputFormat = $options['format'] ?? '';
+        if ($inputFormat === 'skos') {
+            return $this->convertThesaurusSkos($filepath, $options, $mediaType);
+        }
         $text = file_get_contents($filepath);
         // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
         $text = @mb_convert_encoding($text, 'HTML-ENTITIES', 'UTF-8');
@@ -515,7 +519,6 @@ class ThesaurusController extends ItemController
         if (count($lines) && !empty($options['skip_first_line'])) {
             unset($lines[0]);
         }
-        $inputFormat = $options['format'] ?? '';
         if ($inputFormat === 'tab_offset') {
             return $this->convertThesaurusTabOffset($lines, $options);
         } elseif ($inputFormat === 'tab_offset_code_prepended' || $inputFormat === 'tab_offset_code_appended') {
@@ -673,6 +676,151 @@ class ThesaurusController extends ItemController
     }
 
     /**
+     * Convert a standard SKOS file into a flat thesaurus.
+     *
+     * @todo Import altLabel, scopeNote and notation from SKOS (currently only the hierarchy of prefLabel is kept).
+     */
+    protected function convertThesaurusSkos(
+        string $filepath,
+        array $options,
+        ?string $mediaType = null
+    ): string {
+        $tree = $this->parseSkosTree($filepath, $this->skosRdfFormat($mediaType));
+        if (!$tree) {
+            return '';
+        }
+
+        $separator = $options['separator'] ?? \Thesaurus\Module::SEPARATOR;
+        $clean = $options['clean'] ?? [];
+
+        $output = '';
+        foreach ($tree as $element) {
+            $label = $this->trimAndCleanString($element['label'], $clean);
+            if (!strlen($label)) {
+                continue;
+            }
+            $path = array_map(fn ($ancestor) => $this->trimAndCleanString($ancestor, $clean), $element['path']);
+            $output .= implode($separator, array_merge($path, [$label])) . "\n";
+        }
+        return $output;
+    }
+
+    /**
+     * Parse a SKOS file into an ordered and flattened tree of concepts.
+     *
+     * Each element has the keys "level" (depth, starting at 0), "label" (the
+     * preferred label) and "path" (the list of ancestor labels). The hierarchy
+     * is built from skos:narrower and skos:broader; roots are the concepts that
+     * are not a child of another one.
+     *
+     * @return array<array{level: int, label: string, path: string[]}>
+     */
+    protected function parseSkosTree(string $filepath, ?string $format = null): array
+    {
+        \EasyRdf\RdfNamespace::set('skos', 'http://www.w3.org/2004/02/skos/core#');
+
+        $graph = new \EasyRdf\Graph();
+        try {
+            $graph->parseFile($filepath, $format);
+        } catch (\Exception $e) {
+            return [];
+        }
+
+        /** @var \EasyRdf\Resource[] $concepts */
+        $concepts = $graph->allOfType('skos:Concept');
+        if (!$concepts) {
+            return [];
+        }
+
+        $byUri = [];
+        $labels = [];
+        foreach ($concepts as $concept) {
+            $uri = $concept->getUri();
+            $byUri[$uri] = $concept;
+            $literal = $concept->getLiteral('skos:prefLabel');
+            $labels[$uri] = $literal ? trim((string) $literal->getValue()) : '';
+        }
+
+        // Build the parent → children relations from broader and narrower.
+        $children = [];
+        $isChild = [];
+        foreach ($byUri as $uri => $concept) {
+            foreach ($concept->all('skos:narrower') as $narrower) {
+                $childUri = $narrower->getUri();
+                if (isset($byUri[$childUri])) {
+                    $children[$uri][$childUri] = $childUri;
+                    $isChild[$childUri] = true;
+                }
+            }
+            foreach ($concept->all('skos:broader') as $broader) {
+                $parentUri = $broader->getUri();
+                if (isset($byUri[$parentUri])) {
+                    $children[$parentUri][$uri] = $uri;
+                    $isChild[$uri] = true;
+                }
+            }
+        }
+
+        // Roots are the concepts that are not a child of another concept.
+        $roots = array_keys(array_diff_key($byUri, $isChild));
+
+        // Sort sibling concepts by label then uri for a deterministic output.
+        $sort = function (array $uris) use ($labels): array {
+            usort($uris, fn ($a, $b) => [$labels[$a], $a] <=> [$labels[$b], $b]);
+            return $uris;
+        };
+
+        $tree = [];
+        $visited = [];
+        $walk = function (array $uris, array $path) use (&$walk, &$tree, &$visited, $children, $labels, $sort): void {
+            foreach ($sort($uris) as $uri) {
+                if (isset($visited[$uri])) {
+                    continue;
+                }
+                $visited[$uri] = true;
+                $label = $labels[$uri];
+                // Keep descendants at the same level when a concept has no
+                // label.
+                $childPath = $label === '' ? $path : array_merge($path, [$label]);
+                if ($label !== '') {
+                    $tree[] = ['level' => count($path), 'label' => $label, 'path' => $path];
+                }
+                if (!empty($children[$uri])) {
+                    $walk(array_values($children[$uri]), $childPath);
+                }
+            }
+        };
+        $walk($roots, []);
+
+        // Append concepts unreachable from roots (e.g. broken by a cycle).
+        $remaining = array_keys(array_diff_key($byUri, $visited));
+        if ($remaining) {
+            $walk($remaining, []);
+        }
+
+        return $tree;
+    }
+
+    /**
+     * Get the EasyRdf format name from a media type, or null to let it guess.
+     */
+    protected function skosRdfFormat(?string $mediaType): ?string
+    {
+        $map = [
+            'application/rdf+xml' => 'rdfxml',
+            'application/xml' => 'rdfxml',
+            'text/xml' => 'rdfxml',
+            'text/turtle' => 'turtle',
+            'application/x-turtle' => 'turtle',
+            'text/n3' => 'n3',
+            'application/n-triples' => 'ntriples',
+            'application/ld+json' => 'jsonld',
+            'application/json' => 'jsonld',
+        ];
+        return $map[$mediaType] ?? null;
+    }
+
+    /**
      * Convert a tree as a thesaurus.
      */
     protected function importThesaurus(
@@ -681,11 +829,21 @@ class ThesaurusController extends ItemController
         array $options,
         ?string $mediaType = 'text/plain'
     ): void {
-        $text = file_get_contents($filepath);
-        // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
-        $text = @mb_convert_encoding($text, 'HTML-ENTITIES', 'UTF-8');
+        if (($options['format'] ?? '') === 'skos') {
+            // Reuse the core engine: serialize the SKOS tree as a tabulation
+            // offset list, then import it as a standard "tab_offset" file.
+            $lines = [];
+            foreach ($this->parseSkosTree($filepath, $this->skosRdfFormat($mediaType)) as $element) {
+                $lines[] = str_repeat("\t", $element['level']) . $element['label'];
+            }
+            $options['format'] = 'tab_offset';
+        } else {
+            $text = file_get_contents($filepath);
+            // TODO The "@" avoids the deprecation notice. Replace by html_entity_decode/htmlentities.
+            $text = @mb_convert_encoding($text, 'HTML-ENTITIES', 'UTF-8');
+            $lines = $this->stringToList($text, false);
+        }
 
-        $lines = $this->stringToList($text, false);
         if (!$lines) {
             $this->messenger()->addError(
                 'The file is empty.' // @translate
@@ -802,10 +960,32 @@ class ThesaurusController extends ItemController
             }
         }
 
+        // SKOS files are unreliably detected by fileinfo (rdfxml as xml,
+        // turtle/n-triples as text/plain, json-ld as json), so the media type
+        // is forced from the extension to let EasyRdf parse them.
+        $skosExtensions = [
+            'rdf' => 'application/rdf+xml',
+            'rdfs' => 'application/rdf+xml',
+            'xml' => 'application/rdf+xml',
+            'ttl' => 'text/turtle',
+            'n3' => 'text/n3',
+            'nt' => 'application/n-triples',
+            'jsonld' => 'application/ld+json',
+        ];
+        if (isset($skosExtensions[$extension])) {
+            $mediaType = $skosExtensions[$extension];
+            $fileData['type'] = $mediaType;
+        }
+
         $supporteds = [
             // 'application/vnd.oasis.opendocument.spreadsheet' => true,
             'text/plain' => true,
             'text/tab-separated-values' => true,
+            'application/rdf+xml' => true,
+            'text/turtle' => true,
+            'text/n3' => true,
+            'application/n-triples' => true,
+            'application/ld+json' => true,
         ];
         if (!isset($supporteds[$mediaType])) {
             return false;

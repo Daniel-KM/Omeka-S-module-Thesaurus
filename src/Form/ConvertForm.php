@@ -32,6 +32,7 @@ class ConvertForm extends Form
                 'options' => [
                     'label' => 'Input format', // @translate
                     'value_options' => [
+                        'skos' => 'Standard SKOS (RDF/XML, Turtle, JSON-LD, N-Triples)', // @translate
                         'tab_offset' => 'Tabulation offsets', // @translate
                         'tab_offset_code_prepended' => 'Tabulation offsets with prepended codes', // @translate
                         'tab_offset_code_appended' => 'Tabulation offsets with appended codes', // @translate
