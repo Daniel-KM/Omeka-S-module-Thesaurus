@@ -21,7 +21,8 @@ or a filing plan (_plan de classement_):
 The view helper can be used for any purpose, for example to build a hierarchical
 list of item sets, but this is not the main purpose.
 
-The thesaurus can be used to fill resources via the module [Custom Vocab].
+The thesaurus can be used to fill resources via a dedicated data type, without
+the module [Custom Vocab] (kept for compatibility).
 
 A future version may rely on ISO 25964 (Thesauri and interoperability with
 other vocabularies).
@@ -83,24 +84,24 @@ The source may be:
 
 Gzipped files (`.gz`, for example a [GEMET] export) are decompressed
 automatically when the php extension `zlib` is available. The maximum size of an
-uploaded file depends on the php settings `upload_max_filesize` and
-`post_max_size`; increase them to import a big thesaurus.
+uploaded file depends on the php settings `upload_max_filesize` and `post_max_size`;
+increase them to import a big thesaurus.
 
 All labels are normalized to Unicode NFC on import, so identical-looking labels
 are stored identically (no duplicates, reliable matching and truncation).
 
 #### Destination
 
-- **Preview**: display the flat list, to check it or to copy-paste it into a
-  custom vocab. From the same screen, the list can also be downloaded, or
-  imported as a custom vocab or a thesaurus (what you see is what is imported).
-- **Custom vocabulary**: create a custom vocab of type "terms". The terms can be
-  the full path ("Europe :: France :: Paris"), the indented label, or the leaf
-  label only.
-- **Thesaurus**: create the item set (skos:Collection), the scheme
-  (skos:ConceptScheme) and one item by concept (skos:Concept) with the
-  broader/narrower relations and the positions. Optionally, the linked custom
-  vocab (type "item set") can be created too.
+- Preview: display the flat list, to check it or to copy-paste it into a custom
+  vocab. From the same screen, the list can also be downloaded, or imported as a
+  custom vocab or a thesaurus (what you see is what is imported).
+- Custom vocabulary: create a custom vocab of type "terms". The terms can be the
+  full path ("Europe :: France :: Paris"), the indented label, or the leaf label
+  only.
+- Thesaurus: create the item set (skos:Collection), the scheme (`skos:ConceptScheme`)
+  and one item by concept (skos:Concept) with the broader/narrower relations and
+  the positions. Optionally, the linked custom vocab (type "item set") can be
+  created too.
 
 The properties used to fill the concepts (descriptor, path, ascendance) and the
 ascendance separator are set in the main settings of Omeka (tab "Thesaurus").
@@ -110,15 +111,31 @@ ascendance separator are set in the main settings of Omeka (tab "Thesaurus").
 A standard SKOS file in RDF/XML, Turtle, JSON-LD or N-Triples, for example the
 [thesaurus of Unesco] or a thesaurus managed with [OpenTheso].
 
-For OpenTheso, the url of the rest api is built as
-`https://{host}/opentheso/openapi/v1/thesaurus/{idTheso}`. The list of the
-thesaurus of an instance (with their `idTheso`) is available at
-`https://{host}/opentheso/openapi/v1/thesaurus`. For example, the "Pactols
-Lieux" thesaurus of Frantiq is
-`https://pactols.frantiq.fr/opentheso/openapi/v1/thesaurus/th17`.
+For OpenTheso, the url of the rest api is built as `https://{host}/opentheso/openapi/v1/thesaurus/{idTheso}`.
+The list of the thesaurus of an instance (with their `idTheso`) is available at
+`https://{host}/opentheso/openapi/v1/thesaurus`.
+For example, the thesaurus "Pactols Lieux" of Frantiq is `https://pactols.frantiq.fr/opentheso/openapi/v1/thesaurus/th17`.
 
-Only the preferred labels and the hierarchy (broader/narrower) are imported for
-now (alternative labels and notes are skipped).
+All the values of the concepts are imported. The preferred labels and the
+hierarchy (broader/narrower) are always imported; a set of checkboxes lets you
+choose the other values to import:
+
+- **Multilingual**: keep the languages of the values; else all the values are
+  set to the Omeka admin language (normalized, so `fr_FR` matches the rdf tag
+  `fr`).
+- **Documentation**: definition, scope note, note, example, history/editorial/
+  change notes.
+- **Notation**.
+- **Internal relations**: `skos:related`, imported as linked resources (a
+  second pass links them once all the concepts exist).
+- **External alignments**: `skos:exactMatch`, `closeMatch`, `broadMatch`,
+  `narrowMatch`, `relatedMatch`, imported as uris.
+- **Other vocabularies**: any other property (dcterms, etc.) is imported when it
+  exists in Omeka (matched by uri, since the rdf prefixes may differ), else it is
+  reported in the logs. Unchecked by default.
+
+The preview only shows the flat list of preferred labels, not all the imported
+values.
 
 ### Manual creation of a thesaurus
 
@@ -211,6 +228,28 @@ Asia
 Asia :: Japan
 Asia :: Japan :: Tokyo
 ```
+
+### Fill a resource with a thesaurus concept
+
+A data type is registered for each thesaurus, so a property of a resource
+template can be filled with a concept selected in the tree, without the module
+[Custom Vocab] and without an item set.
+
+In a resource template, add the data type "Thesaurus: {scheme label}" to a
+property. The selected concept is stored as a linked resource (the concept
+item), so it can be searched (see below) and displayed as a link.
+
+Like the modules [Custom Vocab] and [Table], the thesaurus data types are also
+available as **value annotation** and in **[CSV Import]** (as resources).
+
+The custom vocab (type "item set") still works and is kept for compatibility.
+To add the thesaurus data type to the templates that currently use the custom
+vocab of a thesaurus, run the task "Thesaurus: Add thesaurus data type to custom
+vocab templates" via the module [Easy Admin] (Check and fix), or the button
+"Migrate data types" of the thesaurus page: the thesaurus data type is added in
+first position (default), the custom vocab is kept and the existing values
+remain valid. The configs of the module [Advanced Resource Template] are
+migrated too.
 
 ### Page blocks
 
@@ -376,6 +415,10 @@ of the French higher administrative court [Conseil d’État].
 [Common]: https://gitlab.com/Daniel-KM/Omeka-S-module-Common
 [Bulk Import]: https://gitlab.com/Daniel-KM/Omeka-S-module-BulkImport
 [Custom Vocab]: https://github.com/omeka-s-modules/CustomVocab
+[Easy Admin]: https://gitlab.com/Daniel-KM/Omeka-S-module-EasyAdmin
+[Table]: https://gitlab.com/Daniel-KM/Omeka-S-module-Table
+[CSV Import]: https://github.com/omeka-s-modules/CSVImport
+[Advanced Resource Template]: https://gitlab.com/Daniel-KM/Omeka-S-module-AdvancedResourceTemplate
 [Value Suggest]: https://github.com/omeka-s-modules/ValueSuggest
 [Value Suggest: Any]: https://gitlab.com/Daniel-KM/Omeka-S-module-ValueSuggestAny
 [official translation]: https://www.sparna.fr/skos/SKOS-traduction-francais.html
