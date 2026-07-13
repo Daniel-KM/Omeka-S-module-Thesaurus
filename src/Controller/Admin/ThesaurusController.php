@@ -11,7 +11,7 @@ use Omeka\Controller\Admin\ItemController;
 use Omeka\Mvc\Exception\NotFoundException;
 use Omeka\Mvc\Exception\RuntimeException;
 use Thesaurus\Form\ConfirmAllForm;
-use Thesaurus\Form\ConvertForm;
+use Thesaurus\Form\ImportForm;
 use Thesaurus\Form\UpdateConceptsForm;
 
 /**
@@ -328,8 +328,8 @@ class ThesaurusController extends ItemController
 
     public function convertAction()
     {
-        /** @var \Thesaurus\Form\ConvertForm $form */
-        $form = $this->getForm(ConvertForm::class);
+        /** @var \Thesaurus\Form\ImportForm $form */
+        $form = $this->getForm(ImportForm::class);
         $form
             ->setAttribute('action', $this->url()->fromRoute('admin/thesaurus/default', ['action' => 'upload']))
             ->init();
@@ -370,8 +370,8 @@ class ThesaurusController extends ItemController
             return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'convert'], true);
         }
 
-        /** @var \Thesaurus\Form\ConvertForm $form */
-        $form = $this->getForm(ConvertForm::class);
+        /** @var \Thesaurus\Form\ImportForm $form */
+        $form = $this->getForm(ImportForm::class);
         $form->setData($post + $files);
         if (!$form->isValid()) {
             $this->messenger()->addError(

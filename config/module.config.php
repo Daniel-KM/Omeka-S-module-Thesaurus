@@ -61,7 +61,7 @@ return [
     'form_elements' => [
         'invokables' => [
             Form\ConfirmAllForm::class => Form\ConfirmAllForm::class,
-            Form\ConvertForm::class => Form\ConvertForm::class,
+            Form\ImportForm::class => Form\ImportForm::class,
             Form\SettingsFieldset::class => Form\SettingsFieldset::class,
             Form\ThesaurusFieldset::class => Form\ThesaurusFieldset::class,
             Form\UpdateConceptsForm::class => Form\UpdateConceptsForm::class,

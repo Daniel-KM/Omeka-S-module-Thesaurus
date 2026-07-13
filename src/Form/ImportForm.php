@@ -7,7 +7,7 @@ use Laminas\Form\Element;
 use Laminas\Form\Form;
 use Omeka\Form\Element as OmekaElement;
 
-class ConvertForm extends Form
+class ImportForm extends Form
 {
     public function init(): void
     {
