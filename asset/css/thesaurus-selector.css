@@ -1,0 +1,142 @@
+.thesaurus-selector {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* The browse button stays beside the chip or the search input. */
+.thesaurus-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.thesaurus-search {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.thesaurus-input {
+    width: 100%;
+}
+
+/* Drop the default margin of the core buttons. */
+.thesaurus-browse.button {
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+.thesaurus-results {
+    position: absolute;
+    z-index: 10;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 2px 0 0;
+    padding: 0;
+    max-height: 18em;
+    overflow-y: auto;
+    list-style: none;
+    background: #fff;
+    border: 1px solid #a1a1a1;
+    border-radius: 3px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .15);
+}
+
+.thesaurus-result {
+    display: flex;
+    flex-direction: column;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.thesaurus-result:last-child {
+    border-bottom: 0;
+}
+
+.thesaurus-result.active,
+.thesaurus-result:hover {
+    background: #eaf3fb;
+}
+
+.thesaurus-result-title {
+    font-weight: 600;
+}
+
+.thesaurus-result-ascendance,
+.thesaurus-chip-ascendance {
+    font-size: .85em;
+    color: #6b6b6b;
+}
+
+/* Same neutral frame as a selected resource in the core (.resource-inputs). */
+.thesaurus-chip {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 5px 8px;
+    background-color: #fff;
+    box-shadow: 0 0 0 1px #dfdfdf;
+}
+
+.thesaurus-chip-title {
+    font-weight: 600;
+}
+
+.thesaurus-browser .dialog-panel {
+    display: flex;
+    flex-direction: column;
+    width: min(560px, 92vw);
+    max-height: 80vh;
+    overflow: hidden;
+}
+
+.thesaurus-browser .dialog-contents {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.thesaurus-browser .dialog-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.thesaurus-browser-toolbar {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+    margin: 0 0 10px;
+}
+
+.thesaurus-browser-search {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+}
+
+.thesaurus-browser-toggle {
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+.thesaurus-browser-tree {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+.thesaurus-browser-tree .jstree-themeicon {
+    display: none;
+}
+
+.thesaurus-browser-tree .jstree-anchor {
+    height: auto;
+    line-height: 1.8;
+}

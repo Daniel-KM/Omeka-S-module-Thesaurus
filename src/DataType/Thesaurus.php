@@ -2,7 +2,6 @@
 
 namespace Thesaurus\DataType;
 
-use Laminas\Form\Element\Select;
 use Laminas\View\Renderer\PhpRenderer;
 use Omeka\Api\Adapter\AbstractEntityAdapter;
 use Omeka\Api\Representation\ItemRepresentation;
@@ -62,28 +61,22 @@ class Thesaurus implements DataTypeInterface, ValueAnnotatingInterface
 
     public function prepareForm(PhpRenderer $view): void
     {
-        $view->headScript()->appendFile($view->assetUrl('js/resource-form.js', 'Thesaurus'));
+        // jstree (bundled in the core) powers the browse dialog of the widget,
+        // that follows the standard dialog of the module Common.
+        $view->headLink()
+            ->appendStylesheet($view->assetUrl('css/jstree.css', 'Omeka'))
+            ->appendStylesheet($view->assetUrl('css/common-dialog.css', 'Common'))
+            ->appendStylesheet($view->assetUrl('css/thesaurus-selector.css', 'Thesaurus'));
+        $view->headScript()
+            ->appendFile($view->assetUrl('vendor/jstree/jstree.min.js', 'Omeka'))
+            ->appendFile($view->assetUrl('js/thesaurus-selector.js', 'Thesaurus'));
     }
 
     public function form(PhpRenderer $view)
     {
-        // TODO The display of the select options needs a separate ux design.
-        $theso = $this->thesaurus->__invoke($this->scheme);
-        $valueOptions = $theso->isSkos()
-            ? $theso->listTree($this->selectOptions ?: ['indent' => '– '])
-            : [];
-
-        $select = new Select('thesaurus');
-        $select
-            ->setValueOptions($valueOptions)
-            ->setEmptyOption('')
-            ->setAttributes([
-                'class' => 'thesaurus-datatype to-require',
-                'data-value-key' => 'value_resource_id',
-                'data-placeholder' => $view->translate('Select a concept'), // @translate
-            ]);
-
-        return $view->formSelect($select);
+        return $view->partial('common/data-type/thesaurus', [
+            'schemeId' => $this->scheme->id(),
+        ]);
     }
 
     public function isValid(array $valueObject)

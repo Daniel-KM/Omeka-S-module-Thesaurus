@@ -180,6 +180,73 @@ class ThesaurusController extends ItemController
         );
     }
 
+    /**
+     * Suggest concepts of a thesaurus for the type-ahead of the data type, as a
+     * flat list of {id, title, ascendance}, filtered by a
+     * diacritics-insensitive substring. An empty query returns the head of the
+     * tree, so the widget can behave like a select for small thesaurus.
+     */
+    public function suggestAction()
+    {
+        if (!$this->getRequest()->isXmlHttpRequest()) {
+            throw new NotFoundException();
+        }
+
+        $id = (int) $this->params()->fromRoute('id');
+        $scheme = $this->api()->read('items', ['id' => $id])->getContent();
+
+        /** @var \Thesaurus\Mvc\Controller\Plugin\Thesaurus $thesaurus */
+        $thesaurus = $this->thesaurus($scheme);
+        if (!$thesaurus->isSkos()) {
+            return new JsonModel(['results' => []]);
+        }
+
+        $separator = ' › ';
+        $titles = $thesaurus->listTree();
+        $paths = $thesaurus->listTree(['ascendance' => true, 'separator' => $separator]);
+
+        $query = $this->fold((string) $this->params()->fromQuery('q', ''));
+
+        $results = [];
+        foreach ($titles as $conceptId => $title) {
+            $position = $query === '' ? 0 : mb_strpos($this->fold((string) $title), $query);
+            if ($position === false) {
+                continue;
+            }
+            $path = (string) ($paths[$conceptId] ?? $title);
+            $cut = mb_strrpos($path, $separator);
+            $results[] = [
+                'id' => $conceptId,
+                'title' => $title,
+                'ascendance' => $cut === false ? '' : mb_substr($path, 0, $cut),
+                // Prefix matches are ranked first, then by natural tree order.
+                'rank' => $position === 0 ? 0 : 1,
+            ];
+        }
+
+        usort($results, fn ($a, $b) => $a['rank'] <=> $b['rank']);
+        $results = array_slice($results, 0, 50);
+        foreach ($results as &$result) {
+            unset($result['rank']);
+        }
+        unset($result);
+
+        return new JsonModel(['results' => $results]);
+    }
+
+    /**
+     * Normalize a string for a diacritics-insensitive and case-insensitive
+     * comparison (decompose to NFD, remove the combining marks, lower case).
+     */
+    protected function fold(string $string): string
+    {
+        $decomposed = \Normalizer::normalize($string, \Normalizer::FORM_D);
+        if ($decomposed === false) {
+            $decomposed = $string;
+        }
+        return mb_strtolower((string) preg_replace('/\p{Mn}+/u', '', $decomposed));
+    }
+
     public function updateAction()
     {
         /** @var \Omeka\Api\Representation\ItemRepresentation $item */

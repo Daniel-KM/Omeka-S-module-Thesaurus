@@ -9,8 +9,8 @@
  */
 
 $plugins = $this->getHelperPluginManager();
-$translate = $this->plugin('translate');
 $escape = $plugins->get('escapeHtml');
+$translate = $plugins->get('translate');
 
 if (empty($data) && !empty($options['hideIfEmpty'])):
     return;

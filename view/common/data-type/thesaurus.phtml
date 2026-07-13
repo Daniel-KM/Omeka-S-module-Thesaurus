@@ -1,0 +1,43 @@
+<?php
+/**
+ * The concept selector is cloned once per value by the resource form.
+ *
+ * Concepts are fetched lazily from the suggest and jstree endpoints, so the
+ * form scales whatever the size and the number of thesaurus.
+ *
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var int $schemeId
+ */
+
+$plugins = $this->getHelperPluginManager();
+$escape = $plugins->get('escapeHtml');
+$translate = $plugins->get('translate');
+$escapeAttr = $plugins->get('escapeHtmlAttr');
+
+$searchLabel = $translate('Search a concept'); // @translate
+$browseLabel = $translate('Browse the thesaurus'); // @translate
+?>
+
+<div class="thesaurus-selector"
+    data-suggest-url="<?= $escapeAttr($this->url('admin/thesaurus/id', ['id' => $schemeId, 'action' => 'suggest'])) ?>"
+    data-jstree-url="<?= $escapeAttr($this->url('admin/thesaurus/id', ['id' => $schemeId, 'action' => 'jstree'])) ?>"
+    data-label-open="<?= $escapeAttr($translate('Open all')) // @translate ?>"
+    data-label-close="<?= $escapeAttr($translate('Close all')) // @translate ?>">
+    <input type="hidden" class="value to-require" data-value-key="value_resource_id">
+    <div class="thesaurus-field">
+        <div class="thesaurus-chip" role="status" hidden>
+            <span class="thesaurus-chip-title"></span>
+            <span class="thesaurus-chip-ascendance"></span>
+        </div>
+        <div class="thesaurus-search">
+            <input type="text" class="thesaurus-input" autocomplete="off" spellcheck="false"
+                placeholder="<?= $escapeAttr($searchLabel) ?>" aria-label="<?= $escapeAttr($searchLabel) ?>"
+                role="combobox" aria-expanded="false" aria-autocomplete="list">
+            <ul class="thesaurus-results" role="listbox" aria-label="<?= $escapeAttr($searchLabel) ?>" hidden></ul>
+        </div>
+        <button type="button" class="thesaurus-browse button" title="<?= $escapeAttr($browseLabel) ?>">
+            <span class="fas fa-project-diagram" aria-hidden="true"></span>
+            <span class="screen-reader-text"><?= $escape($browseLabel) ?></span>
+        </button>
+    </div>
+</div>
