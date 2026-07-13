@@ -19,6 +19,7 @@ use Omeka\Entity\Item;
  *
  * @Entity
  * @Table(
+ *     name="thesaurus_term",
  *     uniqueConstraints={
  *         @UniqueConstraint(
  *             columns={

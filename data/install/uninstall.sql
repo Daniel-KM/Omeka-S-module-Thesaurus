@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS term;
+DROP TABLE IF EXISTS thesaurus_term;

@@ -578,7 +578,7 @@ WHERE `custom_vocab`.`item_set_id` IS NOT NULL
 AND `custom_vocab`.`item_set_id` IN (
     SELECT DISTINCT `item_item_set`.`item_set_id`
     FROM `resource`
-    INNER JOIN `term` ON `term`.`scheme_id` = `resource`.`id`
+    INNER JOIN `thesaurus_term` AS `term` ON `term`.`scheme_id` = `resource`.`id`
     INNER JOIN `item_item_set` ON `item_item_set`.`item_id` = `term`.`scheme_id`
     INNER JOIN `resource_class` ON `resource_class`.`id` = `resource`.`resource_class_id`
     INNER JOIN `vocabulary` ON `vocabulary`.`id` = `resource_class`.`vocabulary_id`
@@ -594,7 +594,7 @@ SQL;
         $subQb
             ->select('DISTINCT item_item_set.item_set_id')
             ->from('resource', 'resource')
-            ->innerJoin('resource', 'term', 'term', 'term.scheme_id = resource.id')
+            ->innerJoin('resource', 'thesaurus_term', 'term', 'term.scheme_id = resource.id')
             ->innerJoin('term', 'item_item_set', 'item_item_set', 'item_item_set.item_id = term.scheme_id')
             ->innerJoin('resource', 'resource_class', 'resource_class', 'resource_class.id = resource.resource_class_id')
             ->innerJoin('resource_class', 'vocabulary', 'vocabulary', 'vocabulary.id = resource_class.vocabulary_id')
