@@ -12,6 +12,9 @@ require dirname(__DIR__, 3) . '/modules/Common/tests/Bootstrap.php';
     [
         'Common',
         'Thesaurus',
+        // Optional: when the module is active, its entities are mapped, so its
+        // tables are required as soon as a resource is serialized.
+        '?DigitalObject',
     ],
     'ThesaurusTest',
     __DIR__ . '/ThesaurusTest'

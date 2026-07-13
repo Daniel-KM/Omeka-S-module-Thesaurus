@@ -240,4 +240,45 @@ trait ThesaurusTestTrait
         }
         $this->createdResources = [];
     }
+
+    /**
+     * Create a thesaurus with the tabulation format and return its scheme.
+     *
+     * The scheme, its item set and its concepts are registered for cleanup.
+     *
+     * @param array $lines Descriptors, a leading tabulation by level.
+     */
+    protected function createThesaurus(string $name, array $lines): ItemRepresentation
+    {
+        $this->runJob(\Thesaurus\Job\CreateThesaurus::class, [
+            'name' => $name,
+            'format' => 'tab_offset',
+            'input' => $lines,
+            'fill' => ['descriptor' => 'skos:prefLabel'],
+        ]);
+
+        $schemeClassId = (int) $this->getServiceLocator()->get('Omeka\Settings')
+            ->get('thesaurus_skos_scheme_class_id');
+        $schemes = $this->api()->search('items', [
+            'resource_class_id' => $schemeClassId,
+            'sort_by' => 'id',
+            'sort_order' => 'desc',
+            'limit' => 1,
+        ])->getContent();
+        if (!$schemes) {
+            throw new \RuntimeException('No thesaurus scheme was created.');
+        }
+        $scheme = reset($schemes);
+
+        foreach ($scheme->itemSets() as $itemSet) {
+            $this->createdResources[] = ['type' => 'item_sets', 'id' => $itemSet->id()];
+        }
+        $thesaurus = $this->getServiceLocator()->get('ControllerPluginManager')->get('thesaurus');
+        foreach (array_keys($thesaurus($scheme)->flatTree()) as $conceptId) {
+            $this->createdResources[] = ['type' => 'items', 'id' => $conceptId];
+        }
+        $this->createdResources[] = ['type' => 'items', 'id' => $scheme->id()];
+
+        return $scheme;
+    }
 }
