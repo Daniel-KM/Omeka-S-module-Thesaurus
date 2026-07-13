@@ -201,6 +201,12 @@ class Module extends AbstractModule
             'data_types.value_annotating',
             [$this, 'addThesaurusDataTypesToValueAnnotating']
         );
+        // Make the thesaurus data types available in CSV Import.
+        $sharedEventManager->attach(
+            '*',
+            'csv_import.config',
+            [$this, 'addThesaurusDataTypesToCsvImport']
+        );
 
         $sharedEventManager->attach(
             \Omeka\Form\SettingForm::class,
@@ -270,6 +276,25 @@ class Module extends AbstractModule
         }
         $valueAnnotating = $event->getParam('data_types');
         $event->setParam('data_types', array_merge($valueAnnotating, array_keys($dataTypes)));
+    }
+
+    /**
+     * Add the thesaurus data types to the CSV Import config (as resources).
+     */
+    public function addThesaurusDataTypesToCsvImport(Event $event): void
+    {
+        $dataTypes = $this->getThesaurusDataTypes();
+        if (!$dataTypes) {
+            return;
+        }
+        $config = $event->getParam('config');
+        foreach ($dataTypes as $name => $label) {
+            $config['data_types'][$name] = [
+                'label' => $label,
+                'adapter' => 'resource',
+            ];
+        }
+        $event->setParam('config', $config);
     }
 
     /**
