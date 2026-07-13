@@ -187,6 +187,7 @@ class ConvertForm extends Form
                 'type' => CommonElement\OptionalCheckbox::class,
                 'options' => [
                     'label' => 'Create the linked custom vocabulary (item set)', // @translate
+                    'info' => 'Optional: the thesaurus data type does not require it. It is kept as a complement for compatibility with the custom vocab.', // @translate
                 ],
                 'attributes' => [
                     'id' => 'create_customvocab',
