@@ -11,6 +11,11 @@ $i18n = $plugins->get('i18n');
 $escape = $plugins->get('escapeHtml');
 $translate = $plugins->get('translate');
 $hyperlink = $plugins->get('hyperlink');
+$assetUrl = $plugins->get('assetUrl');
+$escapeAttr = $plugins->get('escapeHtmlAttr');
+
+$this->headLink()
+    ->appendStylesheet($assetUrl('css/common-page-action-menu.css', 'Common'));
 
 $this->htmlElement('body')->appendAttribute('class', 'items browse');
 
@@ -50,7 +55,17 @@ $sortHeadings = [
 
 <div id="page-actions">
     <?php if ($this->userIsAllowed('Omeka\Api\Adapter\ItemAdapter', 'create')): ?>
-    <?= $hyperlink($translate('Convert'), $url('admin/thesaurus/default', ['action' => 'convert'], true), ['class' => 'button', 'title' => $translate('Convert a file into a thesaurus')]) ?>
+    <div class="page-action-menu">
+        <div class="with-sub-menu">
+            <a href="#" class="button expand"
+                aria-label="<?= $escapeAttr($translate('Expand')) ?>"
+                title="<?= $escapeAttr($translate('Expand')) ?>"><?= $escape($translate('Maintenance')) ?></a>
+            <ul class="collapsible">
+                <li><a href="<?= $escapeAttr($url('admin/thesaurus/default', ['action' => 'convert'], true)) ?>"><?= $escape($translate('Import')) ?></a></li>
+                <li><a href="<?= $escapeAttr($url('admin/thesaurus/default', ['action' => 'migrate-data-types'], true)) ?>"><?= $escape($translate('Migrate data types')) ?></a></li>
+            </ul>
+        </div>
+    </div>
     <?= $hyperlink($translate('Add new item'), $url('admin/thesaurus/default', ['action' => 'add'], true), ['class' => 'button']) ?>
     <?php endif; ?>
 </div>

@@ -274,3 +274,17 @@ if (version_compare($oldVersion, '3.4.24', '<')) {
         $messenger->addSuccess($message);
     }
 }
+
+if (version_compare($oldVersion, '3.4.25', '<')) {
+    // The migration of the data types is not run automatically: it is delegated
+    // to a job, triggered manually, so the admin can review the impact first.
+    $message = new PsrMessage(
+        'A new data type "thesaurus" can fill values with a thesaurus concept, without a custom vocab or an item set.' // @translate
+    );
+    $messenger->addSuccess($message);
+
+    $message = new PsrMessage(
+        'To add it to the resource templates (and advanced resource template) that currently use the custom vocab of a thesaurus, run the task "Thesaurus: Add thesaurus data type to custom vocab templates" via the module Easy Admin (Check and fix). The custom vocab is kept for compatibility, and existing values remain valid.' // @translate
+    );
+    $messenger->addWarning($message);
+}

@@ -675,6 +675,7 @@ SQL;
         $process = $fieldset->get('process');
         $valueOptions = $process->getValueOptions();
         $valueOptions['db_thesaurus_index'] = 'Thesaurus: Index thesaurus'; // @translate
+        $valueOptions['db_thesaurus_migrate_datatypes'] = 'Thesaurus: Add thesaurus data type to custom vocab templates'; // @translate
         $process->setValueOptions($valueOptions);
 
         if (method_exists($form, 'addTaskSubjects')) {
@@ -686,6 +687,13 @@ SQL;
                         'db_thesaurus_index' => 'Index', // @translate
                     ],
                 ],
+                'db_thesaurus_migrate_datatypes' => [
+                    'name' => 'Thesaurus data type migration', // @translate
+                    'description' => 'Add the thesaurus data type to the resource templates (and advanced resource template) that use the custom vocab of a thesaurus, without removing the custom vocab.', // @translate
+                    'actions' => [
+                        'db_thesaurus_migrate_datatypes' => 'Migrate', // @translate
+                    ],
+                ],
             ]);
         }
     }
@@ -695,6 +703,9 @@ SQL;
         $process = $event->getParam('process');
         if ($process === 'db_thesaurus_index') {
             $event->setParam('job', \Thesaurus\Job\IndexThesaurus::class);
+            $event->setParam('args', []);
+        } elseif ($process === 'db_thesaurus_migrate_datatypes') {
+            $event->setParam('job', \Thesaurus\Job\MigrateDataTypes::class);
             $event->setParam('args', []);
         }
     }

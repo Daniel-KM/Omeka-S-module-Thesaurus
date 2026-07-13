@@ -17,6 +17,14 @@
       right: 60px;
     }
 
+    body.thesaurus.tree i.jstree-displaylink {
+        right: 48px;
+    }
+    body.thesaurus.tree .jstree-open > .jstree-anchor .jstree-displaylink,
+    body.thesaurus.tree .jstree-closed > .jstree-anchor .jstree-displaylink {
+        right: 72px;
+    }
+
     body.thesaurus.convert form .field .inputs label,
     body.thesaurus.update-concepts form .field .inputs label {
         display: block;

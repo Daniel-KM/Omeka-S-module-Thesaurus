@@ -266,6 +266,26 @@ class ThesaurusController extends ItemController
         return $this->redirect()->toRoute('admin/thesaurus/default');
     }
 
+    public function migrateDataTypesAction()
+    {
+        $dispatcher = $this->jobDispatcher();
+        $job = $dispatcher->dispatch(\Thesaurus\Job\MigrateDataTypes::class, []);
+        $message = new PsrMessage(
+            'Migrating data types in background: the thesaurus data type is added to the templates using a thesaurus custom vocab ({link}job #{job_id}{link_end}, {link_log}logs{link_end}).', // @translate
+            [
+                'link' => sprintf('<a href="%s">', htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))),
+                'job_id' => $job->getId(),
+                'link_end' => '</a>',
+                'link_log' => class_exists('Log\Module', false)
+                    ? sprintf('<a href="%1$s">', htmlspecialchars($this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]])))
+                    : sprintf('<a href="%1$s" target="_blank" rel="noopener noreferrer">', htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()]))),
+            ]
+        );
+        $message->setEscapeHtml(false);
+        $this->messenger()->addSuccess($message);
+        return $this->redirect()->toRoute('admin/thesaurus/default');
+    }
+
     public function structureAction()
     {
         /** @var \Omeka\Api\Representation\ItemRepresentation $item */
