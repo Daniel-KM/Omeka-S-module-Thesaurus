@@ -62,6 +62,11 @@ class CreateThesaurus extends AbstractJob
             $hasError = true;
         }
 
+        // The name is kept as is for the label, but the identifier is slugified
+        // so it can be used in a clean url, whose pattern excludes any other
+        // character (a name is generally built from the imported file name).
+        $identifier = $this->slugify((string) $name);
+
         $formats = [
             'tab_offset',
             'tab_offset_code_prepended',
@@ -180,7 +185,7 @@ class CreateThesaurus extends AbstractJob
                 [
                     'type' => 'literal',
                     'property_id' => 10,
-                    '@value' => 'c' . $name,
+                    '@value' => 'c' . $identifier,
                 ],
             ],
         ];
@@ -206,7 +211,7 @@ class CreateThesaurus extends AbstractJob
                 [
                     'type' => 'literal',
                     'property_id' => 10,
-                    '@value' => $name,
+                    '@value' => $identifier,
                 ],
             ],
         ];
@@ -952,6 +957,32 @@ class CreateThesaurus extends AbstractJob
             'topIds' => $topIds,
             'narrowers' => $narrowers,
         ];
+    }
+
+    /**
+     * Transform a string into a slug usable as an identifier in a clean url.
+     *
+     * Accented characters are transliterated, then any character that is not an
+     * ascii alphanumeric, "_" or "-" is replaced by a "_".
+     *
+     * @see \AdvancedSearch\Controller\Admin\SearchConfigController::slugify()
+     * @see \Omeka\Api\Adapter\SiteSlugTrait::slugify()
+     */
+    protected function slugify(string $input): string
+    {
+        if (extension_loaded('intl')) {
+            static $transliterator;
+            $transliterator ??= \Transliterator::createFromRules(':: NFD; :: [:Nonspacing Mark:] Remove; :: NFC;');
+            $slug = (string) $transliterator->transliterate($input);
+        } elseif (extension_loaded('iconv')) {
+            $slug = (string) iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $input);
+        } else {
+            $slug = $input;
+        }
+        // Don't lowercase: the clean url pattern accepts the upper case.
+        $slug = preg_replace('/[^a-zA-Z0-9_-]+/u', '_', $slug);
+        $slug = preg_replace('/_{2,}/', '_', $slug);
+        return trim((string) $slug, '_');
     }
 
     /**
