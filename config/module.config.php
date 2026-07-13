@@ -8,6 +8,11 @@ return [
             'terms' => Api\Adapter\TermAdapter::class,
         ],
     ],
+    'data_types' => [
+        'abstract_factories' => [
+            Service\DataType\ThesaurusFactory::class,
+        ],
+    ],
     'entity_manager' => [
         'mapping_classes_paths' => [
             dirname(__DIR__) . '/src/Entity',

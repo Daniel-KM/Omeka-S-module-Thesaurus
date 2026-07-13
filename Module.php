@@ -189,6 +189,13 @@ class Module extends AbstractModule
             [$this, 'updateAscendance']
         );
 
+        // Register a data type "thesaurus:{schemeId}" by thesaurus scheme.
+        $sharedEventManager->attach(
+            'Omeka\DataType\Manager',
+            'service.registered_names',
+            [$this, 'registerThesaurusDataTypes']
+        );
+
         $sharedEventManager->attach(
             \Omeka\Form\SettingForm::class,
             'form.add_elements',
@@ -206,6 +213,31 @@ class Module extends AbstractModule
             'easyadmin.job',
             [$this, 'handleEasyAdminJobs']
         );
+    }
+
+    /**
+     * Register a data type "thesaurus:{schemeId}" for each thesaurus scheme.
+     */
+    public function registerThesaurusDataTypes(Event $event): void
+    {
+        $services = $this->getServiceLocator();
+        $schemeClassId = (int) $services->get('Omeka\Settings')->get('thesaurus_skos_scheme_class_id');
+        if (!$schemeClassId) {
+            return;
+        }
+
+        /** @var \Omeka\Api\Manager $api */
+        $api = $services->get('Omeka\ApiManager');
+        $schemeIds = $api->search('items', ['resource_class_id' => $schemeClassId], ['returnScalar' => 'id'])->getContent();
+        if (!$schemeIds) {
+            return;
+        }
+
+        $names = $event->getParam('registered_names');
+        foreach ($schemeIds as $schemeId) {
+            $names[] = 'thesaurus:' . $schemeId;
+        }
+        $event->setParam('registered_names', $names);
     }
 
     /**
