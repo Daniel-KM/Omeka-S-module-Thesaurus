@@ -37,25 +37,25 @@ if (!method_exists($this, 'checkModuleActiveVersion') || !$this->checkModuleActi
 
 if (version_compare($oldVersion, '3.0.4', '<')) {
     $sql = <<<SQL
-CREATE TABLE term (
-    id INT AUTO_INCREMENT NOT NULL,
-    item_id INT NOT NULL,
-    scheme_id INT NOT NULL,
-    root_id INT DEFAULT NULL,
-    broader_id INT DEFAULT NULL,
-    position INT DEFAULT NULL,
-    INDEX IDX_A50FE78D126F525E (item_id),
-    INDEX IDX_A50FE78D65797862 (scheme_id),
-    INDEX IDX_A50FE78D79066886 (root_id),
-    INDEX IDX_A50FE78D5646636A (broader_id),
-    UNIQUE INDEX UNIQ_A50FE78D126F525E65797862 (item_id, scheme_id),
-    PRIMARY KEY(id)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB;
-ALTER TABLE term ADD CONSTRAINT FK_A50FE78D126F525E FOREIGN KEY (item_id) REFERENCES item (id) ON DELETE CASCADE;
-ALTER TABLE term ADD CONSTRAINT FK_A50FE78D65797862 FOREIGN KEY (scheme_id) REFERENCES item (id) ON DELETE CASCADE;
-ALTER TABLE term ADD CONSTRAINT FK_A50FE78D79066886 FOREIGN KEY (root_id) REFERENCES term (id) ON DELETE CASCADE;
-ALTER TABLE term ADD CONSTRAINT FK_A50FE78D5646636A FOREIGN KEY (broader_id) REFERENCES term (id) ON DELETE CASCADE;
-SQL;
+        CREATE TABLE term (
+            id INT AUTO_INCREMENT NOT NULL,
+            item_id INT NOT NULL,
+            scheme_id INT NOT NULL,
+            root_id INT DEFAULT NULL,
+            broader_id INT DEFAULT NULL,
+            position INT DEFAULT NULL,
+            INDEX IDX_A50FE78D126F525E (item_id),
+            INDEX IDX_A50FE78D65797862 (scheme_id),
+            INDEX IDX_A50FE78D79066886 (root_id),
+            INDEX IDX_A50FE78D5646636A (broader_id),
+            UNIQUE INDEX UNIQ_A50FE78D126F525E65797862 (item_id, scheme_id),
+            PRIMARY KEY(id)
+        ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB;
+        ALTER TABLE term ADD CONSTRAINT FK_A50FE78D126F525E FOREIGN KEY (item_id) REFERENCES item (id) ON DELETE CASCADE;
+        ALTER TABLE term ADD CONSTRAINT FK_A50FE78D65797862 FOREIGN KEY (scheme_id) REFERENCES item (id) ON DELETE CASCADE;
+        ALTER TABLE term ADD CONSTRAINT FK_A50FE78D79066886 FOREIGN KEY (root_id) REFERENCES term (id) ON DELETE CASCADE;
+        ALTER TABLE term ADD CONSTRAINT FK_A50FE78D5646636A FOREIGN KEY (broader_id) REFERENCES term (id) ON DELETE CASCADE;
+        SQL;
     foreach (array_filter(array_map('trim', explode(";\n", $sql))) as $sql) {
         $connection->executeStatement($sql);
     }
@@ -276,6 +276,49 @@ if (version_compare($oldVersion, '3.4.24', '<')) {
 }
 
 if (version_compare($oldVersion, '3.4.25', '<')) {
+    // Rename the table "term" to "thesaurus_term" to use a prefixed name.
+    $sql = <<<'SQL'
+        SELECT COUNT(*)
+        FROM information_schema.TABLES
+        WHERE TABLE_SCHEMA = DATABASE()
+            AND TABLE_NAME = 'thesaurus_term'
+        SQL;
+    $exists = (int) $connection->executeQuery($sql)->fetchOne();
+    if (!$exists) {
+        $sqls = <<<'SQL'
+            RENAME TABLE `term` TO `thesaurus_term`;
+            ALTER TABLE `thesaurus_term`
+                DROP FOREIGN KEY `FK_A50FE78D126F525E`,
+                DROP FOREIGN KEY `FK_A50FE78D65797862`,
+                DROP FOREIGN KEY `FK_A50FE78D79066886`,
+                DROP FOREIGN KEY `FK_A50FE78D5646636A`;
+            ALTER TABLE `thesaurus_term`
+                DROP INDEX `IDX_A50FE78D126F525E`,
+                DROP INDEX `IDX_A50FE78D65797862`,
+                DROP INDEX `IDX_A50FE78D79066886`,
+                DROP INDEX `IDX_A50FE78D5646636A`,
+                DROP INDEX `UNIQ_A50FE78D126F525E65797862`;
+            ALTER TABLE `thesaurus_term`
+                ADD INDEX `IDX_C633FC11126F525E` (`item_id`),
+                ADD INDEX `IDX_C633FC1165797862` (`scheme_id`),
+                ADD INDEX `IDX_C633FC1179066886` (`root_id`),
+                ADD INDEX `IDX_C633FC115646636A` (`broader_id`),
+                ADD UNIQUE INDEX `UNIQ_C633FC11126F525E65797862` (`item_id`, `scheme_id`);
+            ALTER TABLE `thesaurus_term`
+                ADD CONSTRAINT `FK_C633FC11126F525E` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON DELETE CASCADE,
+                ADD CONSTRAINT `FK_C633FC1165797862` FOREIGN KEY (`scheme_id`) REFERENCES `item` (`id`) ON DELETE CASCADE,
+                ADD CONSTRAINT `FK_C633FC1179066886` FOREIGN KEY (`root_id`) REFERENCES `thesaurus_term` (`id`) ON DELETE CASCADE,
+                ADD CONSTRAINT `FK_C633FC115646636A` FOREIGN KEY (`broader_id`) REFERENCES `thesaurus_term` (`id`) ON DELETE CASCADE;
+            SQL;
+        foreach (array_filter(explode(";\n", $sqls)) as $sql) {
+            $connection->executeStatement($sql);
+        }
+        $message = new PsrMessage(
+            'The table "term" was renamed to "thesaurus_term".' // @translate
+        );
+        $messenger->addSuccess($message);
+    }
+
     // The migration of the data types is not run automatically: it is delegated
     // to a job, triggered manually, so the admin can review the impact first.
     $message = new PsrMessage(
