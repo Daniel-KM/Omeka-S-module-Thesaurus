@@ -195,6 +195,12 @@ class Module extends AbstractModule
             'service.registered_names',
             [$this, 'registerThesaurusDataTypes']
         );
+        // Make the thesaurus data types available as value annotation.
+        $sharedEventManager->attach(
+            '*',
+            'data_types.value_annotating',
+            [$this, 'addThesaurusDataTypesToValueAnnotating']
+        );
 
         $sharedEventManager->attach(
             \Omeka\Form\SettingForm::class,
@@ -216,28 +222,54 @@ class Module extends AbstractModule
     }
 
     /**
-     * Register a data type "thesaurus:{schemeId}" for each thesaurus scheme.
+     * List the data types "thesaurus:{schemeId}" with their label (the scheme
+     * title), one for each thesaurus scheme.
+     *
+     * @return array<string, string> data type name => scheme title
      */
-    public function registerThesaurusDataTypes(Event $event): void
+    protected function getThesaurusDataTypes(): array
     {
         $services = $this->getServiceLocator();
         $schemeClassId = (int) $services->get('Omeka\Settings')->get('thesaurus_skos_scheme_class_id');
         if (!$schemeClassId) {
-            return;
+            return [];
         }
 
         /** @var \Omeka\Api\Manager $api */
         $api = $services->get('Omeka\ApiManager');
-        $schemeIds = $api->search('items', ['resource_class_id' => $schemeClassId], ['returnScalar' => 'id'])->getContent();
-        if (!$schemeIds) {
+        $schemes = $api->search('items', ['resource_class_id' => $schemeClassId], ['returnScalar' => 'title'])->getContent();
+
+        $result = [];
+        foreach ($schemes as $schemeId => $title) {
+            $result['thesaurus:' . $schemeId] = (string) $title;
+        }
+        return $result;
+    }
+
+    /**
+     * Register a data type "thesaurus:{schemeId}" for each thesaurus scheme.
+     */
+    public function registerThesaurusDataTypes(Event $event): void
+    {
+        $dataTypes = $this->getThesaurusDataTypes();
+        if (!$dataTypes) {
             return;
         }
-
         $names = $event->getParam('registered_names');
-        foreach ($schemeIds as $schemeId) {
-            $names[] = 'thesaurus:' . $schemeId;
+        $event->setParam('registered_names', array_merge($names, array_keys($dataTypes)));
+    }
+
+    /**
+     * Add the thesaurus data types to the value annotation.
+     */
+    public function addThesaurusDataTypesToValueAnnotating(Event $event): void
+    {
+        $dataTypes = $this->getThesaurusDataTypes();
+        if (!$dataTypes) {
+            return;
         }
-        $event->setParam('registered_names', $names);
+        $valueAnnotating = $event->getParam('data_types');
+        $event->setParam('data_types', array_merge($valueAnnotating, array_keys($dataTypes)));
     }
 
     /**
