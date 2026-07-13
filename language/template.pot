@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-01 00:00+0000\n"
+"POT-Creation-Date: 2026-07-08 06:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,8 +26,12 @@ msgstr ""
 msgid "Missing requirement. Unable to upgrade."
 msgstr ""
 
-#: Module.php:442
+#: Module.php:474
 msgid "is"
+msgstr ""
+
+#: src/DataType/Thesaurus.php:83
+msgid "Select a concept"
 msgstr ""
 
 #: src/View/Helper/LinkTerm.php:68
@@ -53,24 +57,24 @@ msgstr ""
 msgid "Thesaurus"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:53
-msgid "Convert"
+#: view/thesaurus/admin/thesaurus/browse.phtml:54
+msgid "Maintenance"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:53
-msgid "Convert a file into a thesaurus"
+#: view/thesaurus/admin/thesaurus/browse.phtml:57
+msgid "Migrate data types"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:84
+#: view/thesaurus/admin/thesaurus/browse.phtml:90
 msgid "[no owner]"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:104
+#: view/thesaurus/admin/thesaurus/browse.phtml:110
 #: view/thesaurus/admin/thesaurus/structure.phtml:53
 msgid "Edit structure"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:108
+#: view/thesaurus/admin/thesaurus/browse.phtml:114
 msgid "Update path/ascendance and reindex"
 msgstr ""
 
@@ -80,10 +84,11 @@ msgstr ""
 
 #: view/thesaurus/admin/thesaurus/convert.phtml:30
 msgid ""
-"Import a hierarchic list of concepts from a standard SKOS file or a "
-"structured text file. According to the chosen destination, the result can be "
-"previewed, imported as a custom vocabulary (list of terms), or imported as a "
-"thesaurus (items with relations)."
+"Import a hierarchic list of concepts from a standard SKOS file (rdf, ttl, "
+"json-ld, nt) or a structured text file (txt, csv, tsv). According to the "
+"chosen destination, the result can be previewed, imported as a custom "
+"vocabulary (list of terms), or imported as a thesaurus (items with "
+"relations)."
 msgstr ""
 
 #: view/thesaurus/admin/thesaurus/flat.phtml:25
@@ -140,7 +145,7 @@ msgstr ""
 msgid "Open all"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/structure.phtml:67
+#: view/thesaurus/admin/thesaurus/structure.phtml:66
 msgid "Close all"
 msgstr ""
 
@@ -206,45 +211,79 @@ msgstr ""
 msgid "{count} thesaurus labels were normalized to Unicode NFC."
 msgstr ""
 
+#: data/scripts/upgrade.php:282
+msgid ""
+"A new data type \"thesaurus\" can fill values with a thesaurus concept, "
+"without a custom vocab or an item set."
+msgstr ""
+
+#: data/scripts/upgrade.php:287
+msgid ""
+"To add it to the resource templates (and advanced resource template) that "
+"currently use the custom vocab of a thesaurus, run the task \"Thesaurus: Add "
+"thesaurus data type to custom vocab templates\" via the module Easy Admin "
+"(Check and fix). The custom vocab is kept for compatibility, and existing "
+"values remain valid."
+msgstr ""
+
 #: Module.php:62
 msgid ""
 "It is recommended to install module CustomVocab to take full advantage of "
 "this module."
 msgstr ""
 
-#: Module.php:645
+#: Module.php:677
 msgid "Thesaurus: Index thesaurus"
 msgstr ""
 
-#: Module.php:651
+#: Module.php:678
+msgid "Thesaurus: Add thesaurus data type to custom vocab templates"
+msgstr ""
+
+#: Module.php:684
 msgid "Thesaurus index"
 msgstr ""
 
-#: Module.php:652
+#: Module.php:685
 msgid "Index the thesaurus terms and their relations."
 msgstr ""
 
-#: Module.php:654
+#: Module.php:687
 msgid "Index"
 msgstr ""
 
-#: Module.php:707
+#: Module.php:691
+msgid "Thesaurus data type migration"
+msgstr ""
+
+#: Module.php:692
+msgid ""
+"Add the thesaurus data type to the resource templates (and advanced resource "
+"template) that use the custom vocab of a thesaurus, without removing the "
+"custom vocab."
+msgstr ""
+
+#: Module.php:694
+msgid "Migrate"
+msgstr ""
+
+#: Module.php:750
 msgid "Unable to find resource template \"Thesaurus Concept\"."
 msgstr ""
 
-#: Module.php:715
+#: Module.php:758
 msgid "Unable to find vocabulary Skos."
 msgstr ""
 
-#: Module.php:726
+#: Module.php:769
 msgid "Unable to find property {term} for descriptor."
 msgstr ""
 
-#: Module.php:739
+#: Module.php:782
 msgid "Unable to find property {term} for path."
 msgstr ""
 
-#: Module.php:753
+#: Module.php:796
 msgid "Unable to find property {term} for ascendance."
 msgstr ""
 
@@ -319,90 +358,100 @@ msgstr ""
 msgid "A name is required to create a thesaurus."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:75
+#: src/Job/CreateThesaurus.php:76
 msgid "The format of the file is undetermined."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:84
+#: src/Job/CreateThesaurus.php:85
 msgid "A list of concepts is required to create a thesaurus."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:93 src/Job/UpdateConcepts.php:65
+#: src/Job/CreateThesaurus.php:94 src/Job/UpdateConcepts.php:65
 msgid ""
 "A preferred label with the descriptor or the full path is required to fill "
 "concepts."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:102
-#: src/Controller/Admin/ThesaurusController.php:382
+#: src/Job/CreateThesaurus.php:103
+#: src/Controller/Admin/ThesaurusController.php:424
 msgid ""
 "The input format is defined as containing codes, but no codes are defined."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:139
+#: src/Job/CreateThesaurus.php:140
 msgid "The property {property} for descriptor is not managed."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:147 src/Job/UpdateConcepts.php:140
+#: src/Job/CreateThesaurus.php:148 src/Job/UpdateConcepts.php:140
 msgid "The property \"{property}\" for path is not managed."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:155 src/Job/UpdateConcepts.php:147
+#: src/Job/CreateThesaurus.php:156 src/Job/UpdateConcepts.php:147
 msgid "The property \"{property}\" for ascendance is not managed."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:163
+#: src/Job/CreateThesaurus.php:164
 msgid "Processing {count} descriptors in three steps."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:221
+#: src/Job/CreateThesaurus.php:222
 msgid "Step 1/3: creation of {count} descriptors."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:256
+#: src/Job/CreateThesaurus.php:259
 msgid "Step 2/3: creation of relations between descriptors."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:264
+#: src/Job/CreateThesaurus.php:267
 msgid "{count}/{total} descriptors completed."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:301
+#: src/Job/CreateThesaurus.php:304
 msgid "Step 3/3: indexation of new thesaurus."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:321
+#: src/Job/CreateThesaurus.php:324
 msgid "The linked custom vocabulary \"{label}\" was created."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:326
+#: src/Job/CreateThesaurus.php:329
 msgid "Unable to create the linked custom vocabulary \"{label}\": {message}"
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:333
+#: src/Job/CreateThesaurus.php:336
 msgid "The thesaurus \"{name}\" is ready, with {count} descriptors."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:414
+#: src/Job/CreateThesaurus.php:417
 msgid ""
 "The line \"{string} has the code \"{code}\", but there is no previous "
 "descriptor to apply to it. It is skipped."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:489
+#: src/Job/CreateThesaurus.php:492
 msgid "The job was stopped. {count}/{total} lines processed."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:500 src/Job/CreateThesaurus.php:638
+#: src/Job/CreateThesaurus.php:503 src/Job/CreateThesaurus.php:854
 #: src/Job/UpdateConcepts.php:200
 msgid "{count}/{total} descriptors processed."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:615
+#: src/Job/CreateThesaurus.php:638 src/Job/CreateThesaurus.php:642
+msgid "total"
+msgstr ""
+
+#: src/Job/CreateThesaurus.php:767
+msgid ""
+"Some properties of other vocabularies are not present in Omeka and were "
+"skipped: {list}."
+msgstr ""
+
+#: src/Job/CreateThesaurus.php:831
 msgid "After first step, {count} descriptors can be processed."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:627 src/Job/UpdateConcepts.php:192
+#: src/Job/CreateThesaurus.php:843 src/Job/UpdateConcepts.php:192
 msgid "The job  was stopped. {count}/{total} descriptors processed."
 msgstr ""
 
@@ -514,6 +563,27 @@ msgstr ""
 
 #: src/Job/IndexThesaurus.php:265
 msgid "The term #{item_id} has more than {count} levels."
+msgstr ""
+
+#: src/Job/MigrateDataTypes.php:26
+msgid ""
+"The thesaurus scheme class is not set; the module may not be fully installed."
+msgstr ""
+
+#: src/Job/MigrateDataTypes.php:32
+msgid "No thesaurus custom vocab found; nothing to migrate."
+msgstr ""
+
+#: src/Job/MigrateDataTypes.php:41
+msgid ""
+"Migration done: the thesaurus data type was added to {rtp} resource template "
+"properties and {art} advanced resource template configs."
+msgstr ""
+
+#: src/Job/MigrateDataTypes.php:160
+msgid ""
+"The setting \"{id}\" (table {table}) references the thesaurus custom vocab "
+"\"{cv}\". Review it manually to use the thesaurus data type if wanted."
 msgstr ""
 
 #: src/Form/SettingsFieldset.php:27
@@ -715,109 +785,147 @@ msgstr ""
 msgid "Remove values"
 msgstr ""
 
-#: src/Form/ConvertForm.php:20
+#: src/Form/ImportForm.php:21
 msgid "Source file"
 msgstr ""
 
-#: src/Form/ConvertForm.php:21
-msgid ""
-"Standard SKOS (rdf, ttl, jsonld, nt), or a simple text file with one concept "
-"by line and tabulations or codes to indicate the hierarchic level (txt, csv, "
-"tsv)."
+#: src/Form/ImportForm.php:32
+msgid "Or import from a URL"
 msgstr ""
 
-#: src/Form/ConvertForm.php:33
+#: src/Form/ImportForm.php:43
 msgid "Input format"
 msgstr ""
 
-#: src/Form/ConvertForm.php:35
+#: src/Form/ImportForm.php:45
 msgid "Standard SKOS (RDF/XML, Turtle, JSON-LD, N-Triples)"
 msgstr ""
 
-#: src/Form/ConvertForm.php:36
+#: src/Form/ImportForm.php:46
 msgid "Tabulation offsets"
 msgstr ""
 
-#: src/Form/ConvertForm.php:37
+#: src/Form/ImportForm.php:47
 msgid "Tabulation offsets with prepended codes"
 msgstr ""
 
-#: src/Form/ConvertForm.php:38
+#: src/Form/ImportForm.php:48
 msgid "Tabulation offsets with appended codes"
 msgstr ""
 
-#: src/Form/ConvertForm.php:39
+#: src/Form/ImportForm.php:49
 msgid "Structure and label (01-02-03 xxx)"
 msgstr ""
 
-#: src/Form/ConvertForm.php:52
+#: src/Form/ImportForm.php:62
 msgid "Property mapping for prepended or appended codes"
 msgstr ""
 
-#: src/Form/ConvertForm.php:53
+#: src/Form/ImportForm.php:63
 msgid ""
 "Set codes mapped with the property. A property can be set directly when used "
 "in input table."
 msgstr ""
 
-#: src/Form/ConvertForm.php:97
+#: src/Form/ImportForm.php:109
+msgid "SKOS values to import"
+msgstr ""
+
+#: src/Form/ImportForm.php:110
+msgid ""
+"The preferred labels and the hierarchy are always imported. The preview does "
+"not show all the imported values."
+msgstr ""
+
+#: src/Form/ImportForm.php:112
+msgid "Multilingual (else the Omeka admin language)"
+msgstr ""
+
+#: src/Form/ImportForm.php:113
+msgid "Documentation (definition, scope note, notes…)"
+msgstr ""
+
+#: src/Form/ImportForm.php:114
+msgid "Notation"
+msgstr ""
+
+#: src/Form/ImportForm.php:115
+msgid "Internal relations (related)"
+msgstr ""
+
+#: src/Form/ImportForm.php:116
+msgid "External alignments (exactMatch, closeMatch…)"
+msgstr ""
+
+#: src/Form/ImportForm.php:117
+msgid ""
+"Other vocabularies (imported if the property exists in Omeka, else logged)"
+msgstr ""
+
+#: src/Form/ImportForm.php:137
 msgid "Skip first line"
 msgstr ""
 
-#: src/Form/ConvertForm.php:108
+#: src/Form/ImportForm.php:148
 msgid "Clean input"
 msgstr ""
 
-#: src/Form/ConvertForm.php:110
+#: src/Form/ImportForm.php:150
 msgid "Remove trailing punctuation"
 msgstr ""
 
-#: src/Form/ConvertForm.php:111
+#: src/Form/ImportForm.php:151
 msgid "Replace single quote by apostrophe"
 msgstr ""
 
-#: src/Form/ConvertForm.php:112
+#: src/Form/ImportForm.php:152
 msgid "Replace apostrophe by single quote"
 msgstr ""
 
-#: src/Form/ConvertForm.php:113
+#: src/Form/ImportForm.php:153
 msgid "Lower case for string"
 msgstr ""
 
-#: src/Form/ConvertForm.php:114
+#: src/Form/ImportForm.php:154
 msgid "Lower case for string and upper case for first letter"
 msgstr ""
 
-#: src/Form/ConvertForm.php:115
+#: src/Form/ImportForm.php:155
 msgid "Lower case for string and upper case for each word"
 msgstr ""
 
-#: src/Form/ConvertForm.php:116
+#: src/Form/ImportForm.php:156
 msgid "Upper case for string"
 msgstr ""
 
-#: src/Form/ConvertForm.php:131
+#: src/Form/ImportForm.php:171
 msgid "Destination"
 msgstr ""
 
-#: src/Form/ConvertForm.php:133
+#: src/Form/ImportForm.php:173
 msgid "Preview the flat list (to check or copy-paste)"
 msgstr ""
 
-#: src/Form/ConvertForm.php:134
+#: src/Form/ImportForm.php:174
 msgid "Custom vocabulary (list of terms)"
 msgstr ""
 
-#: src/Form/ConvertForm.php:135
+#: src/Form/ImportForm.php:175
 msgid "Thesaurus (items with relations)"
 msgstr ""
 
-#: src/Form/ConvertForm.php:149
+#: src/Form/ImportForm.php:189
 msgid "Leave empty to use the file name."
 msgstr ""
 
-#: src/Form/ConvertForm.php:177
+#: src/Form/ImportForm.php:217
 msgid "Create the linked custom vocabulary (item set)"
+msgstr ""
+
+#: src/Form/ImportForm.php:218
+msgid ""
+"Optional: the thesaurus data type does not require it. It is kept as a "
+"complement for compatibility with the custom vocab."
 msgstr ""
 
 #: src/Form/ConfirmAllForm.php:22
@@ -917,92 +1025,116 @@ msgid ""
 "logs{link_end})."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:285
+#: src/Controller/Admin/ThesaurusController.php:274
+msgid ""
+"Migrating data types in background: the thesaurus data type is added to the "
+"templates using a thesaurus custom vocab ({link}job #{job_id}{link_end}, "
+"{link_log}logs{link_end})."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:305
 msgid ""
 "You may need to reload {link}this page{link_end} a second time to clean "
 "indexation of top concepts."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:326
+#: src/Controller/Admin/ThesaurusController.php:346
 msgid "Unallowed request."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:343
-msgid "Missing file."
+#: src/Controller/Admin/ThesaurusController.php:367
+msgid ""
+"The file exceeds the maximum upload size allowed by the server ({size})."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:353
+#: src/Controller/Admin/ThesaurusController.php:378
 msgid "Wrong request for file."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:395
-msgid "An error occurred when uploading the file."
+#: src/Controller/Admin/ThesaurusController.php:398
+msgid "A file or a URL is required."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:400
+#: src/Controller/Admin/ThesaurusController.php:443
 msgid "Wrong media type (\"{type}\") for file."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:406
-#: src/Controller/Admin/ThesaurusController.php:985
+#: src/Controller/Admin/ThesaurusController.php:449
+#: src/Controller/Admin/ThesaurusController.php:1079
 msgid "The file is empty."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:415
+#: src/Controller/Admin/ThesaurusController.php:458
 msgid "Unable to convert the file."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:479
+#: src/Controller/Admin/ThesaurusController.php:522
 msgid "Convert first a file to get the flat list."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:522
+#: src/Controller/Admin/ThesaurusController.php:565
 msgid "The module Custom Vocab is required to create a custom vocabulary."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:530
+#: src/Controller/Admin/ThesaurusController.php:573
 msgid "There is no term to create the custom vocabulary."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:542
+#: src/Controller/Admin/ThesaurusController.php:585
 msgid "Unable to create the custom vocabulary \"{label}\": {message}"
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:549
+#: src/Controller/Admin/ThesaurusController.php:592
 msgid "The custom vocabulary \"{label}\" was created with {count} terms."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:574
+#: src/Controller/Admin/ThesaurusController.php:617
 msgid "The list is empty."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:620
+#: src/Controller/Admin/ThesaurusController.php:663
 msgid ""
 "Structure saved and reindexed ({link}job #{job_id}{link_end}, {link_log}"
 "logs{link_end})."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:624
+#: src/Controller/Admin/ThesaurusController.php:667
 msgid ""
 "Indexing structure in background. Do not display structure while indexing, "
 "else errors may occur ({link}job #{job_id}{link_end}, {link_log}"
 "logs{link_end})."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:1018
+#: src/Controller/Admin/ThesaurusController.php:1110
 msgid "The thesaurus \"{title}\" is created."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:1025
+#: src/Controller/Admin/ThesaurusController.php:1117
 msgid ""
 "Creation of thesaurus \"{title}\" with {total} lines started ({link}job "
 "#{job_id}{link_end}, {link_log}logs{link_end})"
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:1061
+#: src/Controller/Admin/ThesaurusController.php:1153
 msgid ""
 "Updating concepts in background ({link}job #{job_id}{link_end}, {link_log}"
 "logs{link_end})."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:1264
+msgid "Unable to fetch the URL: {message}"
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:1272
+msgid "Unable to fetch the URL (status {status})."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:1281
+msgid "The fetched URL is empty."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:1329
+msgid "The php extension \"zlib\" is required to import a gzipped file."
 msgstr ""
 
 #: src/Stdlib/Thesaurus.php:324
@@ -1260,3 +1392,13 @@ msgid ""
 "combining mappings across more than two concept schemes, skos:closeMatch is "
 "not declared to be a transitive property."
 msgstr ""
+
+msgid "The table \"term\" was renamed to \"thesaurus_term\"."
+msgstr ""
+
+msgid "Search a concept"
+msgstr ""
+
+msgid "Browse the thesaurus"
+msgstr ""
+
