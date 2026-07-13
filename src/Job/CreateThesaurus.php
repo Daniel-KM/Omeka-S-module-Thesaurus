@@ -67,6 +67,7 @@ class CreateThesaurus extends AbstractJob
             'tab_offset_code_prepended',
             'tab_offset_code_appended',
             'structure_label',
+            'skos',
         ];
 
         $format = $this->getArg('format');
@@ -244,6 +245,8 @@ class CreateThesaurus extends AbstractJob
             $result = $this->convertThesaurusStructureLabel($input, $baseConcept, $fill, $separator, $clean);
         } elseif ($format === 'tab_offset_code_prepended' || $format === 'tab_offset_code_appended') {
             $result = $this->convertThesaurusTabOffset($input, $baseConcept, $fill, $separator, $clean, $format === 'tab_offset_code_appended' ? 'appended' : 'prepended');
+        } elseif ($format === 'skos') {
+            $result = $this->convertThesaurusSkos($input, $baseConcept, $fill);
         }
 
         // Even if the job is stopped, fill the other data.
@@ -544,6 +547,234 @@ class CreateThesaurus extends AbstractJob
             }
 
             ++$totalProcessed;
+        }
+
+        return [
+            'topIds' => $topIds,
+            'narrowers' => $narrowers,
+        ];
+    }
+
+    /**
+     * Create the concepts of a thesaurus from a parsed SKOS structure.
+     *
+     * The input is the ordered list returned by the controller (level, uri,
+     * label, path, prefLabels, values). All the values are imported according
+     * to the "skos" job option (documentation, notation, relations, mappings,
+     * other vocabularies, multilingual). The preferred labels and the hierarchy
+     * are always imported.
+     */
+    protected function convertThesaurusSkos(array $input, array $baseConcept, array $fill): array
+    {
+        $services = $this->getServiceLocator();
+        $schemeId = $baseConcept['skos:inScheme'][0]['value_resource_id'];
+
+        $skosOptions = $this->getArg('skos') ?: [];
+        $multilingual = in_array('multilingual', $skosOptions);
+        $withDoc = in_array('documentation', $skosOptions);
+        $withNotation = in_array('notation', $skosOptions);
+        $withRelations = in_array('relations', $skosOptions);
+        $withMappings = in_array('mappings', $skosOptions);
+        $withOther = in_array('other_vocabularies', $skosOptions);
+
+        // Admin language, normalized (fr_FR → fr) to match the rdf lang tags.
+        $locale = (string) $services->get('Omeka\Settings')->get('locale');
+        $adminLang = $locale === '' ? '' : strtolower(strtok($locale, '_-'));
+
+        $descriptorTerm = $fill['descriptor'] ?: 'skos:prefLabel';
+        $descriptorPid = $this->easyMeta->propertyId($descriptorTerm);
+        $pathPid = empty($fill['path']) ? null : $this->easyMeta->propertyId($fill['path']);
+        $ascendancePid = empty($fill['ascendance']) ? null : $this->easyMeta->propertyId($fill['ascendance']);
+        $separator = $this->getArg('separator') ?? \Thesaurus\Module::SEPARATOR;
+
+        // Map each property full uri to its Omeka id, since the rdf prefixes
+        // may differ from the Omeka ones (e.g. EasyRdf shortens dcterms as
+        // "dc").
+        $uriToPid = $services->get('Omeka\Connection')->executeQuery(
+            'SELECT CONCAT(vocabulary.namespace_uri, property.local_name) AS uri, property.id FROM property INNER JOIN vocabulary ON vocabulary.id = property.vocabulary_id'
+        )->fetchAllKeyValue();
+
+        $labelTerms = ['skos:altLabel' => true, 'skos:hiddenLabel' => true];
+        $docTerms = array_flip([
+            'skos:definition', 'skos:scopeNote', 'skos:note', 'skos:example',
+            'skos:historyNote', 'skos:editorialNote', 'skos:changeNote',
+        ]);
+        $notationTerms = ['skos:notation' => true];
+        $mappingTerms = array_flip([
+            'skos:exactMatch', 'skos:closeMatch', 'skos:broadMatch',
+            'skos:narrowMatch', 'skos:relatedMatch',
+        ]);
+
+        // Build value objects for a property from a list of {value, lang},
+        // according to the multilingual option (else the admin language).
+        $literals = function (array $items, int $pid) use ($multilingual, $adminLang): array {
+            $out = [];
+            $seen = [];
+            foreach ($items as $it) {
+                $rawLang = (string) ($it['lang'] ?? '');
+                $lang = $rawLang === '' ? '' : strtolower((string) strtok($rawLang, '_-'));
+                if (!$multilingual && $lang !== '' && $adminLang !== '' && $lang !== $adminLang) {
+                    continue;
+                }
+                $key = $it['value'] . "\0" . ($multilingual ? $lang : '');
+                if (isset($seen[$key])) {
+                    continue;
+                }
+                $seen[$key] = true;
+                $value = ['type' => 'literal', 'property_id' => $pid, '@value' => $it['value']];
+                $useLang = $multilingual ? $lang : $adminLang;
+                if ($useLang !== '') {
+                    $value['@language'] = $useLang;
+                }
+                $out[] = $value;
+            }
+            return $out;
+        };
+
+        $topIds = [];
+        $narrowers = [];
+        $levels = [];
+        $uriToId = [];
+        $relatedByConcept = [];
+        $missingProps = [];
+
+        $total = count($input);
+        $processed = 0;
+        foreach ($input as $element) {
+            if ($this->shouldStop()) {
+                $this->logger->warn('The job was stopped. {count}/{total} concepts processed.', ['count' => $processed, 'total' => $total]); // @translate
+                break;
+            }
+            if ($processed && ($processed % 100) === 0) {
+                $this->logger->info('{count}/{total} concepts processed.', ['count' => $processed, 'total' => $total]); // @translate
+                $this->entityManager->clear();
+            }
+
+            $level = (int) $element['level'];
+            $data = $baseConcept;
+
+            // Preferred label (descriptor).
+            $data[$descriptorTerm] = $literals($element['prefLabels'] ?? [], $descriptorPid);
+            if (!$data[$descriptorTerm] && !empty($element['label'])) {
+                $value = ['type' => 'literal', 'property_id' => $descriptorPid, '@value' => $element['label']];
+                if ($adminLang !== '') {
+                    $value['@language'] = $adminLang;
+                }
+                $data[$descriptorTerm] = [$value];
+            }
+
+            // Path / ascendance.
+            $path = $element['path'] ?? [];
+            if ($ascendancePid && $path) {
+                $data[$fill['ascendance']][] = ['type' => 'literal', 'property_id' => $ascendancePid, '@value' => implode($separator, $path)];
+            }
+            if ($pathPid) {
+                $data[$fill['path']][] = ['type' => 'literal', 'property_id' => $pathPid, '@value' => implode($separator, array_merge($path, [$element['label'] ?? '']))];
+            }
+
+            // Other values, grouped by term.
+            $byTerm = [];
+            foreach (($element['values'] ?? []) as $val) {
+                $byTerm[$val['term']][] = $val;
+            }
+            foreach ($byTerm as $term => $vals) {
+                if ($term === 'skos:related') {
+                    // Handled after all concepts are created (needs the ids).
+                    continue;
+                }
+                $isLabel = isset($labelTerms[$term]);
+                $isDoc = isset($docTerms[$term]);
+                $isNotation = isset($notationTerms[$term]);
+                $isMapping = isset($mappingTerms[$term]);
+                $keep = $isLabel
+                    || ($isDoc && $withDoc)
+                    || ($isNotation && $withNotation)
+                    || ($isMapping && $withMappings)
+                    || (!$isLabel && !$isDoc && !$isNotation && !$isMapping && $withOther);
+                if (!$keep) {
+                    continue;
+                }
+                $propertyUri = $vals[0]['property_uri'] ?? '';
+                $pid = $uriToPid[$propertyUri] ?? $this->easyMeta->propertyId($term);
+                if (!$pid) {
+                    $missingProps[$term] = true;
+                    continue;
+                }
+                $lits = [];
+                foreach ($vals as $v) {
+                    if (($v['type'] ?? '') === 'literal') {
+                        $lits[] = ['value' => $v['value'], 'lang' => $v['lang'] ?? ''];
+                    } elseif (($v['type'] ?? '') === 'resource' && !empty($v['uri'])) {
+                        $data[$term][] = ['type' => 'uri', 'property_id' => $pid, '@id' => $v['uri']];
+                    }
+                }
+                foreach ($literals($lits, $pid) as $value) {
+                    $data[$term][] = $value;
+                }
+            }
+
+            // Hierarchy via level.
+            $parentLevel = $level ? $level - 1 : false;
+            if ($level && isset($levels[$parentLevel])) {
+                $data['skos:broader'] = [[
+                    'type' => 'resource:item',
+                    'property_id' => $this->easyMeta->propertyId('skos:broader'),
+                    'value_resource_id' => $levels[$parentLevel],
+                ]];
+            } else {
+                $levels = [];
+                $level = 0;
+                $data['skos:topConceptOf'] = [[
+                    'type' => 'resource:item',
+                    'property_id' => $this->easyMeta->propertyId('skos:topConceptOf'),
+                    'value_resource_id' => $schemeId,
+                ]];
+            }
+
+            $concept = $this->api->create('items', $data)->getContent();
+            $conceptId = $concept->id();
+            if (!empty($element['uri'])) {
+                $uriToId[$element['uri']] = $conceptId;
+            }
+            $levels[$level] = $conceptId;
+            if ($level === 0) {
+                $topIds[] = $conceptId;
+            } else {
+                $narrowers[$levels[$parentLevel]][] = $conceptId;
+            }
+
+            if ($withRelations) {
+                foreach (($element['values'] ?? []) as $val) {
+                    if ($val['term'] === 'skos:related' && ($val['type'] ?? '') === 'resource' && !empty($val['uri'])) {
+                        $relatedByConcept[$conceptId][] = $val['uri'];
+                    }
+                }
+            }
+
+            ++$processed;
+        }
+
+        // Second pass: internal relations (skos:related) as linked resources.
+        if ($relatedByConcept) {
+            $relatedPid = $this->easyMeta->propertyId('skos:related');
+            foreach ($relatedByConcept as $conceptId => $uris) {
+                $append = [];
+                foreach ($uris as $uri) {
+                    if (isset($uriToId[$uri])) {
+                        $append[] = ['type' => 'resource:item', 'property_id' => $relatedPid, 'value_resource_id' => $uriToId[$uri]];
+                    }
+                }
+                if ($append) {
+                    $this->api->update('items', $conceptId, ['skos:related' => $append], [], ['isPartial' => true, 'collectionAction' => 'append']);
+                }
+            }
+        }
+
+        if ($missingProps) {
+            $this->logger->warn(
+                'Some properties of other vocabularies are not present in Omeka and were skipped: {list}.', // @translate
+                ['list' => implode(', ', array_keys($missingProps))]
+            );
         }
 
         return [

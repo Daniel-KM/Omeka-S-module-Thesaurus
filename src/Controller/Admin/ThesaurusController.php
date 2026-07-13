@@ -428,6 +428,10 @@ class ThesaurusController extends ItemController
             $options['position_code'] = $inputFormat === 'tab_offset_code_appended' ? 'appended' : 'prepended';
         }
 
+        if ($inputFormat === 'skos') {
+            $options['skos'] = $data['skos'] ?? [];
+        }
+
         // TODO Check the file during validation inside the form.
 
         // Decompress gzipped files (for example a GEMET ".rdf.gz" export).
@@ -882,16 +886,66 @@ class ThesaurusController extends ItemController
     }
 
     /**
+     * Extract all the values of a skos concept, except the structural ones.
+     *
+     * The structural properties (prefLabel, broader, narrower, topConceptOf,
+     * inScheme, rdf:type) are managed separately. The preferred labels are
+     * returned apart (with their language) to be used as the descriptor.
+     *
+     * @return array{prefLabels: array<array{value: string, lang: string}>, values: array<array<string, string>>}
+     */
+    protected function extractSkosValues(\EasyRdf\Resource $concept): array
+    {
+        $structural = [
+            'skos:prefLabel',
+            'skos:broader',
+            'skos:narrower',
+            'skos:topConceptOf',
+            'skos:inScheme',
+            'rdf:type',
+        ];
+
+        $prefLabels = [];
+        foreach ($concept->allLiterals('skos:prefLabel') as $literal) {
+            $value = trim((string) $literal);
+            if ($value !== '') {
+                $prefLabels[] = ['value' => $value, 'lang' => (string) $literal->getLang()];
+            }
+        }
+
+        $values = [];
+        foreach ($concept->propertyUris() as $uri) {
+            $term = \EasyRdf\RdfNamespace::shorten($uri) ?: $uri;
+            if (in_array($term, $structural, true)) {
+                continue;
+            }
+            foreach ($concept->all($term) as $val) {
+                if ($val instanceof \EasyRdf\Literal) {
+                    $value = trim((string) $val);
+                    if ($value !== '') {
+                        $values[] = ['term' => $term, 'property_uri' => $uri, 'type' => 'literal', 'value' => $value, 'lang' => (string) $val->getLang()];
+                    }
+                } elseif ($val instanceof \EasyRdf\Resource && !$val->isBNode()) {
+                    $values[] = ['term' => $term, 'property_uri' => $uri, 'type' => 'resource', 'uri' => $val->getUri()];
+                }
+            }
+        }
+
+        return ['prefLabels' => $prefLabels, 'values' => $values];
+    }
+
+    /**
      * Parse a SKOS file into an ordered and flattened tree of concepts.
      *
      * Each element has the keys "level" (depth, starting at 0), "label" (the
      * preferred label) and "path" (the list of ancestor labels). The hierarchy
      * is built from skos:narrower and skos:broader; roots are the concepts that
-     * are not a child of another one.
+     * are not a child of another one. With $withValues, each element also has
+     * "uri", "prefLabels" and "values" (see self::extractSkosValues()).
      *
      * @return array<array{level: int, label: string, path: string[]}>
      */
-    protected function parseSkosTree(string $filepath, ?string $format = null): array
+    protected function parseSkosTree(string $filepath, ?string $format = null, bool $withValues = false): array
     {
         \EasyRdf\RdfNamespace::set('skos', 'http://www.w3.org/2004/02/skos/core#');
 
@@ -948,7 +1002,7 @@ class ThesaurusController extends ItemController
 
         $tree = [];
         $visited = [];
-        $walk = function (array $uris, array $path) use (&$walk, &$tree, &$visited, $children, $labels, $sort): void {
+        $walk = function (array $uris, array $path) use (&$walk, &$tree, &$visited, $children, $labels, $sort, $byUri, $withValues): void {
             foreach ($sort($uris) as $uri) {
                 if (isset($visited[$uri])) {
                     continue;
@@ -959,7 +1013,12 @@ class ThesaurusController extends ItemController
                 // label.
                 $childPath = $label === '' ? $path : array_merge($path, [$label]);
                 if ($label !== '') {
-                    $tree[] = ['level' => count($path), 'label' => $label, 'path' => $path];
+                    $element = ['level' => count($path), 'label' => $label, 'path' => $path];
+                    if ($withValues) {
+                        $element['uri'] = $uri;
+                        $element += $this->extractSkosValues($byUri[$uri]);
+                    }
+                    $tree[] = $element;
                 }
                 if (!empty($children[$uri])) {
                     $walk(array_values($children[$uri]), $childPath);
@@ -1006,13 +1065,9 @@ class ThesaurusController extends ItemController
         ?string $mediaType = 'text/plain'
     ): void {
         if (($options['format'] ?? '') === 'skos') {
-            // Reuse the core engine: serialize the SKOS tree as a tabulation
-            // offset list, then import it as a standard "tab_offset" file.
-            $lines = [];
-            foreach ($this->parseSkosTree($filepath, $this->skosRdfFormat($mediaType)) as $element) {
-                $lines[] = str_repeat("\t", $element['level']) . $element['label'];
-            }
-            $options['format'] = 'tab_offset';
+            // Import the full SKOS structure (all values); the job creates the
+            // concepts with their values according to the "skos" options.
+            $lines = $this->parseSkosTree($filepath, $this->skosRdfFormat($mediaType), true);
         } else {
             $text = file_get_contents($filepath);
             $text = mb_encode_numericentity($text, [0x80, 0x10FFFF, 0, 0x1FFFFF], 'UTF-8');
