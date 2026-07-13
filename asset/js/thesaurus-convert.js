@@ -25,6 +25,7 @@
     function update() {
         var format = checkedValue('format');
         toggle('codes', format === 'tab_offset_code_prepended' || format === 'tab_offset_code_appended');
+        toggle('skos', format === 'skos');
 
         var destination = checkedValue('destination');
         toggle('customvocab_label', destination === 'customvocab');

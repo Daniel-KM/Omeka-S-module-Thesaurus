@@ -103,6 +103,34 @@ class ImportForm extends Form
             ])
 
             ->add([
+                'name' => 'skos',
+                'type' => CommonElement\OptionalMultiCheckbox::class,
+                'options' => [
+                    'label' => 'SKOS values to import', // @translate
+                    'info' => 'The preferred labels and the hierarchy are always imported. The preview does not show all the imported values.', // @translate
+                    'value_options' => [
+                        'multilingual' => 'Multilingual (else the Omeka admin language)', // @translate
+                        'documentation' => 'Documentation (definition, scope note, notes…)', // @translate
+                        'notation' => 'Notation', // @translate
+                        'relations' => 'Internal relations (related)', // @translate
+                        'mappings' => 'External alignments (exactMatch, closeMatch…)', // @translate
+                        'other_vocabularies' => 'Other vocabularies (imported if the property exists in Omeka, else logged)', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'skos',
+                    // All but the non-skos vocabularies.
+                    'value' => [
+                        'multilingual',
+                        'documentation',
+                        'notation',
+                        'relations',
+                        'mappings',
+                    ],
+                ],
+            ])
+
+            ->add([
                 'name' => 'skip_first_line',
                 'type' => Element\Checkbox::class,
                 'options' => [
