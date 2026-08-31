@@ -10,6 +10,8 @@ Thesaurus (module for Omeka S)
 or a filing plan (_plan de classement_):
 
 - the skos ontology is included;
+- the concepts are a specific resource, like the items or the item sets, so the
+  arborescence is stored in database and not rebuilt from the values;
 - two resource templates are included to set the thesaurus scheme and each
   concept to allow to build the thesaurus as a list of items;
 - an admin view to manage the tree structure;
@@ -35,7 +37,8 @@ See general end user documentation for [installing a module].
 
 This module requires the module [Common], that should be installed first.
 
-An optional module is [Custom Vocab].
+An optional module is [Custom Vocab], but it is deprecated for the thesaurus:
+use the data type `thesaurus:xxx` included in this module instead.
 
 * From the zip
 
@@ -64,6 +67,41 @@ Usage
 
 This module allows to manage concept as any other items and to use and to manage
 directly the terms of the ontology [skos].
+
+### Concepts as resources
+
+A concept is a resource of its own, like an item or an item set. It has its own
+api (`/api/concepts`), its own admin pages (`/admin/concept/:id`) and its own
+database table, that stores the scheme, the broader concept, the top concept of
+the branch and the position. The scheme itself remains an item with the class
+`skos:ConceptScheme`.
+
+An existing thesaurus built with items is converted with the maintenance task
+"Convert items into concepts…", available in the main admin page "Thesaurus". A
+concept has no media, so the conversion of a thesaurus is refused when at least
+one of its items has a media: remove the media, use an asset or exclude these
+items first.
+
+#### Structure and values
+
+The skos values are the source of truth: the columns of the table are an index
+built from them by the job of reindexation. So a concept can be created with the
+values only (`skos:inScheme`, `skos:topConceptOf`, `skos:broader`), like any
+resource, and the structure is filled automatically. The keys `o:scheme`,
+`o:broader`, `o:top` and `o:position` may be used to set the structure
+explicitly and they take precedence when they are present.
+
+#### Reindexation
+
+The structure is not rebuilt on each save: the positions and the top concepts
+are global to the thesaurus, so a single change may reindex thousands of rows.
+When a concept is created, updated or deleted in a way that may break the
+structure, a single warning is displayed, with a link to reindex the thesaurus
+(action `reindex`). The page "Structure" of a thesaurus has the same command,
+with the button "Update and reindex".
+
+The removal of a skos relation is a known limit: only the reindexation updates
+the structure in that case.
 
 You can create a thesaurus in various ways.
 
@@ -309,8 +347,13 @@ where xxx is the thesaurus item id.
 
 ### Api sort
 
-It is possible to sort a query according to thesaurus items order with `sort_by=thesaurus&sort_thesaurus=xxx`,
-where xxx is the item id of the thesaurus.
+The concepts are a resource with their own api, so they are sorted by their
+position inside the thesaurus directly: `/api/concepts?scheme_id=xxx&sort_by=position`,
+where xxx is the item id of the scheme. They can be filtered by `scheme_id`,
+`top_id` and `broader_id` too.
+
+The query `sort_by=thesaurus&sort_thesaurus=xxx` on items, available until
+version 3.4.25, was removed: the concepts are no longer items.
 
 ### Use with the module Collecting
 
@@ -320,42 +363,27 @@ custom vocab of the thesaurus.
 
 The old [fork of the module Collecting] is no more needed.
 
-A prompt with the input type "Item resource" and a resource query can be used
-too, in order to limit and to sort the proposed concepts. Choose a property to
-fill, the input type "Item resource", then the query:
-`resource_class_id[0]=xxx&property[0][joiner]=and&property[0][property]=skos:inScheme&property[0][type]=res&property[0][text]=yyy&sort_by=thesaurus&sort_thesaurus=yyy`.
-or in php:
-
-```php
-    'resource_class_id' => [
-        xxx,
-    ],
-    'property' => [
-        [
-            'joiner' => 'and',
-            'property' => 'skos:inScheme',
-            'type' => 'res',
-            'text' => 'yyy',
-        ],
-    ],
-    'sort_by' => 'thesaurus',
-    'sort_thesaurus' => 'zzz',
-```
-
-Here, `xxx` is the resource class id of `skos:ConceptScheme` and `yyy` is the
-item id of the scheme, as string.
+Since version 3.4.26, a prompt with the input type "Item resource" no longer
+proposes the concepts, because they are a resource of their own and no longer
+items. Use the data type `thesaurus:xxx` of the module, where xxx is the item id
+of the scheme, that displays the concepts of the thesaurus as a tree.
 
 
 TODO
 ----
 
-* [-] Manage terms as a full resources, separately from items (like Annotation)? No.
+* [x] Manage terms as a full resources, separately from items (like Annotation).
+* [ ] Support the [ISO 25964] extension of skos to replace the skos classes removed from the item sets.
+* [ ] Support [skos-xl] to manage labels as resources, in order to store their metadata (date, author, source) as value annotation.
+* [x] Declare the prefix `o-module-thesaurus` in the json-ld api context, else the type of the concepts is silently skipped by the json-ld processors.
+* [ ] Update the structure of a concept when a skos relation is removed: only the reindexation of the thesaurus does it currently.
 * [ ] Manage representation when a term belongs to multiple thesaurus? Probably useless with association.
 * [ ] Implement a tree iterator in representation, plugin and helper.
 * [ ] Uninstall vocabulary and resources templates if not used.
 * [ ] Create a data type to store the ascendance or the full path with resource ids and display with multiple links.
 * [ ] Update ascendance of descendants with a single job after batch edit.
 * [ ] Remove the process with pref label / alt label to build select. Add an intermediate process.
+* [ ] Create public views (browse, arborescence and concept/show).
 
 
 Warning
@@ -419,8 +447,6 @@ of the French higher administrative court [Conseil d’État].
 [Table]: https://gitlab.com/Daniel-KM/Omeka-S-module-Table
 [CSV Import]: https://github.com/omeka-s-modules/CSVImport
 [Advanced Resource Template]: https://gitlab.com/Daniel-KM/Omeka-S-module-AdvancedResourceTemplate
-[Value Suggest]: https://github.com/omeka-s-modules/ValueSuggest
-[Value Suggest: Any]: https://gitlab.com/Daniel-KM/Omeka-S-module-ValueSuggestAny
 [official translation]: https://www.sparna.fr/skos/SKOS-traduction-francais.html
 [LibreOffice]: https://libreoffice.org
 [thesaurus of Unesco]: https://vocabularies.unesco.org/browser/thesaurus/
@@ -428,6 +454,8 @@ of the French higher administrative court [Conseil d’État].
 [GEMET]: https://www.eionet.europa.eu/gemet/
 [Collecting]: https://github.com/omeka-s-modules/Collecting
 [fork of the module Collecting]: https://gitlab.com/Daniel-KM/Omeka-S-module-Collecting
+[ISO 25964]: http://purl.org/iso25964/skos-thes
+[skos-xl]: https://www.w3.org/TR/skos-reference/skos-xl.html
 [module issues]: https://gitlab.com/Daniel-KM/Omeka-S-module-Thesaurus/-/issues
 [CeCILL v2.1]: https://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html
 [GNU/GPL]: https://www.gnu.org/licenses/gpl-3.0.html
