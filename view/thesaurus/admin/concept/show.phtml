@@ -1,0 +1,93 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Thesaurus\Api\Representation\ConceptRepresentation $resource
+ * @var \Thesaurus\Api\Representation\ConceptRepresentation $concept
+ */
+
+$plugins = $this->getHelperPluginManager();
+$url = $plugins->get('url');
+$escape = $plugins->get('escapeHtml');
+$translate = $plugins->get('translate');
+$hyperlink = $plugins->get('hyperlink');
+
+$this->htmlElement('body')->appendAttribute('class', 'concept show');
+
+$scheme = $concept->scheme();
+$broader = $concept->broader();
+$narrowers = $concept->narrowers();
+
+$sectionNavs = [
+    'concept-metadata' => $translate('Metadata'),
+    'concept-thesaurus' => $translate('Thesaurus'),
+    'linked-resources' => $translate('Linked resources'),
+];
+?>
+
+<?= $this->pageTitle($concept->displayTitle(), 1, $translate('Concept')) ?>
+
+<div id="page-actions">
+    <?php $this->trigger('view.show.page_actions', ['resource' => $concept]); ?>
+    <?php if ($concept->userIsAllowed('update')): ?>
+    <?= $hyperlink($translate('Edit concept'), $concept->adminUrl('edit'), ['class' => 'button']) ?>
+    <?php endif; ?>
+</div>
+
+<?= $this->sectionNav($sectionNavs, 'view.show.section_nav', $concept) ?>
+
+<div id="concept-metadata" class="active section">
+    <?php if ($concept->resourceClass()): ?>
+    <dl class="resource-class">
+        <div class="meta-group">
+            <dt><?= $translate('Class') ?></dt>
+            <dd class="value"><?= $escape($translate($concept->resourceClass()->label())) ?></dd>
+        </div>
+    </dl>
+    <?php endif; ?>
+    <?php if ($concept->resourceTemplate()): ?>
+    <dl>
+        <div class="meta-group">
+            <dt><?= $translate('Resource template') ?></dt>
+            <dd class="value"><?= $escape($concept->resourceTemplate()->label()) ?></dd>
+        </div>
+    </dl>
+    <?php endif; ?>
+    <?= $concept->displayValues() ?>
+</div>
+
+<div id="concept-thesaurus" class="section">
+    <dl>
+        <div class="meta-group">
+            <dt><?= $translate('Thesaurus') ?></dt>
+            <dd class="value"><?= $scheme ? $hyperlink($scheme->displayTitle(), $url('admin/thesaurus/id', ['action' => 'structure', 'id' => $scheme->id()])) : '—' ?></dd>
+        </div>
+        <div class="meta-group">
+            <dt><?= $translate('Broader concept') ?></dt>
+            <dd class="value"><?= $broader ? $hyperlink($broader->displayTitle(), $broader->adminUrl()) : '—' ?></dd>
+        </div>
+        <div class="meta-group">
+            <dt><?= $translate('Narrower concepts') ?></dt>
+            <dd class="value">
+                <?php if ($narrowers): ?>
+                <ul>
+                    <?php foreach ($narrowers as $narrower): ?>
+                    <li><?= $hyperlink($narrower->displayTitle(), $narrower->adminUrl()) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+                <?php else: ?>
+                —
+                <?php endif; ?>
+            </dd>
+        </div>
+        <div class="meta-group">
+            <dt><?= $translate('Position') ?></dt>
+            <dd class="value"><?= $escape($concept->position() ?? '—') ?></dd>
+        </div>
+    </dl>
+</div>
+
+<div id="linked-resources" class="section">
+    <?= $this->linkedResources($concept) ?>
+</div>
+
+<?php $this->trigger('view.show.after', ['resource' => $concept]); ?>

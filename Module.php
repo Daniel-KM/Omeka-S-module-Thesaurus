@@ -94,7 +94,10 @@ class Module extends AbstractModule
             ->allow('reviewer', [$conceptEntity], ['delete'], $ownsAssertion)
             ->allow('editor', [$conceptAdapter], $writeOperations)
             ->allow('editor', [$conceptEntity], ['create', 'update', 'delete'])
-            ->allow(null, [Controller\Admin\ConceptController::class], ['show', 'show-details']);
+            ->allow(null, [Controller\Admin\ConceptController::class], ['show', 'show-details'])
+            // A concept is created by the thesaurus, so only edition and
+            // deletion are available, with the same roles than the items.
+            ->allow(['author', 'reviewer', 'editor'], [Controller\Admin\ConceptController::class], ['edit', 'delete', 'delete-confirm']);
 
         $acl
             ->allow(

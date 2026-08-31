@@ -1,0 +1,65 @@
+<?php
+/**
+ * Details of a concept, displayed in the sidebar.
+ *
+ * Same as the details of an item, without the item sets and the medias, and
+ * with the position in the thesaurus.
+ *
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Thesaurus\Api\Representation\ConceptRepresentation $resource
+ * @var bool $linkTitle
+ * @var string $values
+ */
+
+$plugins = $this->getHelperPluginManager();
+$escape = $plugins->get('escapeHtml');
+$translate = $plugins->get('translate');
+
+$linkTitle ??= true;
+$broader = $resource->broader();
+?>
+<div class="resource-details" data-resource-values="<?= $escape($values) ?>">
+    <?php if ($linkTitle): ?>
+    <h3 class="o-title"><?= $this->hyperlink($resource->displayTitle(), $resource->adminUrl()) ?></h3>
+    <?php else: ?>
+    <h3 class="o-title"><?= $escape($resource->displayTitle()) ?></h3>
+    <?php endif; ?>
+    <div class="o-description"><?= $escape($resource->displayDescription()) ?></div>
+    <div class="meta-group">
+        <h4><?= $translate('ID') ?></h4>
+        <div class="value"><?= $escape($resource->id()) ?></div>
+    </div>
+    <div class="meta-group">
+        <h4><?= $escape($translate('Visibility')) ?></h4>
+        <div class="value"><?= $resource->isPublic() ? $translate('Public') : $translate('Private') ?></div>
+    </div>
+    <?php if ($resourceClass = $resource->resourceClass()): ?>
+    <div class="meta-group">
+        <h4><?= $translate('Class') ?></h4>
+        <div class="value"><?= $escape($translate($resourceClass->label())) ?></div>
+    </div>
+    <?php endif; ?>
+    <?php if ($resourceTemplate = $resource->resourceTemplate()): ?>
+    <div class="meta-group">
+        <h4><?= $translate('Resource template') ?></h4>
+        <div class="value"><?= $resourceTemplate->link($resourceTemplate->label()) ?></div>
+    </div>
+    <?php endif; ?>
+    <div class="meta-group">
+        <h4><?= $translate('Thesaurus') ?></h4>
+        <div class="value"><?= $escape($resource->scheme()->displayTitle()) ?></div>
+    </div>
+    <?php if ($broader): ?>
+    <div class="meta-group">
+        <h4><?= $translate('Broader concept') ?></h4>
+        <div class="value"><?= $this->hyperlink($broader->displayTitle(), $broader->adminUrl()) ?></div>
+    </div>
+    <?php endif; ?>
+    <div class="meta-group">
+        <h4><?= $translate('Owner') ?></h4>
+        <div class="value">
+            <?php $owner = $resource->owner(); ?>
+            <?= $owner ? $owner->link($owner->name()) : $translate('[no owner]') ?>
+        </div>
+    </div>
+</div>

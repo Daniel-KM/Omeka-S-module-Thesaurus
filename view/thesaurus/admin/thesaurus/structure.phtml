@@ -51,13 +51,13 @@ $this->htmlElement('body')->appendAttribute('class', 'thesaurus tree ' . ($form 
 <div id="page-actions">
     <?= $hyperlink($translate('Update and reindex'), $url('admin/thesaurus/id', ['action' => 'update-concepts', 'id' => $item->id()], true), [ 'class' => 'button']) ?>
     <?= $hyperlink($translate('Edit structure'), $url('admin/thesaurus/id', ['action' => 'structure', 'id' => $item->id()], true), ['class' => 'button']) ?>
-    <?= $hyperlink($translate('Edit item'), $item->adminUrl('edit'), ['class' => 'button']) ?>
+    <?= $hyperlink($translate('Edit thesaurus'), $item->adminUrl('edit'), ['class' => 'button']) ?>
 </div>
 
 <?php elseif ($item->userIsAllowed('edit')): // show ?>
 
 <div id="page-actions">
-    <?= $hyperlink($translate('Edit item'), $item->adminUrl('edit'), ['class' => 'button']) ?>
+    <?= $hyperlink($translate('Edit thesaurus'), $item->adminUrl('edit'), ['class' => 'button']) ?>
 </div>
 
 <?php endif; ?>
@@ -68,7 +68,8 @@ $this->htmlElement('body')->appendAttribute('class', 'thesaurus tree ' . ($form 
 
 <div id="jstree"
     data-link-form-url="<?= $form ? $escapeAttr($url('admin/thesaurus/id', ['action' => 'tree'], true)) : '' ?>"
-    data-jstree-url="<?= $escapeAttr($url('admin/thesaurus/id', ['action' => 'jstree'], true)) ?>">
+    data-jstree-url="<?= $escapeAttr($url('admin/thesaurus/id', ['action' => 'jstree'], true)) ?>"
+    data-concept-url="<?= $escapeAttr($url('admin/concept')) ?>">
 </div>
 
 <?php if ($form): ?>

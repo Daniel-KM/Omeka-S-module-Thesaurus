@@ -26,6 +26,38 @@ class ThesaurusController extends ItemController
             ->setTemplate('omeka/admin/item/search');
     }
 
+    /**
+     * List the thesaurus, or the concepts of a thesaurus when there is an id.
+     */
+    public function browseAction()
+    {
+        $id = (int) $this->params('id');
+        if (!$id) {
+            return parent::browseAction();
+        }
+
+        /** @var \Omeka\Api\Representation\ItemRepresentation $scheme */
+        $scheme = $this->api()->read('items', ['id' => $id])->getContent();
+
+        $this->browse()->setDefaults('concepts');
+        $query = $this->params()->fromQuery();
+        $query['scheme_id'] = $id;
+        $query['sort_by'] ??= 'position';
+        $query['sort_order'] ??= 'asc';
+
+        $response = $this->api()->search('concepts', $query);
+        $this->paginator($response->getTotalResults());
+
+        $view = new ViewModel([
+            'scheme' => $scheme,
+            'item' => $scheme,
+            'concepts' => $response->getContent(),
+            'resources' => $response->getContent(),
+        ]);
+        return $view
+            ->setTemplate('thesaurus/admin/thesaurus/browse-concepts');
+    }
+
     public function showAction()
     {
         $response = $this->api()->read('items', $this->params('id'));
@@ -166,9 +198,16 @@ class ThesaurusController extends ItemController
             ));
         }
 
-        return new JsonModel(
-            $thesaurus->jsFlatTree()
-        );
+        // Link each node to the page of the concept.
+        $tree = $thesaurus->jsFlatTree();
+        foreach ($tree as &$element) {
+            $element['a_attr'] = [
+                'href' => $this->url()->fromRoute('admin/concept/id', ['id' => $element['id']]),
+            ];
+        }
+        unset($element);
+
+        return new JsonModel($tree);
     }
 
     /**

@@ -23,37 +23,47 @@ $(document).ready( function() {
      * Adapted from jstree-plugins.
      */
     $.jstree.plugins.displayElements = function(options, parent) {
-       // Use a <i> instead of a <a> because inside a <a>.
+        // The url of the concepts is built by the server, so the routes and the
+        // base path are always right.
+        const conceptUrl = $('#jstree').data('concept-url');
+        const urlConcept = function (id, action) {
+            return conceptUrl + '/' + id + (action ? '/' + action : '');
+        };
+        // Use a <i> instead of a <a> because inside a <a>.
+        var editIcon = $('<i>', {
+            class: 'jstree-icon jstree-editlink',
+            attr: {role: 'presentation'}
+        });
         var displayIcon = $('<i>', {
             class: 'jstree-icon jstree-displaylink',
-            attr:{role: 'presentation'}
+            attr: {role: 'presentation'}
         });
         this.bind = function() {
             parent.bind.call(this);
             this.element.on(
                 'click.jstree',
-                '.jstree-displaylink',
+                '.jstree-editlink, .jstree-displaylink',
                 $.proxy(function(e) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
                     var icon = $(e.currentTarget);
-                    var node = icon.closest('.jstree-node');
-                    var nodeObj = this.get_node(node);
-                    var nodeUrl = basePath + 'admin/item/' + nodeObj.id;
-                    window.open(nodeUrl, '_blank');
+                    var nodeObj = this.get_node(icon.closest('.jstree-node'));
+                    var action = icon.hasClass('jstree-editlink') ? 'edit' : null;
+                    window.open(urlConcept(nodeObj.id, action), '_blank');
                 }, this)
             );
         };
         this.redraw_node = function(node, deep, is_callback, force_render) {
             node = parent.redraw_node.apply(this, arguments);
-            if (node) {
+            if (node && conceptUrl) {
                 var nodeObj = this.get_node(node);
-                var nodeUrl = basePath + 'admin/item/' + nodeObj.id;
-                if (nodeUrl) {
-                    var nodeJq = $(node);
-                    var anchor = nodeJq.children('.jstree-anchor');
-                    let anchorClone = displayIcon.clone();
-                    anchorClone.attr('title', 'item #' + nodeObj.id);
-                    anchor.append(anchorClone);
-                }
+                var anchor = $(node).children('.jstree-anchor');
+                let editClone = editIcon.clone();
+                editClone.attr('title', 'concept #' + nodeObj.id + ' (edit)');
+                anchor.append(editClone);
+                let displayClone = displayIcon.clone();
+                displayClone.attr('title', 'concept #' + nodeObj.id);
+                anchor.append(displayClone);
             }
             return node;
         };

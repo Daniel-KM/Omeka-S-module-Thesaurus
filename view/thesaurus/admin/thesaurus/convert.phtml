@@ -46,6 +46,7 @@ $descriptor = $setting('thesaurus_property_descriptor', 'skos:prefLabel');
 
 <?= $this->form()->openTag($form) ?>
 <div id="page-actions">
+    <?= $this->cancelButton() ?>
     <button type="submit" class="button"><?= $translate('Submit') ?></button>
 </div>
 <?= $this->formCollection($form, false) ?>

@@ -12,6 +12,16 @@ class ConceptRepresentation extends AbstractResourceEntityRepresentation
         return 'concept';
     }
 
+    public function adminUrl($action = null, $canonical = false)
+    {
+        $url = $this->getViewHelper('Url');
+        $params = ['id' => $this->id()];
+        if ($action !== null) {
+            $params['action'] = $action;
+        }
+        return $url('admin/concept/id', $params, ['force_canonical' => $canonical]);
+    }
+
     public function getResourceJsonLdType()
     {
         return 'o-module-thesaurus:Concept';

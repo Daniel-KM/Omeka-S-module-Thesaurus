@@ -1,0 +1,99 @@
+<?php
+/**
+ * Flat list of the concepts of a thesaurus.
+ *
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\ItemRepresentation $scheme
+ * @var \Thesaurus\Api\Representation\ConceptRepresentation[] $concepts
+ */
+
+$plugins = $this->getHelperPluginManager();
+$url = $plugins->get('url');
+$i18n = $plugins->get('i18n');
+$escape = $plugins->get('escapeHtml');
+$translate = $plugins->get('translate');
+$hyperlink = $plugins->get('hyperlink');
+$escapeAttr = $plugins->get('escapeHtmlAttr');
+
+$this->htmlElement('body')->appendAttribute('class', 'concepts browse');
+?>
+
+<?= $this->pageTitle($scheme->displayTitle(), 1, $translate('Concepts')) ?>
+
+<div class="browse-controls">
+    <?= $this->pagination() ?>
+</div>
+
+<div id="page-actions">
+    <?= $hyperlink($translate('Tree'), $url('admin/thesaurus/id', ['id' => $scheme->id()]), ['class' => 'button']) ?>
+    <?php if ($scheme->userIsAllowed('update')): ?>
+    <?= $hyperlink($translate('Edit thesaurus'), $scheme->adminUrl('edit'), ['class' => 'button']) ?>
+    <?php endif; ?>
+</div>
+
+<?php $this->trigger('view.browse.before'); ?>
+
+<?php if (empty($concepts)): ?>
+
+<div class="no-resources">
+    <p><?= $translate('This thesaurus has no concept.') ?></p>
+</div>
+
+<?php else: ?>
+
+<table class="tablesaw" data-tablesaw-mode="stack">
+    <thead>
+        <tr>
+            <th><?= $translate('Concept') ?></th>
+            <th><?= $translate('Broader concept') ?></th>
+            <th><?= $translate('Position') ?></th>
+            <th><?= $translate('Created') ?></th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($concepts as $concept): ?>
+        <?php $broader = $concept->broader(); ?>
+        <tr>
+            <td>
+                <?= $hyperlink($concept->displayTitle(), $concept->adminUrl()) ?>
+                <?php if (!$concept->isPublic()): ?>
+                <span class="o-icon-private" aria-label="<?= $escapeAttr($translate('Private')) ?>"></span>
+                <?php endif; ?>
+                <ul class="actions">
+                    <?php if ($concept->userIsAllowed('update')): ?>
+                    <li><?= $hyperlink('', $concept->adminUrl('edit'), [
+                        'class' => 'o-icon-edit',
+                        'title' => $translate('Edit'),
+                    ]) ?></li>
+                    <?php endif; ?>
+                    <li><?= $hyperlink('', '#', [
+                        'data-sidebar-selector' => '#sidebar',
+                        'data-sidebar-content-url' => $concept->adminUrl('show-details'),
+                        'class' => 'o-icon-more sidebar-content',
+                        'title' => $translate('Details'),
+                    ]) ?></li>
+                </ul>
+            </td>
+            <td><?= $broader ? $hyperlink($broader->displayTitle(), $broader->adminUrl()) : '' ?></td>
+            <td><?= $escape($concept->position()) ?></td>
+            <td><?= $escape($i18n->dateFormat($concept->created())) ?></td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+
+<?php endif; ?>
+
+<?php $this->trigger('view.browse.after'); ?>
+
+<div class="browse-controls">
+    <?= $this->pagination() ?>
+</div>
+
+<div id="sidebar" class="sidebar">
+    <?= $hyperlink('', '#', [
+        'class' => 'sidebar-close o-icon-close',
+        'title' => $translate('Close'),
+    ]) ?>
+    <div class="sidebar-content"></div>
+</div>

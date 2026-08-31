@@ -145,6 +145,48 @@ return [
                             ],
                         ],
                     ],
+                    // A specific route is required for the concepts.
+                    // The generic route "admin/id" builds the controller name with the namespace of the core.
+                    'concept' => [
+                        'type' => \Laminas\Router\Http\Literal::class,
+                        'options' => [
+                            'route' => '/concept',
+                            'defaults' => [
+                                '__NAMESPACE__' => 'Thesaurus\Controller\Admin',
+                                '__ADMIN__' => true,
+                                'controller' => Controller\Admin\ConceptController::class,
+                                'action' => 'browse',
+                            ],
+                        ],
+                        'may_terminate' => true,
+                        'child_routes' => [
+                            'default' => [
+                                'type' => \Laminas\Router\Http\Segment::class,
+                                'options' => [
+                                    'route' => '/:action',
+                                    'constraints' => [
+                                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                                    ],
+                                    'defaults' => [
+                                        'action' => 'browse',
+                                    ],
+                                ],
+                            ],
+                            'id' => [
+                                'type' => \Laminas\Router\Http\Segment::class,
+                                'options' => [
+                                    'route' => '/:id[/:action]',
+                                    'constraints' => [
+                                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                                        'id' => '\d+',
+                                    ],
+                                    'defaults' => [
+                                        'action' => 'show',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
                 ],
             ],
         ],
@@ -162,6 +204,11 @@ return [
                 'privilege' => 'browse',
                 'pages' => [
                     [
+                        'route' => 'admin/thesaurus',
+                        'controller' => Controller\Admin\ThesaurusController::class,
+                        'visible' => false,
+                    ],
+                    [
                         'route' => 'admin/thesaurus/id',
                         'controller' => Controller\Admin\ThesaurusController::class,
                         'visible' => false,
@@ -169,6 +216,23 @@ return [
                     [
                         'route' => 'admin/thesaurus/default',
                         'controller' => Controller\Admin\ThesaurusController::class,
+                        'visible' => false,
+                    ],
+                    // The pages of the concepts belong to the thesaurus, so the
+                    // menu is highlighted when browsing them.
+                    [
+                        'route' => 'admin/concept',
+                        'controller' => Controller\Admin\ConceptController::class,
+                        'visible' => false,
+                    ],
+                    [
+                        'route' => 'admin/concept/default',
+                        'controller' => Controller\Admin\ConceptController::class,
+                        'visible' => false,
+                    ],
+                    [
+                        'route' => 'admin/concept/id',
+                        'controller' => Controller\Admin\ConceptController::class,
                         'visible' => false,
                     ],
                     // TODO Clariflying place of the old tool to build a static flat thesaurus.

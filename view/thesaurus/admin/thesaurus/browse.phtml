@@ -125,10 +125,15 @@ $sortHeadings = [
                     ]) ?></li>
                     <?php endif; ?>
                     <?php if ($item->userIsAllowed('batch-edit')): ?>
-                    <li><?= $hyperlink('', $url('admin/thesaurus/id', ['action' => 'structure', 'id' => $item->id()], true), [
-                        // Or fa-project-diagram or fa-folder-tree when available.
+                    <li><?= $hyperlink('', $url('admin/thesaurus/id', ['id' => $item->id()]), [
+                        // Or fa-project-diagram or fa-folder-tree when
+                        // available.
                         'class' => 'thesaurus fas fa-sitemap o-icon-',
-                        'title' => $translate('Edit structure'),
+                        'title' => $translate('Tree of the concepts'),
+                    ]) ?></li>
+                    <li><?= $hyperlink('', $url('admin/thesaurus/id', ['action' => 'browse', 'id' => $item->id()]), [
+                        'class' => 'thesaurus fas fa-list o-icon-',
+                        'title' => $translate('Flat list of the concepts'),
                     ]) ?></li>
                     <li><?= $hyperlink('', $url('admin/thesaurus/id', ['action' => 'update', 'id' => $item->id()], true), [
                         'class' => 'thesaurus fa fa-refresh fa-sync o-icon-',

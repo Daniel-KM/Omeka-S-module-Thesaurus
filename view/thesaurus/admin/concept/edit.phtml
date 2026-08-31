@@ -1,0 +1,95 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Thesaurus\Api\Representation\ConceptRepresentation $resource
+ * @var \Thesaurus\Api\Representation\ConceptRepresentation $concept
+ * @var \Omeka\Form\ResourceForm $form
+ */
+
+$plugins = $this->getHelperPluginManager();
+$url = $plugins->get('url');
+$escape = $plugins->get('escapeHtml');
+$translate = $plugins->get('translate');
+$hyperlink = $plugins->get('hyperlink');
+$formElement = $plugins->get('formElement');
+
+$this->htmlElement('body')->appendAttribute('class', 'concept edit');
+$this->headScript()->appendFile($this->assetUrl('vendor/sortablejs/Sortable.min.js', 'Omeka'));
+$this->headScript()->appendFile($this->assetUrl('js/resource-form.js', 'Omeka'));
+
+$form->setAttribute('action', $concept->adminUrl('edit'));
+$form->prepare();
+
+// Also use the item controller identifier, so the modules that enhance the
+// resource form of an item (data types, value suggest, etc.) apply here too.
+$triggerIdentifiers = [
+    'Thesaurus\Controller\Admin\ConceptController',
+    'Omeka\Controller\Admin\Item',
+];
+
+$scheme = $concept->scheme();
+$broader = $concept->broader();
+$narrowers = $concept->narrowers();
+?>
+
+<?= $this->pageTitle($concept->displayTitle(), 1, $translate('Concept')) ?>
+
+<?php $this->trigger('view.edit.before', [], false, $triggerIdentifiers); ?>
+
+<?= $this->form()->openTag($form) ?>
+
+<?= $this->sectionNav([
+    'resource-values' => $translate('Values'),
+    'concept-thesaurus' => $translate('Thesaurus'),
+    'advanced-settings' => $translate('Advanced'),
+], 'view.edit.section_nav', $concept) ?>
+
+<?= $this->partial('common/resource-fields.phtml', [
+    'form' => $form,
+    'resource' => $concept,
+    'action' => 'edit',
+    'postedValues' => $postedValues ?? null,
+]) ?>
+
+<fieldset id="concept-thesaurus" class="section" aria-labelledby="concept-thesaurus-label">
+    <h3 id="concept-thesaurus-label"><?= $translate('Thesaurus') ?></h3>
+    <ul class="messages">
+        <li class="notice"><?= $translate('The position of a concept in the tree is managed in the structure editor of the thesaurus.') ?></li>
+    </ul>
+    <dl>
+        <dt><?= $translate('Thesaurus') ?></dt>
+        <dd><?= $scheme ? $hyperlink($scheme->displayTitle(), $url('admin/thesaurus/id', ['action' => 'structure', 'id' => $scheme->id()])) : '—' ?></dd>
+        <dt><?= $translate('Broader concept') ?></dt>
+        <dd><?= $broader ? $hyperlink($broader->displayTitle(), $broader->adminUrl()) : '—' ?></dd>
+        <dt><?= $translate('Narrower concepts') ?></dt>
+        <dd>
+            <?php if ($narrowers): ?>
+            <ul>
+                <?php foreach ($narrowers as $narrower): ?>
+                <li><?= $hyperlink($narrower->displayTitle(), $narrower->adminUrl()) ?></li>
+                <?php endforeach; ?>
+            </ul>
+            <?php else: ?>
+            —
+            <?php endif; ?>
+        </dd>
+        <dt><?= $translate('Position') ?></dt>
+        <dd><?= $escape($concept->position() ?? '—') ?></dd>
+    </dl>
+</fieldset>
+
+<div id="page-actions">
+    <input type="hidden" name="o:is_public" value="<?= $concept->isPublic() ? 1 : 0 ?>">
+    <?= $this->cancelButton() ?>
+    <button type="submit"><?= $translate('Save') ?></button>
+</div>
+
+<?php $this->trigger('view.edit.form.after', ['form' => $form], false, $triggerIdentifiers); ?>
+
+<?= $formElement($form->get('csrf')) ?>
+
+<?= $this->form()->closeTag() ?>
+
+<?= $this->partial('common/resource-form-templates.phtml') ?>
+
+<?php $this->trigger('view.edit.after', [], false, $triggerIdentifiers); ?>

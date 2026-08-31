@@ -13,16 +13,64 @@
     body.thesaurus.show .jstree-node a i.jstree-icon.jstree-themeicon::before {
         content: '';
     }
-    body.thesaurus.show .jstree-open > .jstree-anchor .jstree-displaylink {
-      right: 60px;
+    /* Icons to open and edit a concept from the tree. The core styles only
+       its own links, so the same rules are applied here, else the icons
+       overlap the icon to open and close a node, that has a background. */
+    body.thesaurus i.jstree-icon.jstree-editlink {
+        width: 24px;
+        height: 36px;
+        line-height: 36px;
+        text-align: right;
+        background-color: transparent;
+        cursor: pointer;
+        z-index: 1;
     }
 
-    body.thesaurus.tree i.jstree-displaylink {
+    /* The icons have not the same density of strokes, so a half opacity makes
+       the thin ones look lighter than the full ones. They all use the color of
+       the links of the admin theme, without opacity, so they are similar. */
+    body.thesaurus .jstree-anchor i.jstree-icon.jstree-displaylink,
+    body.thesaurus .jstree-anchor i.jstree-icon.jstree-editlink,
+    body.thesaurus .jstree-anchor i.jstree-icon.jstree-removenode-remove {
+        color: #a91919;
+        opacity: 1;
+    }
+    body.thesaurus .jstree-anchor i.jstree-icon.jstree-displaylink:hover,
+    body.thesaurus .jstree-anchor i.jstree-icon.jstree-editlink:hover,
+    body.thesaurus .jstree-anchor i.jstree-icon.jstree-removenode-remove:hover {
+        color: #e11717;
+    }
+    body.thesaurus i.jstree-icon.jstree-editlink::before {
+        content: "\f303";
+    }
+
+    /* The icons are aligned on all the rows, so the place of the icon to open
+       and close a node (36px) is kept even when a concept has no narrower. */
+    body.thesaurus.show i.jstree-editlink,
+    body.thesaurus.show .jstree-open > .jstree-anchor .jstree-editlink,
+    body.thesaurus.show .jstree-closed > .jstree-anchor .jstree-editlink {
         right: 48px;
     }
-    body.thesaurus.tree .jstree-open > .jstree-anchor .jstree-displaylink,
-    body.thesaurus.tree .jstree-closed > .jstree-anchor .jstree-displaylink {
+    body.thesaurus.show i.jstree-displaylink,
+    body.thesaurus.show .jstree-open > .jstree-anchor .jstree-displaylink,
+    body.thesaurus.show .jstree-closed > .jstree-anchor .jstree-displaylink {
         right: 72px;
+    }
+
+    body.thesaurus.edit i.jstree-removenode-remove,
+    body.thesaurus.edit .jstree-open > .jstree-anchor .jstree-removenode-remove,
+    body.thesaurus.edit .jstree-closed > .jstree-anchor .jstree-removenode-remove {
+        right: 48px;
+    }
+    body.thesaurus.edit i.jstree-editlink,
+    body.thesaurus.edit .jstree-open > .jstree-anchor .jstree-editlink,
+    body.thesaurus.edit .jstree-closed > .jstree-anchor .jstree-editlink {
+        right: 72px;
+    }
+    body.thesaurus.edit i.jstree-displaylink,
+    body.thesaurus.edit .jstree-open > .jstree-anchor .jstree-displaylink,
+    body.thesaurus.edit .jstree-closed > .jstree-anchor .jstree-displaylink {
+        right: 96px;
     }
 
     body.thesaurus.convert form .field .inputs label,
