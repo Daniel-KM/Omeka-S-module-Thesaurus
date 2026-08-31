@@ -26,6 +26,15 @@ $connection = $services->get('Omeka\Connection');
 $messenger = $plugins->get('messenger');
 $entityManager = $services->get('Omeka\EntityManager');
 
+if (PHP_VERSION_ID < 80100) {
+    $message = new \Omeka\Stdlib\Message(
+        $translate('The module %1$s requires PHP %2$s or later.'), // @translate
+        'Thesaurus', '8.1'
+    );
+    $messenger->addError($message);
+    throw new \Omeka\Module\Exception\ModuleCannotInstallException((string) $message);
+}
+
 if (!method_exists($this, 'checkModuleActiveVersion') || !$this->checkModuleActiveVersion('Common', '3.4.91')) {
     $message = new \Omeka\Stdlib\Message(
         $translate('The module %1$s should be upgraded to version %2$s or later.'), // @translate
@@ -330,4 +339,131 @@ if (version_compare($oldVersion, '3.4.25', '<')) {
         'To add it to the resource templates (and advanced resource template) that currently use the custom vocab of a thesaurus, run the task "Thesaurus: Add thesaurus data type to custom vocab templates" via the module Easy Admin (Check and fix). The custom vocab is kept for compatibility, and existing values remain valid.' // @translate
     );
     $messenger->addWarning($message);
+}
+
+if (version_compare($oldVersion, '3.4.26', '<')) {
+    // Create the subtype table for the new resource type "Concept". It is
+    // required as soon as the entity is mapped: a query on the abstract
+    // resource left joins all subtype tables. The table is filled later, when
+    // concepts are migrated from items.
+    $sql = <<<'SQL'
+        SELECT COUNT(*)
+        FROM information_schema.TABLES
+        WHERE TABLE_SCHEMA = DATABASE()
+            AND TABLE_NAME = 'concept'
+        SQL;
+    $exists = (int) $connection->executeQuery($sql)->fetchOne();
+    if (!$exists) {
+        $sqls = [
+            <<<'SQL'
+                CREATE TABLE `concept` (
+                    `id` INT NOT NULL,
+                    `scheme_id` INT NOT NULL,
+                    `top_id` INT DEFAULT NULL,
+                    `broader_id` INT DEFAULT NULL,
+                    `position` INT DEFAULT NULL,
+                    INDEX `IDX_E74A605065797862` (`scheme_id`),
+                    INDEX `IDX_E74A6050C82CB256` (`top_id`),
+                    INDEX `IDX_E74A60505646636A` (`broader_id`),
+                    UNIQUE INDEX `UNIQ_E74A6050BF39675065797862` (`id`, `scheme_id`),
+                    PRIMARY KEY(`id`)
+                ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB
+                SQL,
+            'ALTER TABLE `concept` ADD CONSTRAINT `FK_E74A605065797862` FOREIGN KEY (`scheme_id`) REFERENCES `item` (`id`) ON DELETE CASCADE',
+            'ALTER TABLE `concept` ADD CONSTRAINT `FK_E74A6050C82CB256` FOREIGN KEY (`top_id`) REFERENCES `concept` (`id`) ON DELETE CASCADE',
+            'ALTER TABLE `concept` ADD CONSTRAINT `FK_E74A60505646636A` FOREIGN KEY (`broader_id`) REFERENCES `concept` (`id`) ON DELETE CASCADE',
+            'ALTER TABLE `concept` ADD CONSTRAINT `FK_E74A6050BF396750` FOREIGN KEY (`id`) REFERENCES `resource` (`id`) ON DELETE CASCADE',
+        ];
+        foreach ($sqls as $sql) {
+            $connection->executeStatement($sql);
+        }
+    }
+
+    // Convert the old index table "thesaurus_term" (concepts stored as items)
+    // into the subtype table "concept" (concepts as a dedicated
+    // resource type). The resource id is kept, so all linked values remain
+    // valid. The broader/root of "thesaurus_term" reference term rows, so they
+    // are resolved to their concept id (item_id).
+    $sql = <<<'SQL'
+        SELECT COUNT(*)
+        FROM information_schema.TABLES
+        WHERE TABLE_SCHEMA = DATABASE()
+            AND TABLE_NAME = 'thesaurus_term'
+        SQL;
+    $hasTerm = (int) $connection->executeQuery($sql)->fetchOne();
+    if ($hasTerm) {
+        // The check of the foreign keys is disabled to move the resources from
+        // the table "item" to the table "concept". It is restored in all cases,
+        // else the connection would keep it disabled after a failure.
+        $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
+        $sqls = [
+            // The concepts already converted are updated, so the migration
+            // can be replayed after a partial upgrade, for example when a big
+            // thesaurus exceeds the maximum execution time.
+            <<<'SQL'
+                INSERT INTO `concept` (`id`, `scheme_id`, `top_id`, `broader_id`, `position`)
+                SELECT t.item_id, t.scheme_id, r.item_id, b.item_id, t.position
+                FROM `thesaurus_term` t
+                LEFT JOIN `thesaurus_term` r ON r.id = t.root_id
+                LEFT JOIN `thesaurus_term` b ON b.id = t.broader_id
+                ON DUPLICATE KEY UPDATE
+                    `scheme_id` = VALUES(`scheme_id`),
+                    `top_id` = VALUES(`top_id`),
+                    `broader_id` = VALUES(`broader_id`),
+                    `position` = VALUES(`position`)
+                SQL,
+            <<<'SQL'
+                UPDATE `resource` SET `resource_type` = 'Thesaurus\\Entity\\Concept'
+                WHERE `id` IN (SELECT `item_id` FROM `thesaurus_term`)
+                SQL,
+            <<<'SQL'
+                DELETE FROM `item`
+                WHERE `id` IN (SELECT `item_id` FROM (SELECT `item_id` FROM `thesaurus_term`) x)
+                SQL,
+            // Any value pointing to a concept must use the "resource:concept"
+            // data type, so relations from concepts (broader, narrower,
+            // related, hasTopConcept) and links to concepts from other
+            // resources (dcterms:subject, etc.) are converted from the old item
+            // type.
+            <<<'SQL'
+                UPDATE `value` SET `type` = 'resource:concept'
+                WHERE `value_resource_id` IN (SELECT `id` FROM `concept`)
+                    AND `type` IN ('resource', 'resource:item')
+                SQL,
+            'DROP TABLE `thesaurus_term`',
+        ];
+        try {
+            foreach ($sqls as $sql) {
+                $connection->executeStatement($sql);
+            }
+        } finally {
+            $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
+        }
+
+        $message = new PsrMessage(
+            'The concepts are now a dedicated resource type, no longer mixed with items in browse, search, facets and references.' // @translate
+        );
+        $messenger->addSuccess($message);
+    }
+
+    // The item set of a thesaurus is a standard one now, so the skos classes
+    // are useless. They are not removed automatically for now, because an
+    // item set may be used elsewhere, but they will be in a future version.
+    $sql = <<<'SQL'
+        SELECT COUNT(DISTINCT `resource`.`id`)
+        FROM `resource`
+        INNER JOIN `item_set` ON `item_set`.`id` = `resource`.`id`
+        INNER JOIN `resource_class` ON `resource_class`.`id` = `resource`.`resource_class_id`
+        INNER JOIN `vocabulary` ON `vocabulary`.`id` = `resource_class`.`vocabulary_id`
+        WHERE `vocabulary`.`prefix` = 'skos'
+            AND `resource_class`.`local_name` IN ('Collection', 'OrderedCollection')
+        SQL;
+    $totalCollections = (int) $connection->executeQuery($sql)->fetchOne();
+    if ($totalCollections) {
+        $message = new PsrMessage(
+            'The item set of a thesaurus is a standard one now, identified via the scheme it contains, not via a class. It is recommended to remove the classes "skos:Collection" and "skos:OrderedCollection" from the {count} item sets that use them, because they will be removed automatically in a future version.', // @translate
+            ['count' => $totalCollections]
+        );
+        $messenger->addWarning($message);
+    }
 }

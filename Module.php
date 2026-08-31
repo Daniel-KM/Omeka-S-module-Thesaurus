@@ -394,6 +394,14 @@ class Module extends AbstractModule
         $services = $this->getServiceLocator();
         $translator = $services->get('MvcTranslator');
 
+        if (PHP_VERSION_ID < 80100) {
+            $message = new \Omeka\Stdlib\Message(
+                $translator->translate('The module %1$s requires PHP %2$s or later.'), // @translate
+                'Thesaurus', '8.1'
+            );
+            throw new \Omeka\Module\Exception\ModuleCannotInstallException((string) $message);
+        }
+
         if (!method_exists($this, 'checkModuleActiveVersion') || !$this->checkModuleActiveVersion('Common', '3.4.91')) {
             $message = new \Omeka\Stdlib\Message(
                 $translator->translate('The module %1$s should be upgraded to version %2$s or later.'), // @translate

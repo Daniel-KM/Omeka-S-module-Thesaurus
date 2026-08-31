@@ -456,7 +456,7 @@ of the French higher administrative court [Conseil d’État].
 [fork of the module Collecting]: https://gitlab.com/Daniel-KM/Omeka-S-module-Collecting
 [ISO 25964]: http://purl.org/iso25964/skos-thes
 [skos-xl]: https://www.w3.org/TR/skos-reference/skos-xl.html
-[module issues]: https://gitlab.com/Daniel-KM/Omeka-S-module-Thesaurus/-/issues
+[module issues]: https://gitlab.com/Daniel-KM/Omeka-S-module-Thesaurus/-/work_items
 [CeCILL v2.1]: https://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html
 [GNU/GPL]: https://www.gnu.org/licenses/gpl-3.0.html
 [FSF]: https://www.fsf.org
