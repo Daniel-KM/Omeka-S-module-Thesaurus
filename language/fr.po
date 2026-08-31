@@ -1,13 +1,8 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-08 06:45+0000\n"
+"POT-Creation-Date: 2026-08-31 00:00+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Daniel Berthereau <Daniel.fr@Berthereau.net>\n"
 "Language-Team: \n"
@@ -17,38 +12,100 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.6\n"
 
-#: data/scripts/upgrade.php:31 Module.php:43
+#: data/scripts/upgrade.php:31 Module.php:399
+#, php-format
+msgid "The module %1$s requires PHP %2$s or later."
+msgstr "Le module « %1$s » a besoin de PHP %2$s ou ultérieur."
+
+#: data/scripts/upgrade.php:40 Module.php:407
 #, php-format
 msgid "The module %1$s should be upgraded to version %2$s or later."
 msgstr "Le module %1$s doit être mis à niveau à la version %2$s ou supérieure."
 
-#: data/scripts/upgrade.php:35
+#: data/scripts/upgrade.php:44
 msgid "Missing requirement. Unable to upgrade."
 msgstr "Prérequis manquant. Mise à jour impossible."
 
-#: Module.php:474
+#: Module.php:92 Module.php:222
+msgid "WARNING"
+msgstr "ATTENTION"
+
+#: Module.php:95
+#, php-format
+msgid "%d concepts still exist. They are a specific resource, so they cannot be kept once the module is removed: choose to convert them into items or to delete them."
+msgstr "Il reste %d concepts. Il s'agit de ressources spécifiques qui ne peuvent pas être conservés une fois le module supprimé : il faut les convertir en contenus ou les supprimer."
+
+#: Module.php:100
+msgid "Convert the concepts back into items. The values that point to them are kept, but the thesaurus structure is lost."
+msgstr "Reconvertir les concepts en contenus. Les valeurs qui y renvoient sont conservées, mais la structure du thésaurus est perdue."
+
+#: Module.php:103
+msgid "Delete all the concepts, with their values and the values that point to them."
+msgstr "Supprimer tous les concepts, leurs valeurs et les valeurs qui y font référence."
+
+#: Module.php:225
+#, php-format
+msgid "This item is a thesaurus scheme with %d concepts. A concept cannot exist without its scheme."
+msgstr "Ce contenu est un schéma de thésaurus avec %d concepts. Un concept ne peut exister sans son schéma."
+
+#: Module.php:230
+msgid "Delete the concepts, with their values and the values that point to them."
+msgstr "Supprimer les concepts, leurs valeurs et les valeurs qui y font référence."
+
+#: Module.php:233
+msgid "Convert the concepts into items. The values that point to them are kept, but the thesaurus structure is lost."
+msgstr "Convertir les concepts en contenus. Les valeurs qui y sont associées sont conservées, mais la structure du thésaurus est perdue."
+
+#: Module.php:1091
 msgid "is"
 msgstr "est"
 
-#: src/DataType/Thesaurus.php:83
-msgid "Select a concept"
-msgstr "Sélectionner un concept"
+#: src/DataType/Resource/Concept.php:40
+#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:21
+msgid "Concepts"
+msgstr "Concepts"
 
-#: src/View/Helper/LinkTerm.php:68
+#: src/View/Helper/LinkTerm.php:69
 msgid "browse"
 msgstr "parcourir"
+
+#: view/common/data-type/thesaurus.phtml:17
+msgid "Search a concept"
+msgstr "Rechercher un concept"
+
+#: view/common/data-type/thesaurus.phtml:18
+msgid "Browse the thesaurus"
+msgstr "Parcourir le thésaurus"
+
+#: view/common/data-type/thesaurus.phtml:24
+#: view/thesaurus/admin/thesaurus/structure.phtml:66
+msgid "Open all"
+msgstr "Tout ouvrir"
+
+#: view/common/data-type/thesaurus.phtml:25
+#: view/thesaurus/admin/thesaurus/structure.phtml:66
+msgid "Close all"
+msgstr "Tout fermer"
 
 #: view/common/thesaurus-flat.phtml:40 view/common/thesaurus-list.phtml:47
 #: view/common/thesaurus-single.phtml:36 view/common/thesaurus-tree.phtml:41
 msgid "No concept."
 msgstr "Pas de concept."
 
-#: view/thesaurus/admin/thesaurus/add.phtml:14
-msgid "New thesaurus"
-msgstr "Nouveau thésaurus"
+#: view/thesaurus/admin/concept/edit.phtml:35
+#: view/thesaurus/admin/concept/show.phtml:27
+#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:47
+msgid "Concept"
+msgstr "Concept"
 
+#: view/thesaurus/admin/concept/edit.phtml:43
+#: view/thesaurus/admin/concept/edit.phtml:55
+#: view/thesaurus/admin/concept/edit.phtml:60
+#: view/thesaurus/admin/concept/show-details.phtml:49
+#: view/thesaurus/admin/concept/show.phtml:22
+#: view/thesaurus/admin/concept/show.phtml:61
 #: view/thesaurus/admin/thesaurus/add.phtml:14
-#: view/thesaurus/admin/thesaurus/browse.phtml:41
+#: view/thesaurus/admin/thesaurus/browse.phtml:49
 #: view/thesaurus/admin/thesaurus/convert.phtml:27
 #: view/thesaurus/admin/thesaurus/edit.phtml:23
 #: view/thesaurus/admin/thesaurus/flat.phtml:22
@@ -57,24 +114,78 @@ msgstr "Nouveau thésaurus"
 msgid "Thesaurus"
 msgstr "Thésaurus"
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:54
-msgid "Maintenance"
-msgstr "Maintenance"
+#: view/thesaurus/admin/concept/edit.phtml:57
+msgid "The position of a concept in the tree is managed in the structure editor of the thesaurus."
+msgstr "La position du concept dans l’arborescence est définie dans l’éditeur de structure du thésaurus."
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:57
-msgid "Migrate data types"
-msgstr "Migrer les types de données"
+#: view/thesaurus/admin/concept/edit.phtml:62
+#: view/thesaurus/admin/concept/show-details.phtml:54
+#: view/thesaurus/admin/concept/show.phtml:65
+#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:48
+msgid "Broader concept"
+msgstr "Concept générique"
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:90
+#: view/thesaurus/admin/concept/edit.phtml:64
+#: view/thesaurus/admin/concept/show.phtml:69
+msgid "Narrower concepts"
+msgstr "Concepts spécifiques"
+
+#: view/thesaurus/admin/concept/show-details.phtml:62
+#: view/thesaurus/admin/thesaurus/browse.phtml:116
 msgid "[no owner]"
 msgstr "[Pas de propriétaire]"
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:110
-#: view/thesaurus/admin/thesaurus/structure.phtml:53
-msgid "Edit structure"
-msgstr "Modifier l’arborescence"
+#: view/thesaurus/admin/concept/show.phtml:32
+msgid "Edit concept"
+msgstr "Modifier le concept"
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:114
+#: view/thesaurus/admin/thesaurus/add.phtml:14
+msgid "New thesaurus"
+msgstr "Nouveau thésaurus"
+
+#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:28
+msgid "Tree"
+msgstr "Arborescence"
+
+#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:30
+#: view/thesaurus/admin/thesaurus/structure.phtml:54
+#: view/thesaurus/admin/thesaurus/structure.phtml:60
+msgid "Edit thesaurus"
+msgstr "Modifier ce thésaurus"
+
+#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:39
+msgid "This thesaurus has no concept."
+msgstr "Ce thésaurus n’a aucun concept."
+
+#: view/thesaurus/admin/thesaurus/browse.phtml:65
+msgid "Maintenance"
+msgstr "Maintenance"
+
+#: view/thesaurus/admin/thesaurus/browse.phtml:69
+msgid "One time tasks"
+msgstr "Tâches ponctuelles"
+
+#: view/thesaurus/admin/thesaurus/browse.phtml:71
+msgid "Migrate data types…"
+msgstr "Migrer les types de données…"
+
+#: view/thesaurus/admin/thesaurus/browse.phtml:76
+msgid "Convert items into concepts…"
+msgstr "Convertir les contenus en concepts…"
+
+#: view/thesaurus/admin/thesaurus/browse.phtml:86
+msgid "Add new thesaurus"
+msgstr "Ajouter un nouveau thésaurus"
+
+#: view/thesaurus/admin/thesaurus/browse.phtml:137
+msgid "Tree of the concepts"
+msgstr "Arborescence des concepts"
+
+#: view/thesaurus/admin/thesaurus/browse.phtml:141
+msgid "Flat list of the concepts"
+msgstr "Liste plate des concepts"
+
+#: view/thesaurus/admin/thesaurus/browse.phtml:145
 msgid "Update path/ascendance and reindex"
 msgstr "Mise à jour du chemin/ascendance et réindexation"
 
@@ -83,31 +194,16 @@ msgid "Import a thesaurus"
 msgstr "Importer un thésaurus"
 
 #: view/thesaurus/admin/thesaurus/convert.phtml:30
-msgid ""
-"Import a hierarchic list of concepts from a standard SKOS file (rdf, ttl, "
-"json-ld, nt) or a structured text file (txt, csv, tsv). According to the "
-"chosen destination, the result can be previewed, imported as a custom "
-"vocabulary (list of terms), or imported as a thesaurus (items with "
-"relations)."
-msgstr ""
-"Importer une liste hiérarchique de concepts depuis un fichier SKOS standard "
-"(rdf, ttl, json-ld, nt) ou un fichier texte structuré (txt, csv, tsv). Selon "
-"la destination choisie, le résultat peut être prévisualisé, importé comme "
-"vocabulaire personnalisé (liste de termes) ou importé comme thésaurus "
-"(contenus avec relations)."
+msgid "Import a hierarchic list of concepts from a standard SKOS file (rdf, ttl, json-ld, nt) or a structured text file (txt, csv, tsv). According to the chosen destination, the result can be previewed, imported as a custom vocabulary (list of terms), or imported as a thesaurus (items with relations)."
+msgstr "Importer une liste hiérarchique de concepts depuis un fichier SKOS standard (rdf, ttl, json-ld, nt) ou un fichier texte structuré (txt, csv, tsv). Selon la destination choisie, le résultat peut être prévisualisé, importé comme vocabulaire personnalisé (liste de termes) ou importé comme thésaurus (contenus avec relations)."
 
 #: view/thesaurus/admin/thesaurus/flat.phtml:25
 msgid "Back to import"
 msgstr "Retour à l’import"
 
 #: view/thesaurus/admin/thesaurus/flat.phtml:29
-msgid ""
-"Preview of the flat list. Copy-paste it into a custom vocabulary, download "
-"it, or import it directly. What you see is what is imported."
-msgstr ""
-"Prévisualisation de la liste à plat. Copiez-collez-la dans un vocabulaire "
-"personnalisé, téléchargez-la ou importez-la directement. Ce que vous voyez "
-"est ce qui est importé."
+msgid "Preview of the flat list. Copy-paste it into a custom vocabulary, download it, or import it directly. What you see is what is imported."
+msgstr "Prévisualisation de la liste à plat. Copiez-collez-la dans un vocabulaire personnalisé, téléchargez-la ou importez-la directement. Ce que vous voyez est ce qui est importé."
 
 #: view/thesaurus/admin/thesaurus/flat.phtml:45
 msgid "Custom vocabulary label"
@@ -145,17 +241,17 @@ msgstr "Créer le thésaurus"
 msgid "Concept scheme"
 msgstr "Schéma de concepts"
 
+#: view/thesaurus/admin/thesaurus/maintenance-sidebar.phtml:25
+msgid "The task is done in background: the progress and the result are available in the logs of the job."
+msgstr "La tâche est effectuée en arrière-plan : la progression et le résultat sont disponibles dans les journaux de la tâche."
+
 #: view/thesaurus/admin/thesaurus/structure.phtml:52
 msgid "Update and reindex"
 msgstr "Mettre à jour et réindexer"
 
-#: view/thesaurus/admin/thesaurus/structure.phtml:66
-msgid "Open all"
-msgstr "Tout ouvrir"
-
-#: view/thesaurus/admin/thesaurus/structure.phtml:66
-msgid "Close all"
-msgstr "Tout fermer"
+#: view/thesaurus/admin/thesaurus/structure.phtml:53
+msgid "Edit structure"
+msgstr "Modifier l’arborescence"
 
 #: view/thesaurus/admin/thesaurus/update-concepts.phtml:19
 msgid "Update concepts"
@@ -163,182 +259,143 @@ msgstr "Mettre à jour les concepts"
 
 #: view/thesaurus/admin/thesaurus/update-concepts.phtml:22
 msgid "Update ascendances and paths according to main settings."
-msgstr ""
-"Mettre à jour les ascendances et les chemins en fonction des paramètres "
-"principaux."
+msgstr "Mettre à jour les ascendances et les chemins en fonction des paramètres généraux."
 
-#: data/scripts/upgrade.php:70
-msgid ""
-"It is now possible to get thesaurus data for another item without rebuilding "
-"it."
-msgstr ""
-"Il est désormais possible de récupérer les données d’un thésaurus pour un "
-"autre contenu sans le reconstruire."
+#: data/scripts/upgrade.php:79
+msgid "It is now possible to get thesaurus data for another item without rebuilding it."
+msgstr "Il est désormais possible de récupérer les données d’un thésaurus pour un autre contenu sans le reconstruire."
 
-#: data/scripts/upgrade.php:83
-msgid ""
-"Many performance improvements have been implemented. Big thesaurus can be "
-"managed instantly."
-msgstr ""
-"De nombreuses améliorations des performances ont été mises en œuvre. Les "
-"grands thésaurus peuvent être gérés instantanément."
+#: data/scripts/upgrade.php:92
+msgid "Many performance improvements have been implemented. Big thesaurus can be managed instantly."
+msgstr "De nombreuses améliorations des performances ont été mises en œuvre. Les grands thésaurus peuvent être gérés instantanément."
 
-#: data/scripts/upgrade.php:88
-msgid ""
-"It is now possible to import a file and to create a standard thesaurus with "
-"all linked resources."
-msgstr ""
-"Il est désormais possible d’importer un fichier et de créer un thésaurus "
-"standard avec toutes les ressources liées."
+#: data/scripts/upgrade.php:97
+msgid "It is now possible to import a file and to create a standard thesaurus with all linked resources."
+msgstr "Il est désormais possible d’importer un fichier et de créer un thésaurus standard avec toutes les ressources liées."
 
-#: data/scripts/upgrade.php:94
-msgid ""
-"{link}New settings{link_end} allow to store the path or the ascendance of "
-"each concept automatically or via the update button of the thesaurus."
-msgstr ""
-"{link}Les nouveaux paramètres{link_end} permettent d’enregistrer le chemin "
-"ou l’ascendance de chaque concept automatiquement ou via le bouton de mise à "
-"jour du thésaurus."
+#: data/scripts/upgrade.php:103
+msgid "{link}New settings{link_end} allow to store the path or the ascendance of each concept automatically or via the update button of the thesaurus."
+msgstr "{link}Les nouveaux paramètres{link_end} permettent d’enregistrer le chemin ou l’ascendance de chaque concept automatiquement ou via le bouton de mise à jour du thésaurus."
 
-#: data/scripts/upgrade.php:131
-msgid ""
-"The template layout of some blocks Thesaurus was renamed. Check matching "
-"pages: {json}."
-msgstr ""
-"Le gabarit de certains blocs Thésaurus a été renommé. Vérifiez les pages "
-"correspondantes : {json}."
+#: data/scripts/upgrade.php:140
+msgid "The template layout of some blocks Thesaurus was renamed. Check matching pages: {json}."
+msgstr "Le gabarit de certains blocs Thésaurus a été renommé. Vérifiez les pages correspondantes : {json}."
 
-#: data/scripts/upgrade.php:216
-msgid ""
-"The setting \"heading\" was removed from block Thessaurus. New blocks "
-"\"Heading\" or \"Html\" were prepended to all blocks that had a filled "
-"heading. You may check pages for styles: {json}"
-msgstr ""
-"Le paramètre « Titre » a été supprimé du bloc Thesaurus. Un nouveau bloc "
-"« Titre » ou « Html » a été ajouté à tous les blocs qui contenait une "
-"entête. Vous pouvez vérifier les pages pour les styles : {json}"
+#: data/scripts/upgrade.php:225
+msgid "The setting \"heading\" was removed from block Thessaurus. New blocks \"Heading\" or \"Html\" were prepended to all blocks that had a filled heading. You may check pages for styles: {json}"
+msgstr "Le paramètre « Titre » a été supprimé du bloc Thesaurus. Un nouveau bloc « Titre » ou « Html » a été ajouté à tous les blocs qui contenait une entête. Vous pouvez vérifier les pages pour les styles : {json}"
 
-#: data/scripts/upgrade.php:226
-msgid ""
-"The setting \"template\" was moved to the new block layout settings "
-"available since Omeka S v4.1. You may check pages for styles: {json}"
-msgstr ""
-"Le paramètre « template » a été déplacé dans les nouveaux paramètres de bloc "
-"depuis Omeka S v4.1. Vous pouvez vérifier les pages pour les styles : {json}"
+#: data/scripts/upgrade.php:235
+msgid "The setting \"template\" was moved to the new block layout settings available since Omeka S v4.1. You may check pages for styles: {json}"
+msgstr "Le paramètre « template » a été déplacé dans les nouveaux paramètres de bloc depuis Omeka S v4.1. Vous pouvez vérifier les pages pour les styles : {json}"
 
-#: data/scripts/upgrade.php:233
-msgid ""
-"The template files for the block Thesaurus should be moved from \"view/"
-"common/block-layout\" to \"view/common/block-template\" in your themes. You "
-"may check your themes for pages: {json}"
-msgstr ""
-"Les fichiers de gabarit du bloc Thesaurus doivent être déplacés de « view/"
-"common/block-layout » vers « view/common/block-template » dans vos thèmes. "
-"Vous pouvez vérifier les pages : {json}"
+#: data/scripts/upgrade.php:242
+msgid "The template files for the block Thesaurus should be moved from \"view/common/block-layout\" to \"view/common/block-template\" in your themes. You may check your themes for pages: {json}"
+msgstr "Les fichiers de gabarit du bloc Thesaurus doivent être déplacés de « view/common/block-layout » vers « view/common/block-template » dans vos thèmes. Vous pouvez vérifier les pages : {json}"
 
-#: data/scripts/upgrade.php:271
+#: data/scripts/upgrade.php:280
 msgid "{count} thesaurus labels were normalized to Unicode NFC."
 msgstr "{count} libellés de thésaurus ont été normalisés en Unicode NFC."
 
-#: data/scripts/upgrade.php:282
-msgid ""
-"A new data type \"thesaurus\" can fill values with a thesaurus concept, "
-"without a custom vocab or an item set."
-msgstr ""
-"Un nouveau type de données « thésaurus » permet de remplir des valeurs avec "
-"un concept de thésaurus, sans vocabulaire personnalisé ni collection."
+#: data/scripts/upgrade.php:326
+msgid "The table \"term\" was renamed to \"thesaurus_term\"."
+msgstr "La table « term » a été renommée en « thesaurus_term »."
 
-#: data/scripts/upgrade.php:287
-msgid ""
-"To add it to the resource templates (and advanced resource template) that "
-"currently use the custom vocab of a thesaurus, run the task \"Thesaurus: Add "
-"thesaurus data type to custom vocab templates\" via the module Easy Admin "
-"(Check and fix). The custom vocab is kept for compatibility, and existing "
-"values remain valid."
-msgstr ""
-"Pour l’ajouter aux modèles de ressource (et au modèle de ressource avancé) "
-"qui utilisent actuellement le vocabulaire personnalisé d’un thésaurus, "
-"lancez la tâche « Thésaurus : ajouter le type de données thésaurus aux "
-"modèles utilisant un vocabulaire personnalisé » via le module Easy Admin "
-"(Vérifier et corriger). Le vocabulaire personnalisé est conservé pour "
-"compatibilité, et les valeurs existantes restent valides."
+#: data/scripts/upgrade.php:334
+msgid "A new data type \"thesaurus\" can fill values with a thesaurus concept, without a custom vocab or an item set."
+msgstr "Un nouveau type de données « thésaurus » permet de remplir des valeurs avec un concept de thésaurus, sans vocabulaire personnalisé ni collection."
 
-#: Module.php:62
-msgid ""
-"It is recommended to install module CustomVocab to take full advantage of "
-"this module."
-msgstr ""
-"Il est recommandé d’installer le module CustomVocab pour profiter pleinement "
-"de ce module."
+#: data/scripts/upgrade.php:339
+msgid "To add it to the resource templates (and advanced resource template) that currently use the custom vocab of a thesaurus, run the task \"Thesaurus: Add thesaurus data type to custom vocab templates\" via the module Easy Admin (Check and fix). The custom vocab is kept for compatibility, and existing values remain valid."
+msgstr "Pour l’ajouter aux modèles de ressource (et au modèle de ressource avancé) qui utilisent actuellement le vocabulaire personnalisé d’un thésaurus, lancez la tâche « Thésaurus : ajouter le type de données thésaurus aux modèles utilisant un vocabulaire personnalisé » via le module Easy Admin (Vérifier et corriger). Le vocabulaire personnalisé est conservé pour compatibilité, et les valeurs existantes restent valides."
 
-#: Module.php:677
-msgid "Thesaurus: Index thesaurus"
-msgstr "Thésaurus : Indexer les thésaurus"
+#: data/scripts/upgrade.php:444
+msgid "The concepts are now a dedicated resource type, no longer mixed with items in browse, search, facets and references."
+msgstr "Les concepts sont désormais un type de ressource dédié qui ne sont plus mélangés avec les contenus dans les listes, la recherche, les facettes et les références."
 
-#: Module.php:678
+#: data/scripts/upgrade.php:464
+msgid "The item set of a thesaurus is a standard one now, identified via the scheme it contains, not via a class. It is recommended to remove the classes \"skos:Collection\" and \"skos:OrderedCollection\" from the {count} item sets that use them, because they will be removed automatically in a future version."
+msgstr "La collection associé à un thésaurus est désormais une collection standard, identifiée par le schéma qu’elle contient et non par une classe. Il est recommandé de supprimer les classes \"skos:Collection\" et \"skos:OrderedCollection\" des {count} collections qui l’utilisent, car elles seront supprimées automatiquement dans une version future."
+
+#: Module.php:157
+msgid "The {count} concepts of the thesaurus were converted into items, so they are kept without their structure."
+msgstr "Les {count} concepts du thésaurus ont été convertis en contenus et sont donc conservés sans leur structure."
+
+#: Module.php:170
+msgid "The {count} concepts of the thesaurus were deleted with it."
+msgstr "Les {count} concepts du thésaurus ont été supprimés avec lui."
+
+#: Module.php:311
+msgid "The {count} concepts were deleted, with their values and the values that pointed to them."
+msgstr "Les {count} concepts ont été supprimés avec leurs valeurs et les valeurs qui y faisaient référence."
+
+#: Module.php:321
+msgid "The {count} concepts were converted back into items, so they are no longer structured as a thesaurus."
+msgstr "Les {count} concepts ont été convertis en contenus et ne sont donc plus organisés sous forme de thésaurus."
+
+#: Module.php:800
+msgid "The structure of the thesaurus \"{title}\" (#{item_id}) may be outdated: reindex it to rebuild the tree."
+msgstr "La structure du thésaurus \"{title}\" (#{item_id}) n’est peut-être plus à jour : relancez l’indexation pour reconstruire l’arborescence."
+
+#: Module.php:809
+msgid "The structure of the thesaurus \"{title}\" (#{item_id}) may be outdated: {link}reindex it{link_end} to rebuild the tree."
+msgstr "La structure du thésaurus \"{title}\" (#{item_id}) n’est peut-être plus à jour : {link}relancez l’indexation{link_end} pour reconstruire l’arborescence."
+
+#: Module.php:1294
+msgid "Thesaurus: Reindex thesaurus"
+msgstr "Thésaurus : Ré-indexer les thésaurus"
+
+#: Module.php:1295
 msgid "Thesaurus: Add thesaurus data type to custom vocab templates"
-msgstr ""
-"Thésaurus : ajouter le type de données thésaurus aux modèles utilisant un "
-"vocabulaire personnalisé"
+msgstr "Thésaurus : ajouter le type de données thésaurus aux modèles utilisant un vocabulaire personnalisé"
 
-#: Module.php:684
-msgid "Thesaurus index"
-msgstr "Indexer les thésaurus"
+#: Module.php:1301
+msgid "Thesaurus: Reindex"
+msgstr "Thésaurus : Ré-indexer"
 
-#: Module.php:685
+#: Module.php:1302
 msgid "Index the thesaurus terms and their relations."
-msgstr "Indexer les descripteurs des thésaurus et leurs relations"
+msgstr "Indexer les descripteurs des thésaurus et leurs relations."
 
-#: Module.php:687
+#: Module.php:1304
 msgid "Index"
 msgstr "Index"
 
-#: Module.php:691
-msgid "Thesaurus data type migration"
-msgstr "Migration du type de données thésaurus"
+#: Module.php:1308
+msgid "Thesaurus: Data type migration"
+msgstr "Thésaurus : Migration du type de données"
 
-#: Module.php:692
-msgid ""
-"Add the thesaurus data type to the resource templates (and advanced resource "
-"template) that use the custom vocab of a thesaurus, without removing the "
-"custom vocab."
-msgstr ""
-"Ajoute le type de données thésaurus aux modèles de ressource (et au modèle "
-"de ressource avancé) qui utilisent le vocabulaire personnalisé d’un "
-"thésaurus, sans supprimer le vocabulaire personnalisé."
+#: Module.php:1309
+msgid "Add the thesaurus data type to the resource templates (and advanced resource template) that use the custom vocab of a thesaurus, without removing the custom vocab."
+msgstr "Ajoute le type de données thésaurus aux modèles de ressource (et au modèle de ressource avancé) qui utilisent le vocabulaire personnalisé d’un thésaurus, sans supprimer le vocabulaire personnalisé."
 
-#: Module.php:694
+#: Module.php:1311
 msgid "Migrate"
 msgstr "Migrer"
 
-#: Module.php:750
+#: Module.php:1367
 msgid "Unable to find resource template \"Thesaurus Concept\"."
 msgstr "Impossible de trouver le modèle de ressource « Thesaurus Concept »."
 
-#: Module.php:758
+#: Module.php:1375
 msgid "Unable to find vocabulary Skos."
 msgstr "Impossible de trouver le vocabulaire Skos."
 
-#: Module.php:769
+#: Module.php:1386
 msgid "Unable to find property {term} for descriptor."
 msgstr "Impossible de trouver la propriété {term} pour le descripteur."
 
-#: Module.php:782
+#: Module.php:1399
 msgid "Unable to find property {term} for path."
 msgstr "Impossible de trouver la propriété {term} pour le chemin."
 
-#: Module.php:796
+#: Module.php:1413
 msgid "Unable to find property {term} for ascendance."
 msgstr "Impossible de trouver la propriété {term} pour l’ascendance."
 
 #: view/common/thesaurus-list.phtml:23 src/Form/ThesaurusFieldset.php:35
 msgid "Top concepts"
 msgstr "Concepts racines"
-
-#: view/common/thesaurus-list.phtml:24 view/common/thesaurus-list.phtml:25
-#: src/Form/ThesaurusFieldset.php:36
-msgid "Narrower concepts"
-msgstr "Concepts spécifiques"
 
 #: view/common/thesaurus-list.phtml:26 view/common/thesaurus-list.phtml:27
 #: src/Form/ThesaurusFieldset.php:38
@@ -380,188 +437,152 @@ msgstr "Arborescence du concept en cours"
 msgid "Descendants of current concept"
 msgstr "Descendants du concept en cours"
 
-#: view/common/thesaurus-single.phtml:22
-msgid "Root concept"
+#: view/common/thesaurus-single.phtml:22 src/Form/ThesaurusFieldset.php:33
+msgid "Top concept"
 msgstr "Concept racine"
-
-#: view/common/thesaurus-single.phtml:23
-msgid "Broader concept"
-msgstr "Concept générique"
 
 #: view/common/thesaurus-single.phtml:24
 msgid "Specific concept"
 msgstr "Concept spécifique"
 
 #: view/thesaurus/admin/thesaurus/convert.phtml:36
-msgid ""
-"General options: separator \"{separator}\", descriptor \"{descriptor}\". "
-"{link}Edit settings{link_end}."
-msgstr ""
-"Options générales : séparateur « {separator} », descripteur "
-"« {descriptor} ». {link}Modifier les réglages{link_end}."
+msgid "General options: separator \"{separator}\", descriptor \"{descriptor}\". {link}Edit settings{link_end}."
+msgstr "Options générales : séparateur « {separator} », descripteur « {descriptor} ». {link}Modifier les réglages{link_end}."
 
 #: src/Job/CreateThesaurus.php:61
 msgid "A name is required to create a thesaurus."
 msgstr "Un nom est nécessaire pour créer un thésaurus."
 
-#: src/Job/CreateThesaurus.php:76
+#: src/Job/CreateThesaurus.php:81
 msgid "The format of the file is undetermined."
 msgstr "Le format du fichier est indéterminé."
 
-#: src/Job/CreateThesaurus.php:85
+#: src/Job/CreateThesaurus.php:90
 msgid "A list of concepts is required to create a thesaurus."
 msgstr "Une liste de concepts est nécessaire pour créer un thésaurus."
 
-#: src/Job/CreateThesaurus.php:94 src/Job/UpdateConcepts.php:65
-msgid ""
-"A preferred label with the descriptor or the full path is required to fill "
-"concepts."
-msgstr ""
-"Une libellé préféré avec le descripteur ou le chemin d’accès complet est "
-"nécessaire pour remplir les concepts."
+#: src/Job/CreateThesaurus.php:99 src/Job/UpdateConcepts.php:65
+msgid "A preferred label with the descriptor or the full path is required to fill concepts."
+msgstr "Une libellé préféré avec le descripteur ou le chemin d’accès complet est nécessaire pour remplir les concepts."
 
-#: src/Job/CreateThesaurus.php:103
-#: src/Controller/Admin/ThesaurusController.php:424
-msgid ""
-"The input format is defined as containing codes, but no codes are defined."
-msgstr ""
-"Le format d’entrée est défini pour contenir des codes, mais aucun code n’est "
-"défini."
+#: src/Job/CreateThesaurus.php:108
+#: src/Controller/Admin/ThesaurusController.php:598
+msgid "The input format is defined as containing codes, but no codes are defined."
+msgstr "Le format d’entrée est défini pour contenir des codes, mais aucun code n’est défini."
 
-#: src/Job/CreateThesaurus.php:140
+#: src/Job/CreateThesaurus.php:144
 msgid "The property {property} for descriptor is not managed."
 msgstr "La propriété {property} du descripteur n’est pas gérée."
 
-#: src/Job/CreateThesaurus.php:148 src/Job/UpdateConcepts.php:140
+#: src/Job/CreateThesaurus.php:152 src/Job/UpdateConcepts.php:140
 msgid "The property \"{property}\" for path is not managed."
 msgstr "La propriété « {property} » pour le chemin n’est pas gérée."
 
-#: src/Job/CreateThesaurus.php:156 src/Job/UpdateConcepts.php:147
+#: src/Job/CreateThesaurus.php:160 src/Job/UpdateConcepts.php:147
 msgid "The property \"{property}\" for ascendance is not managed."
 msgstr "La propriété « {property} » pour l’ascendance n’est pas gérée."
 
-#: src/Job/CreateThesaurus.php:164
+#: src/Job/CreateThesaurus.php:168
 msgid "Processing {count} descriptors in three steps."
 msgstr "Traitement des {count} descripteurs en trois étapes."
 
-#: src/Job/CreateThesaurus.php:222
+#: src/Job/CreateThesaurus.php:227
 msgid "Step 1/3: creation of {count} descriptors."
 msgstr "Étape 1/3 : création de {count} descripteurs."
 
-#: src/Job/CreateThesaurus.php:259
+#: src/Job/CreateThesaurus.php:265
 msgid "Step 2/3: creation of relations between descriptors."
 msgstr "Étape 2/3 : création de relations entre les descripteurs."
 
-#: src/Job/CreateThesaurus.php:267
+#: src/Job/CreateThesaurus.php:273
 msgid "{count}/{total} descriptors completed."
 msgstr "{count}/{total} descripteurs complétés."
 
-#: src/Job/CreateThesaurus.php:304
+#: src/Job/CreateThesaurus.php:310
 msgid "Step 3/3: indexation of new thesaurus."
 msgstr "Étape 3/3 : indexation du nouveau thésaurus."
 
-#: src/Job/CreateThesaurus.php:324
+#: src/Job/CreateThesaurus.php:330
 msgid "The linked custom vocabulary \"{label}\" was created."
 msgstr "Le vocabulaire personnalisé lié « {label} » a été créé."
 
-#: src/Job/CreateThesaurus.php:329
+#: src/Job/CreateThesaurus.php:335
 msgid "Unable to create the linked custom vocabulary \"{label}\": {message}"
-msgstr ""
-"Impossible de créer le vocabulaire personnalisé lié « {label} » : {message}"
+msgstr "Impossible de créer le vocabulaire personnalisé lié « {label} » : {message}"
 
-#: src/Job/CreateThesaurus.php:336
+#: src/Job/CreateThesaurus.php:342
 msgid "The thesaurus \"{name}\" is ready, with {count} descriptors."
 msgstr "Le thésaurus « {name} » est prêt, avec {count} descripteurs."
 
-#: src/Job/CreateThesaurus.php:417
-msgid ""
-"The line \"{string} has the code \"{code}\", but there is no previous "
-"descriptor to apply to it. It is skipped."
-msgstr ""
-"La ligne « {string} » a le code « {code} », mais il n’y a aucun descripteur "
-"avant sur lequel l’appliquer. Elle est ignorée."
+#: src/Job/CreateThesaurus.php:423
+msgid "The line \"{string} has the code \"{code}\", but there is no previous descriptor to apply to it. It is skipped."
+msgstr "La ligne « {string} » a le code « {code} », mais il n’y a aucun descripteur avant sur lequel l’appliquer. Elle est ignorée."
 
-#: src/Job/CreateThesaurus.php:492
+#: src/Job/CreateThesaurus.php:498
 msgid "The job was stopped. {count}/{total} lines processed."
 msgstr "La tâche a été arrêtée. {count}/{total} lignes traitées."
 
-#: src/Job/CreateThesaurus.php:503 src/Job/CreateThesaurus.php:854
+#: src/Job/CreateThesaurus.php:509 src/Job/CreateThesaurus.php:875
 #: src/Job/UpdateConcepts.php:200
 msgid "{count}/{total} descriptors processed."
 msgstr "{count}/{total} descripteurs traités."
 
-#: src/Job/CreateThesaurus.php:638 src/Job/CreateThesaurus.php:642
+#: src/Job/CreateThesaurus.php:651 src/Job/CreateThesaurus.php:655
 msgid "total"
 msgstr "total"
 
-#: src/Job/CreateThesaurus.php:767
-msgid ""
-"Some properties of other vocabularies are not present in Omeka and were "
-"skipped: {list}."
+#: src/Job/CreateThesaurus.php:781
+msgid "Some properties of other vocabularies are not present in Omeka and were skipped: {list}."
 msgstr "Certaines propriétés d’autres vocabulaires ne sont pas présentes dans Omeka et ont été ignorées : {list}."
 
-#: src/Job/CreateThesaurus.php:831
+#: src/Job/CreateThesaurus.php:852
 msgid "After first step, {count} descriptors can be processed."
 msgstr "Après la première étape, {count} descripteurs peuvent être traités."
 
-#: src/Job/CreateThesaurus.php:843 src/Job/UpdateConcepts.php:192
+#: src/Job/CreateThesaurus.php:864 src/Job/UpdateConcepts.php:192
 msgid "The job  was stopped. {count}/{total} descriptors processed."
 msgstr "La tâche a été arrêtée. {count}/{total} descripteurs traités."
 
-#: src/Job/UpdateStructure.php:80 src/Job/UpdateConcepts.php:55
+#: src/Job/UpdateStructure.php:86 src/Job/UpdateConcepts.php:55
 msgid "No thesaurus specified."
 msgstr "Pas de thésaurus indiqué."
 
-#: src/Job/UpdateStructure.php:88 src/Job/UpdateConcepts.php:82
-#: src/Job/IndexThesaurus.php:96
+#: src/Job/UpdateStructure.php:94 src/Job/UpdateConcepts.php:82
+#: src/Job/IndexThesaurus.php:121
 msgid "Thesaurus #{item_id} not found."
 msgstr "Le thésaurus #{item_id} n’a pas été trouvé."
 
-#: src/Job/UpdateStructure.php:100 src/Job/UpdateConcepts.php:94
+#: src/Job/UpdateStructure.php:106 src/Job/UpdateConcepts.php:94
 msgid "Item #{item_id} is not a thesaurus."
 msgstr "Le contenu #{item_id} n’est pas un thésaurus."
 
-#: src/Job/UpdateStructure.php:116
-msgid ""
-"The thesaurus \"{title}\" (#{item_id}) is empty. No process can be done for "
-"now. Include concepts in thesaurus first."
-msgstr ""
-"Le thésaurus « {title} » (#{item_id}) est vide. Aucune restructuration ne "
-"peut être effectuée. Inclure d’abord les concepts dans le thésaurus."
+#: src/Job/UpdateStructure.php:122
+msgid "The thesaurus \"{title}\" (#{item_id}) is empty. No process can be done for now. Include concepts in thesaurus first."
+msgstr "Le thésaurus « {title} » (#{item_id}) est vide. Aucune restructuration ne peut être effectuée. Inclure d’abord les concepts dans le thésaurus."
 
-#: src/Job/UpdateStructure.php:123
+#: src/Job/UpdateStructure.php:129
 msgid "Starting restructuration of thesaurus \"{title}\" (#{item_id}) ."
-msgstr ""
-"Lancement de la restructuration du thésaurus « {title} » (#{item_id}) ."
+msgstr "Lancement de la restructuration du thésaurus « {title} » (#{item_id}) ."
 
-#: src/Job/UpdateStructure.php:136
-msgid ""
-"Concepts were restructured and reindexed for thesaurus \"{title}\" "
-"(#{item_id}) ."
-msgstr ""
-"Les concepts ont été restructurés et réindexés pour le thésaurus « {title} » "
-"(#{item_id}) ."
+#: src/Job/UpdateStructure.php:142
+msgid "Concepts were restructured and reindexed for thesaurus \"{title}\" (#{item_id}) ."
+msgstr "Les concepts ont été restructurés et réindexés pour le thésaurus « {title} » (#{item_id}) ."
 
-#: src/Job/UpdateStructure.php:141
-msgid ""
-"An error occurred. Ended restructuration of thesaurus \"{title}\" "
-"(#{item_id}) ."
-msgstr ""
-"Une erreur s’est produite. Fin de la restructuration du thésaurus "
-"« {title} » (#{item_id}) ."
+#: src/Job/UpdateStructure.php:147
+msgid "An error occurred. Ended restructuration of thesaurus \"{title}\" (#{item_id}) ."
+msgstr "Une erreur s’est produite. Fin de la restructuration du thésaurus « {title} » (#{item_id}) ."
 
-#: src/Job/UpdateStructure.php:171
+#: src/Job/UpdateStructure.php:177
 msgid "Missing id or parent key for id #{item_id}."
 msgstr "Id manquant ou clé \"parent\" manquante pour id #{item_id}."
 
-#: src/Job/UpdateStructure.php:216
+#: src/Job/UpdateStructure.php:222
 msgid "The thesaurus is now empty."
 msgstr "Le thésaurus est désormais vide."
 
 #: src/Job/UpdateConcepts.php:74
 msgid "No defined property for path or ascendance, so nothing to fill."
-msgstr ""
-"Aucune propriété définie pour le chemin ou l’ascendance, donc rien à remplir."
+msgstr "Aucune propriété définie pour le chemin ou l’ascendance, donc rien à remplir."
 
 #: src/Job/UpdateConcepts.php:109
 msgid "The mode \"{mode}\" is not supported."
@@ -572,100 +593,100 @@ msgid "The property \"{property}\" for descriptor is not managed."
 msgstr "La propriété « {property} » du descripteur n’est pas gérée."
 
 #: src/Job/UpdateConcepts.php:161
-msgid ""
-"The property to use as a title is not set in the template Thesaurus Concept."
-msgstr ""
-"La propriété à utiliser comme titre n’est pas définie dans le modèle Concept "
-"de thésaurus."
+msgid "The property to use as a title is not set in the template Thesaurus Concept."
+msgstr "La propriété à utiliser comme titre n’est pas définie dans le modèle Concept de thésaurus."
 
 #: src/Job/UpdateConcepts.php:167
-msgid ""
-"To update data, the property used as a title in the template \"Thesaurus "
-"Concept\" must be \"skos:prefLabel\", not \"{property}\"."
-msgstr ""
-"Pour mettre à jour les données, la propriété utilisée comme titre dans le "
-"modèle « Thesaurus Concept » doit être « skos:prefLabel », et non "
-"« {property} »."
+msgid "To update data, the property used as a title in the template \"Thesaurus Concept\" must be \"skos:prefLabel\", not \"{property}\"."
+msgstr "Pour mettre à jour les données, la propriété utilisée comme titre dans le modèle « Thesaurus Concept » doit être « skos:prefLabel », et non « {property} »."
 
 #: src/Job/UpdateConcepts.php:174
-msgid ""
-"To update data, the descriptor must be the preferred label, not \"{property}"
-"\"."
-msgstr ""
-"Pour mettre à jour les données, le descripteur doit être l’étiquette "
-"préférée et non « {property} »."
+msgid "To update data, the descriptor must be the preferred label, not \"{property}\"."
+msgstr "Pour mettre à jour les données, le descripteur doit être l’étiquette préférée et non « {property} »."
 
 #: src/Job/UpdateConcepts.php:181
 msgid "Updating {count} descriptors."
 msgstr "Mise à jour des {count} descripteurs."
 
 #: src/Job/UpdateConcepts.php:274
-msgid ""
-"Concepts were updated and reindexed for thesaurus \"{title}\" (#{item_id})."
-msgstr ""
-"Les concepts ont été mis à jour et réindexés pour le thésaurus « {title} » "
-"(#{item_id}) ."
+msgid "Concepts were updated and reindexed for thesaurus \"{title}\" (#{item_id})."
+msgstr "Les concepts ont été mis à jour et réindexés pour le thésaurus « {title} » (#{item_id}) ."
 
-#: src/Job/IndexThesaurus.php:76
+#: src/Job/ConvertItemsToConcepts.php:70
+msgid "The property {term} is not available: the vocabulary skos is required."
+msgstr "La propriété {term} n’est pas disponible : le vocabulaire skos est nécessaire."
+
+#: src/Job/ConvertItemsToConcepts.php:81
+msgid "No thesaurus to convert."
+msgstr "Aucun thésaurus à convertir."
+
+#: src/Job/ConvertItemsToConcepts.php:91
+msgid "The job was stopped: {total} concepts were converted."
+msgstr "La tâche a été arrêtée. {total} concepts ont été convertis."
+
+#: src/Job/ConvertItemsToConcepts.php:105
+msgid "No item to convert into concept: the thesaurus are up to date."
+msgstr "Aucun contenu ) convertir en concept : les thésaurus sont à jour."
+
+#: src/Job/ConvertItemsToConcepts.php:120
+msgid "{total} items were converted into concepts and the thesaurus were reindexed."
+msgstr "{total} contenus seront convertis en concepts et les thésaurus seront ré-indexés."
+
+#: src/Job/ConvertItemsToConcepts.php:142
+msgid "The thesaurus #{item_id} does not exist or is not an item."
+msgstr "Le thésaurus #{item_id} n’existe pas ou n’est pas un contenu."
+
+#: src/Job/ConvertItemsToConcepts.php:199
+msgid "The conversion of the thesaurus #{item_id} is not possible: {count} items have media (#{item_ids}). Remove the media or exclude these items from the thesaurus first."
+msgstr "La conversion du thésaurus #{item_id} n’est pas possible : {count} contenus ont un media (#{item_ids}). Supprimer les médias ou exclure les contenus du thésaurus d’abord."
+
+#: src/Job/ConvertItemsToConcepts.php:248
+msgid "Thesaurus #{item_id}: {count} items were converted into concepts."
+msgstr "Thésaurus #{item_id} : {count} contenus seront convertis en concepts."
+
+#: src/Job/IndexThesaurus.php:102
 msgid "No thesaurus in the database."
 msgstr "Pas de thésaurus dans la base."
 
-#: src/Job/IndexThesaurus.php:103
+#: src/Job/IndexThesaurus.php:128
 msgid "Starting indexing of thesaurus \"{title}\" (#{item_id})."
 msgstr "Lancement de l’indexation du thésaurus « {title} » (#{item_id}) ."
 
-#: src/Job/IndexThesaurus.php:115
+#: src/Job/IndexThesaurus.php:140
 msgid "Thesaurus \"{title}\" (#{item_id}) not indexed."
 msgstr "Le thésaurus « {title} » (#{item_id}) n’a pas été indexé."
 
-#: src/Job/IndexThesaurus.php:147
-msgid "Thesaurus #{item_id} has a missing root for item #{item_id_2}."
-msgstr ""
-"Le thésaurus #{item_id} a une racine manquante pour le contenu #{item_id_2}."
+#: src/Job/IndexThesaurus.php:176
+msgid "Thesaurus #{item_id} has a missing top concept for item #{item_id_2}."
+msgstr "Le thésaurus #{item_id} a une racine manquante pour le contenu #{item_id_2}."
 
-#: src/Job/IndexThesaurus.php:185
-msgid ""
-"Thesaurus \"{title}\" (#{item_id}) indexed (full thesaurus: #{thesaurus_id})."
-msgstr ""
-"Le thésaurus « {title} » (#{item_id}) a été indexé (thésaurus complet : "
-"#{thesaurus_id})."
+#: src/Job/IndexThesaurus.php:213
+msgid "Thesaurus \"{title}\" (#{item_id}) indexed (full thesaurus: #{thesaurus_id})."
+msgstr "Le thésaurus « {title} » (#{item_id}) a été indexé (thésaurus complet : #{thesaurus_id})."
 
-#: src/Job/IndexThesaurus.php:236
+#: src/Job/IndexThesaurus.php:266
 msgid "Thesaurus #{item_id} has no top concepts."
 msgstr "Le thésaurus #{item_id} n’a pas de concepts racine."
 
-#: src/Job/IndexThesaurus.php:265
+#: src/Job/IndexThesaurus.php:295
 msgid "The term #{item_id} has more than {count} levels."
 msgstr "Le concept #{item_id} a plus de {count} niveaux."
 
 #: src/Job/MigrateDataTypes.php:26
-msgid ""
-"The thesaurus scheme class is not set; the module may not be fully installed."
-msgstr ""
-"La classe de schéma du thésaurus n’est pas définie ; le module n’est peut-"
-"être pas complètement installé."
+msgid "The thesaurus scheme class is not set; the module may not be fully installed."
+msgstr "La classe de schéma du thésaurus n’est pas définie ; le module n’est peut-être pas complètement installé."
 
 #: src/Job/MigrateDataTypes.php:32
 msgid "No thesaurus custom vocab found; nothing to migrate."
 msgstr "Aucun vocabulaire personnalisé de thésaurus trouvé ; rien à migrer."
 
 #: src/Job/MigrateDataTypes.php:41
-msgid ""
-"Migration done: the thesaurus data type was added to {rtp} resource template "
-"properties and {art} advanced resource template configs."
-msgstr ""
-"Migration terminée : le type de données thésaurus a été ajouté à {rtp} "
-"propriétés de modèle de ressource et {art} configurations de modèle de "
-"ressource avancé."
+msgid "Migration done: the thesaurus data type was added to {rtp} resource template properties and {art} advanced resource template configs."
+msgstr "Migration terminée : le type de données thésaurus a été ajouté à {rtp} propriétés de modèle de ressource et {art} configurations de modèle de ressource avancé."
 
 #: src/Job/MigrateDataTypes.php:160
-msgid ""
-"The setting \"{id}\" (table {table}) references the thesaurus custom vocab "
-"\"{cv}\". Review it manually to use the thesaurus data type if wanted."
-msgstr ""
-"Le paramètre « {id} » (table {table}) référence le vocabulaire personnalisé "
-"de thésaurus « {cv} ». Vérifiez-le manuellement pour utiliser le type de "
-"données thésaurus si souhaité."
+msgid "The setting \"{id}\" (table {table}) references the thesaurus custom vocab \"{cv}\". Review it manually to use the thesaurus data type if wanted."
+msgstr "Le paramètre « {id} » (table {table}) référence le vocabulaire personnalisé de thésaurus « {cv} ». Vérifiez-le manuellement pour utiliser le type de données thésaurus si souhaité."
 
 #: src/Form/SettingsFieldset.php:27
 msgid "Property used for the label of the descriptor"
@@ -692,11 +713,8 @@ msgid "Property used for the full path (ascendance and descriptor)"
 msgstr "Propriété pour le chemin complet (du concept racine au descripteur)"
 
 #: src/Form/SettingsFieldset.php:45 src/Form/SettingsFieldset.php:63
-msgid ""
-"To store the path or the ascendance simplifies form filling and searches."
-msgstr ""
-"L’enregistrement du chemin ou de l’ascendance simplifie le remplissage des "
-"formulaires et les recherches."
+msgid "To store the path or the ascendance simplifies form filling and searches."
+msgstr "L’enregistrement du chemin ou de l’ascendance simplifie le remplissage des formulaires et les recherches."
 
 #: src/Form/SettingsFieldset.php:48 src/Form/SettingsFieldset.php:66
 msgid "Skos preferred label (not recommended)"
@@ -723,13 +741,8 @@ msgid "Ascendance separator (with spaces)"
 msgstr "Séparateur pour l’ascendance (avec espaces)"
 
 #: src/Form/SettingsFieldset.php:82
-msgid ""
-"Usually \" :: \", \" -- \", \" / \" or \" > \". Set a leading and a trailing "
-"space if needed. It must not be used in descriptors."
-msgstr ""
-"Généralement « :: », « -- », « / » ou « > ». Définit un espace de départ et "
-"un espace d’arrivée si nécessaire. Il ne doit pas être utilisé dans les "
-"descripteurs."
+msgid "Usually \" :: \", \" -- \", \" / \" or \" > \". Set a leading and a trailing space if needed. It must not be used in descriptors."
+msgstr "Généralement « :: », « -- », « / » ou « > ». Définit un espace de départ et un espace d’arrivée si nécessaire. Il ne doit pas être utilisé dans les descripteurs."
 
 #: src/Form/SettingsFieldset.php:94
 msgid "Display of html \"select\" options"
@@ -750,10 +763,6 @@ msgstr "Schéma ou id du concept"
 #: src/Form/ThesaurusFieldset.php:30
 msgid "Type of display"
 msgstr "Type d’affichage"
-
-#: src/Form/ThesaurusFieldset.php:33
-msgid "Root"
-msgstr "Racine"
 
 #: src/Form/ThesaurusFieldset.php:34
 msgid "Broader"
@@ -823,10 +832,6 @@ msgstr "Choisir le type…"
 msgid "Type of link"
 msgstr "Type de lien"
 
-#: src/Form/ThesaurusFieldset.php:70
-msgid "Concepts"
-msgstr "Concepts"
-
 #: src/Form/ThesaurusFieldset.php:72
 msgid "Both"
 msgstr "Les deux"
@@ -849,9 +854,7 @@ msgstr "Profondeur initiale"
 
 #: src/Form/ThesaurusFieldset.php:113
 msgid "Set 0 to start closed, a big number to display all levels."
-msgstr ""
-"Indiquer 0 pour afficher l’arborescence fermée, un grand nombre pour "
-"afficher tous les niveaux."
+msgstr "Indiquer 0 pour afficher l’arborescence fermée, un grand nombre pour afficher tous les niveaux."
 
 #: src/Form/UpdateConceptsForm.php:17
 msgid "Mode"
@@ -910,24 +913,16 @@ msgid "Property mapping for prepended or appended codes"
 msgstr "Alignement des codes préfixés ou suffixés et des propriétés"
 
 #: src/Form/ImportForm.php:63
-msgid ""
-"Set codes mapped with the property. A property can be set directly when used "
-"in input table."
-msgstr ""
-"Aligner les codes avec une propriété. Une propriété peut aussi être indiquée "
-"directement quand elle utilisée dans le tableau d’entrée."
+msgid "Set codes mapped with the property. A property can be set directly when used in input table."
+msgstr "Aligner les codes avec une propriété. Une propriété peut aussi être indiquée directement quand elle utilisée dans le tableau d’entrée."
 
 #: src/Form/ImportForm.php:109
 msgid "SKOS values to import"
 msgstr "Valeurs SKOS à importer"
 
 #: src/Form/ImportForm.php:110
-msgid ""
-"The preferred labels and the hierarchy are always imported. The preview does "
-"not show all the imported values."
-msgstr ""
-"Les libellés préférés et la hiérarchie sont toujours importés. La "
-"prévisualisation n’affiche pas toutes les valeurs importées."
+msgid "The preferred labels and the hierarchy are always imported. The preview does not show all the imported values."
+msgstr "Les libellés préférés et la hiérarchie sont toujours importés. La prévisualisation n’affiche pas toutes les valeurs importées."
 
 #: src/Form/ImportForm.php:112
 msgid "Multilingual (else the Omeka admin language)"
@@ -950,11 +945,8 @@ msgid "External alignments (exactMatch, closeMatch…)"
 msgstr "Alignements externes (exactMatch, closeMatch…)"
 
 #: src/Form/ImportForm.php:117
-msgid ""
-"Other vocabularies (imported if the property exists in Omeka, else logged)"
-msgstr ""
-"Autres vocabulaires (importés si la propriété existe dans Omeka, sinon "
-"journalisés)"
+msgid "Other vocabularies (imported if the property exists in Omeka, else logged)"
+msgstr "Autres vocabulaires (importés si la propriété existe dans Omeka, sinon journalisés)"
 
 #: src/Form/ImportForm.php:137
 msgid "Skip first line"
@@ -1001,8 +993,8 @@ msgid "Preview the flat list (to check or copy-paste)"
 msgstr "Prévisualiser la liste à plat (pour vérifier ou copier-coller)"
 
 #: src/Form/ImportForm.php:174
-msgid "Custom vocabulary (list of terms)"
-msgstr "Vocabulaire personnalisé (liste de termes)"
+msgid "Custom vocabulary (list of terms) [deprecated: use a thesaurus]"
+msgstr "Vocabulaire personnalisé (liste de termes) [déprécié : utiliser un thésaurus]"
 
 #: src/Form/ImportForm.php:175
 msgid "Thesaurus (items with relations)"
@@ -1013,17 +1005,12 @@ msgid "Leave empty to use the file name."
 msgstr "Laisser vide pour utiliser le nom du fichier."
 
 #: src/Form/ImportForm.php:217
-msgid "Create the linked custom vocabulary (item set)"
-msgstr "Créer le vocabulaire personnalisé lié (collection)"
+msgid "Create the linked custom vocabulary (item set) [deprecated]"
+msgstr "Créer le vocabulaire personnalisé lié (collection) [déprécié]"
 
 #: src/Form/ImportForm.php:218
-msgid ""
-"Optional: the thesaurus data type does not require it. It is kept as a "
-"complement for compatibility with the custom vocab."
-msgstr ""
-"Facultatif : le type de données thésaurus ne le nécessite pas. Il est "
-"conservé comme complément pour compatibilité avec le vocabulaire "
-"personnalisé."
+msgid "Deprecated: the thesaurus data type does not require it and the module CustomVocab is optional. It is kept only for the thesaurus that are not migrated yet."
+msgstr "Déprécié : Les types de données thésaurus n’en ont pas besoin et le module Vocabulaire personnalisé est facultatif. Il est conservé uniquement pour les thésaurus qui ne sont pas encore migrés."
 
 #: src/Form/ConfirmAllForm.php:22
 msgid "Limit deletion"
@@ -1041,266 +1028,217 @@ msgstr "Schéma et concepts"
 msgid "Scheme, all concepts and item set"
 msgstr "Schéma, concepts et collection"
 
-#: src/Api/Adapter/TermAdapter.php:91
-msgid "A term must be an item."
-msgstr "Un concept doit être un contenu."
+#: src/Api/Adapter/ConceptAdapter.php:174
+msgid "A concept must belong to a thesaurus scheme."
+msgstr "Un concept doit appartenir à un schéma (thésaurus)."
 
-#: src/Api/Adapter/TermAdapter.php:95
-msgid "A term must have a scheme."
-msgstr "Un concept doit avoir un schéma."
+#: src/Api/Adapter/ConceptAdapter.php:186
+msgid "The broader concept must belong to the same scheme."
+msgstr "Le concept générique doit se trouver dans le même schéma."
 
-#: src/Api/Adapter/TermAdapter.php:109
-msgid "This item is already a term in this scheme."
-msgstr "Ce contenu est déjà un concept dans ce schéma."
-
-#: src/Api/Adapter/TermAdapter.php:116
-msgid "The scheme of the broader term must be the same than term one."
-msgstr "Le schéma du concept générique doit être le même que le concept."
-
-#: src/Api/Adapter/TermAdapter.php:120
-msgid "A term must not be a ancestor of itself."
+#: src/Api/Adapter/ConceptAdapter.php:188
+msgid "A concept cannot be an ancestor of itself."
 msgstr "Un concept ne peut pas être un ancêtre de lui-même."
 
-#: src/Api/Representation/TermRepresentation.php:369
-#, php-format
-msgid "There cannot be more than %d ancestors."
-msgstr "Il ne peut pas y avoir plus de %d ancêtres."
-
-#: src/Api/Representation/TermRepresentation.php:393
-#: src/Api/Representation/TermRepresentation.php:420
-#: src/Api/Representation/TermRepresentation.php:449
-#, php-format
-msgid "There cannot be more than %d levels of descendants."
-msgstr "Il ne peut pas y avoir plus de %d niveaux de descendants."
-
-#: src/Controller/Admin/ThesaurusController.php:39
-msgid ""
-"The thesaurus has no item set with class \"skos:Collection\" or "
-"\"skos:OrderedCollection\"."
-msgstr ""
-"Le thésaurus n’a pas de collection avec la classe « skos:Collection » ou "
-"« skos:OrderedCollection »."
-
-#: src/Controller/Admin/ThesaurusController.php:73
+#: src/Controller/Admin/ThesaurusController.php:96
 msgid "thesaurus"
 msgstr "thésaurus"
 
-#: src/Controller/Admin/ThesaurusController.php:95
+#: src/Controller/Admin/ThesaurusController.php:118
 msgid "The item #{item_id} is not available."
 msgstr "Le contenu #{item_id} n’est pas disponible."
 
-#: src/Controller/Admin/ThesaurusController.php:103
+#: src/Controller/Admin/ThesaurusController.php:126
 msgid "The item #{item_id} does not belong to a thesaurus."
 msgstr "Le contenu #{item_id} n’appartient pas à un thésaurus."
 
-#: src/Controller/Admin/ThesaurusController.php:112
+#: src/Controller/Admin/ThesaurusController.php:135
 msgid "Thesaurus scheme successfully deleted"
 msgstr "Le schéma du Thésaurus a été supprimé avec succès"
 
-#: src/Controller/Admin/ThesaurusController.php:127
+#: src/Controller/Admin/ThesaurusController.php:150
 msgid "Full thesaurus successfully deleted"
 msgstr "Le thésaurus a été entièrement supprimé"
 
-#: src/Controller/Admin/ThesaurusController.php:128
+#: src/Controller/Admin/ThesaurusController.php:151
 msgid "Full thesaurus and item set successfully deleted"
 msgstr "Le thésaurus a été entièrement supprimé, ainsi que la collection"
 
-#: src/Controller/Admin/ThesaurusController.php:173
+#: src/Controller/Admin/ThesaurusController.php:196
 msgid "Item #{item_id} is not a skos scheme and is not a thesaurus."
-msgstr ""
-"Le contenu #{item_id} n’a pas de schéma skos et n’est pas un thésaurus."
+msgstr "Le contenu #{item_id} n’a pas de schéma skos et n’est pas un thésaurus."
 
-#: src/Controller/Admin/ThesaurusController.php:189
-#: src/Controller/Admin/ThesaurusController.php:204
+#: src/Controller/Admin/ThesaurusController.php:286
+#: src/Controller/Admin/ThesaurusController.php:301
 msgid "User is not allowed to batch edit thesaurus."
 msgstr "L’utilisateur n’a pas le droit d’éditer en lot le thésaurus."
 
-#: src/Controller/Admin/ThesaurusController.php:232
+#: src/Controller/Admin/ThesaurusController.php:329
 msgid "id"
 msgstr "id"
 
-#: src/Controller/Admin/ThesaurusController.php:254
-msgid ""
-"Indexing concepts in background ({link}job #{job_id}{link_end}, {link_log}"
-"logs{link_end})."
-msgstr ""
-"Indexation des concepts en arrière-plan ({link}tâche #{job_id}{link_end}, "
-"{link_log}journaux{link_end})."
+#: src/Controller/Admin/ThesaurusController.php:351
+msgid "Indexing concepts in background ({link}job #{job_id}{link_end}, {link_log}logs{link_end})."
+msgstr "Indexation des concepts en arrière-plan ({link}tâche #{job_id}{link_end}, {link_log}journaux{link_end})."
 
-#: src/Controller/Admin/ThesaurusController.php:274
-msgid ""
-"Migrating data types in background: the thesaurus data type is added to the "
-"templates using a thesaurus custom vocab ({link}job #{job_id}{link_end}, "
-"{link_log}logs{link_end})."
-msgstr ""
-"Migration des types de données en arrière-plan : le type de données "
-"thésaurus est ajouté aux modèles utilisant un vocabulaire personnalisé de "
-"thésaurus ({link}tâche #{job_id}{link_end}, {link_log}journaux{link_end})."
+#: src/Controller/Admin/ThesaurusController.php:387
+msgid "Converting items into concepts in background ({link}job #{job_id}{link_end}, {link_log}logs{link_end})."
+msgstr "Conversion des contenus en concepts en arrière-plan ({link}tâche #{job_id}{link_end}, {link_log}journaux{link_end})."
 
-#: src/Controller/Admin/ThesaurusController.php:305
-msgid ""
-"You may need to reload {link}this page{link_end} a second time to clean "
-"indexation of top concepts."
-msgstr ""
-"Vous pouvez avoir besoin de recharger {link}cette page{link_end} une seconde "
-"fois pour finaliser l’indexation des concepts racines."
+#: src/Controller/Admin/ThesaurusController.php:409
+#: src/Controller/Admin/ThesaurusController.php:411
+msgid "Migrate data types"
+msgstr "Migrer les types de données"
 
-#: src/Controller/Admin/ThesaurusController.php:346
+#: src/Controller/Admin/ThesaurusController.php:410
+msgid "The data type \"thesaurus\" is added to the resource templates and to the configs that use the custom vocab of a thesaurus, so the concepts can be selected in a tree. The custom vocabs are not removed and the existing values are not modified."
+msgstr "Le type de données « thesaurus » est ajouté aux modèles de ressource et aux configurations qui utilisent le vocabulaire personnalisé d’un thésaurus, afin que les concepts puissent être sélectionnés dans une arborescence. Les vocabulaires personnalisés ne sont pas supprimés et les valeurs existantes ne sont pas modifiées."
+
+#: src/Controller/Admin/ThesaurusController.php:414
+#: src/Controller/Admin/ThesaurusController.php:416
+msgid "Convert items into concepts"
+msgstr "Convertir les contenus en concepts"
+
+#: src/Controller/Admin/ThesaurusController.php:415
+msgid "The items that belong to a thesaurus are converted into concepts, that are a dedicated resource type since version 3.4.26. The ids and the values are kept, so the links to the concepts remain valid, but the items are removed from the browse of the items. The items with a media cannot be converted."
+msgstr "Les contenus qui appartiennent à un thésaurus sont convertis en concepts, qui sont un type de ressource dédié depuis la version 3.4.26. Les identifiants et les valeurs sont conservés, donc les liens vers les concepts restent valides, mais les contenus disparaissent de la liste des contenus. Les contenus avec un média ne peuvent pas être convertis."
+
+#: src/Controller/Admin/ThesaurusController.php:448
+msgid "Migrating data types in background: the thesaurus data type is added to the templates using a thesaurus custom vocab ({link}job #{job_id}{link_end}, {link_log}logs{link_end})."
+msgstr "Migration des types de données en arrière-plan : le type de données thésaurus est ajouté aux modèles utilisant un vocabulaire personnalisé de thésaurus ({link}tâche #{job_id}{link_end}, {link_log}journaux{link_end})."
+
+#: src/Controller/Admin/ThesaurusController.php:479
+msgid "You may need to reload {link}this page{link_end} a second time to clean indexation of top concepts."
+msgstr "Vous pouvez avoir besoin de recharger {link}cette page{link_end} une seconde fois pour finaliser l’indexation des concepts racines."
+
+#: src/Controller/Admin/ThesaurusController.php:520
 msgid "Unallowed request."
 msgstr "Requête non autorisée."
 
-#: src/Controller/Admin/ThesaurusController.php:367
-msgid ""
-"The file exceeds the maximum upload size allowed by the server ({size})."
-msgstr ""
-"Le fichier dépasse la taille maximale d’envoi autorisée par le serveur "
-"({size})."
+#: src/Controller/Admin/ThesaurusController.php:541
+msgid "The file exceeds the maximum upload size allowed by the server ({size})."
+msgstr "Le fichier dépasse la taille maximale d’envoi autorisée par le serveur ({size})."
 
-#: src/Controller/Admin/ThesaurusController.php:378
+#: src/Controller/Admin/ThesaurusController.php:552
 msgid "Wrong request for file."
 msgstr "Requête du fichier incorrecte."
 
-#: src/Controller/Admin/ThesaurusController.php:398
+#: src/Controller/Admin/ThesaurusController.php:572
 msgid "A file or a URL is required."
 msgstr "Un fichier ou une URL est requis."
 
-#: src/Controller/Admin/ThesaurusController.php:443
+#: src/Controller/Admin/ThesaurusController.php:617
 msgid "Wrong media type (\"{type}\") for file."
 msgstr "Média-type incorrect (« {type} ») pour le fichier."
 
-#: src/Controller/Admin/ThesaurusController.php:449
-#: src/Controller/Admin/ThesaurusController.php:1079
+#: src/Controller/Admin/ThesaurusController.php:623
+#: src/Controller/Admin/ThesaurusController.php:1253
 msgid "The file is empty."
 msgstr "Le fichier est vide."
 
-#: src/Controller/Admin/ThesaurusController.php:458
+#: src/Controller/Admin/ThesaurusController.php:632
 msgid "Unable to convert the file."
 msgstr "Impossible de convertir le fichier."
 
-#: src/Controller/Admin/ThesaurusController.php:522
+#: src/Controller/Admin/ThesaurusController.php:696
 msgid "Convert first a file to get the flat list."
 msgstr "Convertissez d’abord un fichier pour obtenir la liste à plat."
 
-#: src/Controller/Admin/ThesaurusController.php:565
+#: src/Controller/Admin/ThesaurusController.php:739
 msgid "The module Custom Vocab is required to create a custom vocabulary."
-msgstr ""
-"Le module Custom Vocab est requis pour créer un vocabulaire personnalisé."
+msgstr "Le module Custom Vocab est requis pour créer un vocabulaire personnalisé."
 
-#: src/Controller/Admin/ThesaurusController.php:573
+#: src/Controller/Admin/ThesaurusController.php:747
 msgid "There is no term to create the custom vocabulary."
 msgstr "Aucun terme pour créer le vocabulaire personnalisé."
 
-#: src/Controller/Admin/ThesaurusController.php:585
+#: src/Controller/Admin/ThesaurusController.php:759
 msgid "Unable to create the custom vocabulary \"{label}\": {message}"
-msgstr ""
-"Impossible de créer le vocabulaire personnalisé « {label} » : {message}"
+msgstr "Impossible de créer le vocabulaire personnalisé « {label} » : {message}"
 
-#: src/Controller/Admin/ThesaurusController.php:592
+#: src/Controller/Admin/ThesaurusController.php:766
 msgid "The custom vocabulary \"{label}\" was created with {count} terms."
-msgstr ""
-"Le vocabulaire personnalisé « {label} » a été créé avec {count} termes."
+msgstr "Le vocabulaire personnalisé « {label} » a été créé avec {count} termes."
 
-#: src/Controller/Admin/ThesaurusController.php:617
+#: src/Controller/Admin/ThesaurusController.php:791
 msgid "The list is empty."
 msgstr "La liste est vide."
 
-#: src/Controller/Admin/ThesaurusController.php:663
-msgid ""
-"Structure saved and reindexed ({link}job #{job_id}{link_end}, {link_log}"
-"logs{link_end})."
-msgstr ""
-"Structure enregistrée et ré-indexée ({link}tâche #{job_id}{link_end}, "
-"{link_log}journaux{link_end})."
+#: src/Controller/Admin/ThesaurusController.php:837
+msgid "Structure saved and reindexed ({link}job #{job_id}{link_end}, {link_log}logs{link_end})."
+msgstr "Structure enregistrée et ré-indexée ({link}tâche #{job_id}{link_end}, {link_log}journaux{link_end})."
 
-#: src/Controller/Admin/ThesaurusController.php:667
-msgid ""
-"Indexing structure in background. Do not display structure while indexing, "
-"else errors may occur ({link}job #{job_id}{link_end}, {link_log}"
-"logs{link_end})."
-msgstr ""
-"Indexation des concepts en arrière-plan. Ne pas afficher la structure durant "
-"l’indexation, sinon des erreurs peuvent apparaître ({link}tâche #{job_id}"
-"{link_end}, {link_log}journaux{link_end})."
+#: src/Controller/Admin/ThesaurusController.php:841
+msgid "Indexing structure in background. Do not display structure while indexing, else errors may occur ({link}job #{job_id}{link_end}, {link_log}logs{link_end})."
+msgstr "Indexation des concepts en arrière-plan. Ne pas afficher la structure durant l’indexation, sinon des erreurs peuvent apparaître ({link}tâche #{job_id}{link_end}, {link_log}journaux{link_end})."
 
-#: src/Controller/Admin/ThesaurusController.php:1110
+#: src/Controller/Admin/ThesaurusController.php:1284
 msgid "The thesaurus \"{title}\" is created."
 msgstr "Le thésaurus « {title} » a été créé."
 
-#: src/Controller/Admin/ThesaurusController.php:1117
-msgid ""
-"Creation of thesaurus \"{title}\" with {total} lines started ({link}job "
-"#{job_id}{link_end}, {link_log}logs{link_end})"
-msgstr ""
-"Création du thésaurus « {title} » avec {total} lignes démarrée ({link}tâche "
-"#{job_id}{link_end}, {link_log}journaux{link_end})"
+#: src/Controller/Admin/ThesaurusController.php:1291
+msgid "Creation of thesaurus \"{title}\" with {total} lines started ({link}job #{job_id}{link_end}, {link_log}logs{link_end})"
+msgstr "Création du thésaurus « {title} » avec {total} lignes démarrée ({link}tâche #{job_id}{link_end}, {link_log}journaux{link_end})"
 
-#: src/Controller/Admin/ThesaurusController.php:1153
-msgid ""
-"Updating concepts in background ({link}job #{job_id}{link_end}, {link_log}"
-"logs{link_end})."
-msgstr ""
-"Mise à jour des concepts en arrière-plan ({link}tâche #{job_id}{link_end}, "
-"{link_log}journaux{link_end})."
+#: src/Controller/Admin/ThesaurusController.php:1327
+msgid "Updating concepts in background ({link}job #{job_id}{link_end}, {link_log}logs{link_end})."
+msgstr "Mise à jour des concepts en arrière-plan ({link}tâche #{job_id}{link_end}, {link_log}journaux{link_end})."
 
-#: src/Controller/Admin/ThesaurusController.php:1264
+#: src/Controller/Admin/ThesaurusController.php:1438
 msgid "Unable to fetch the URL: {message}"
 msgstr "Impossible de récupérer l’URL : {message}"
 
-#: src/Controller/Admin/ThesaurusController.php:1272
+#: src/Controller/Admin/ThesaurusController.php:1446
 msgid "Unable to fetch the URL (status {status})."
 msgstr "Impossible de récupérer l’URL (statut {status})."
 
-#: src/Controller/Admin/ThesaurusController.php:1281
+#: src/Controller/Admin/ThesaurusController.php:1455
 msgid "The fetched URL is empty."
 msgstr "L’URL récupérée est vide."
 
-#: src/Controller/Admin/ThesaurusController.php:1329
+#: src/Controller/Admin/ThesaurusController.php:1503
 msgid "The php extension \"zlib\" is required to import a gzipped file."
 msgstr "L’extension php « zlib » est requise pour importer un fichier gzippé."
 
-#: src/Stdlib/Thesaurus.php:324
-msgid ""
-"Thesaurus based on item #{item_id} does not exist or is not available to "
-"current user."
-msgstr ""
-"Le thésaurus basé sur l’article #{item_id} n’existe pas ou n’est pas "
-"disponible pour l’utilisateur actuel."
+#: src/Controller/Admin/ConceptController.php:56
+msgid "Concept successfully updated"
+msgstr "Concept mis à jour avec succès"
 
-#: src/Stdlib/Thesaurus.php:983 src/Stdlib/Thesaurus.php:1339
-#: src/Stdlib/Thesaurus.php:1367 src/Stdlib/Thesaurus.php:1394
-#: src/Stdlib/Thesaurus.php:1426
+#: src/Controller/Admin/ConceptController.php:78
+msgid "concept"
+msgstr "concept"
+
+#: src/Controller/Admin/ConceptController.php:96
+msgid "Concept successfully deleted"
+msgstr "Concept supprimé avec succès"
+
+#: src/Service/Form/Element/CustomVocabSelectFactory.php:21
+msgid "The module CustomVocab is required to use the deprecated custom vocab select."
+msgstr "Le module Custom Vocab est requis pour utiliser le sélecteur déprécié de vocabulaire personnalisé."
+
+#: src/Stdlib/Thesaurus.php:359
+msgid "Thesaurus based on resource #{resource_id} does not exist or is not available to current user."
+msgstr "Le thésaurus basé sur la ressource #{resource_id} n’existe pas ou n’est pas disponible pour l’utilisateur actuel."
+
+#: src/Stdlib/Thesaurus.php:998 src/Stdlib/Thesaurus.php:1357
+#: src/Stdlib/Thesaurus.php:1385 src/Stdlib/Thesaurus.php:1412
+#: src/Stdlib/Thesaurus.php:1444
 msgid "There cannot be more than {total} levels of descendants."
 msgstr "Il ne peut pas y avoir plus de {total} niveaux de descendants."
 
-#: src/Stdlib/Thesaurus.php:1107
-msgid ""
-"At least one descriptor (\"{title}\") contains the separator \"{value}\". "
-"You must change it."
-msgstr ""
-"Au moins un descripteur (« {title} ») contient le séparateur « {value} ». "
-"Vous devez le modifier."
+#: src/Stdlib/Thesaurus.php:1125
+msgid "At least one descriptor (\"{title}\") contains the separator \"{value}\". You must change it."
+msgstr "Au moins un descripteur (« {title} ») contient le séparateur « {value} ». Vous devez le modifier."
 
-#: src/Stdlib/Thesaurus.php:1288 src/Stdlib/Thesaurus.php:1312
+#: src/Stdlib/Thesaurus.php:1306 src/Stdlib/Thesaurus.php:1330
 msgid "There cannot be more than {total} ancestors."
 msgstr "Il ne peut pas y avoir plus de {total} ancêtres."
 
 msgid "SKOS Vocabulary"
 msgstr "Vocabulaire SKOS"
 
-msgid ""
-"An RDF vocabulary for describing the basic structure and content of concept "
-"schemes such as thesauri, classification schemes, subject heading lists, "
-"taxonomies, 'folksonomies', other types of controlled vocabulary, and also "
-"concept schemes embedded in glossaries and terminologies."
-msgstr ""
-"Un vocabulaire RDF pour décrire la structure de base et le contenu des "
-"schémas conceptuels tels que les thésaurus, les schémas de classification, "
-"les listes de rubriques, les taxonomies, les « folksonomies », d’autres "
-"types de vocabulaire contrôlé, ainsi que les schémas conceptuels intégrés "
-"dans les glossaires et les terminologies."
-
-msgid "Concept"
-msgstr "Concept"
+msgid "An RDF vocabulary for describing the basic structure and content of concept schemes such as thesauri, classification schemes, subject heading lists, taxonomies, 'folksonomies', other types of controlled vocabulary, and also concept schemes embedded in glossaries and terminologies."
+msgstr "Un vocabulaire RDF pour décrire la structure de base et le contenu des schémas conceptuels tels que les thésaurus, les schémas de classification, les listes de rubriques, les taxonomies, les « folksonomies », d’autres types de vocabulaire contrôlé, ainsi que les schémas conceptuels intégrés dans les glossaires et les terminologies."
 
 msgid "An idea or notion; a unit of thought."
 msgstr "Une idée ou une notion ; une unité de pensée."
@@ -1308,12 +1246,8 @@ msgstr "Une idée ou une notion ; une unité de pensée."
 msgid "Concept Scheme"
 msgstr "Schéma de concepts"
 
-msgid ""
-"A set of concepts, optionally including statements about semantic "
-"relationships between those concepts."
-msgstr ""
-"Un ensemble de concepts, comprenant éventuellement des déclarations sur les "
-"relations sémantiques entre ces concepts."
+msgid "A set of concepts, optionally including statements about semantic relationships between those concepts."
+msgstr "Un ensemble de concepts, comprenant éventuellement des déclarations sur les relations sémantiques entre ces concepts."
 
 msgid "A meaningful collection of concepts."
 msgstr "Un ensemble significatif de concepts."
@@ -1321,48 +1255,32 @@ msgstr "Un ensemble significatif de concepts."
 msgid "Ordered Collection"
 msgstr "Collection ordonnée"
 
-msgid ""
-"An ordered collection of concepts, where both the grouping and the ordering "
-"are meaningful."
-msgstr ""
-"Une collection ordonnée de concepts, où le regroupement et l’ordre sont "
-"significatifs."
+msgid "An ordered collection of concepts, where both the grouping and the ordering are meaningful."
+msgstr "Une collection ordonnée de concepts, où le regroupement et l’ordre sont significatifs."
 
 msgid "is in scheme"
 msgstr "est dans le schéma"
 
-msgid ""
-"Relates a resource (for example a concept) to a concept scheme in which it "
-"is included."
-msgstr ""
-"Relie une ressource (par exemple un concept) à un schéma de concepts dans "
-"lequel elle est incluse."
+msgid "Relates a resource (for example a concept) to a concept scheme in which it is included."
+msgstr "Relie une ressource (par exemple un concept) à un schéma de concepts dans lequel elle est incluse."
 
 msgid "has top concept"
 msgstr "a pour concept racine"
 
-msgid ""
-"Relates, by convention, a concept scheme to a concept which is topmost in "
-"the broader/narrower concept hierarchies for that scheme, providing an entry "
-"point to these hierarchies."
-msgstr ""
-"Relie, par convention, un schéma de concepts à un concept qui se trouve au "
-"sommet des hiérarchies de concepts plus larges/plus étroites pour ce schéma, "
-"en fournissant un point d’entrée à ces hiérarchies."
+msgid "Relates, by convention, a concept scheme to a concept which is topmost in the broader/narrower concept hierarchies for that scheme, providing an entry point to these hierarchies."
+msgstr "Relie, par convention, un schéma de concepts à un concept qui se trouve au sommet des hiérarchies de concepts plus larges/plus étroites pour ce schéma, en fournissant un point d’entrée à ces hiérarchies."
 
 msgid "is top concept in scheme"
 msgstr "est un concept racine du schéma"
 
-msgid ""
-"Relates a concept to the concept scheme that it is a top level concept of."
+msgid "Relates a concept to the concept scheme that it is a top level concept of."
 msgstr "Relie un concept au schéma de concepts dont il est un concept racine."
 
 msgid "preferred label"
 msgstr "libellé préféré"
 
 msgid "The preferred lexical label for a resource, in a given language."
-msgstr ""
-"Étiquette lexicale préférée pour une ressource, dans une langue donnée."
+msgstr "Étiquette lexicale préférée pour une ressource, dans une langue donnée."
 
 msgid "alternative label"
 msgstr "libellé alternatif"
@@ -1373,27 +1291,14 @@ msgstr "Un autre libellé lexical pour une ressource."
 msgid "hidden label"
 msgstr "libellé caché"
 
-msgid ""
-"A lexical label for a resource that should be hidden when generating visual "
-"displays of the resource, but should still be accessible to free text search "
-"operations."
-msgstr ""
-"Étiquette lexicale d’une ressource qui doit être cachée dans l’affichage de "
-"la ressource, mais qui doit rester accessible pour les opérations de "
-"recherche en texte libre."
+msgid "A lexical label for a resource that should be hidden when generating visual displays of the resource, but should still be accessible to free text search operations."
+msgstr "Étiquette lexicale d’une ressource qui doit être cachée dans l’affichage de la ressource, mais qui doit rester accessible pour les opérations de recherche en texte libre."
 
 msgid "notation"
 msgstr "notation"
 
-msgid ""
-"A notation, also known as classification code, is a string of characters "
-"such as \"T58.5\" or \"303.4833\" used to uniquely identify a concept within "
-"the scope of a given concept scheme."
-msgstr ""
-"Une notation, également connue sous le nom de code de classification, est "
-"une chaîne de caractères telle que « T58.5 » ou « 303.4833 » utilisée pour "
-"identifier de manière unique un concept dans le cadre d'un schéma de "
-"concepts donné."
+msgid "A notation, also known as classification code, is a string of characters such as \"T58.5\" or \"303.4833\" used to uniquely identify a concept within the scope of a given concept scheme."
+msgstr "Une notation, également connue sous le nom de code de classification, est une chaîne de caractères telle que « T58.5 » ou « 303.4833 » utilisée pour identifier de manière unique un concept dans le cadre d'un schéma de concepts donné."
 
 msgid "note"
 msgstr "note"
@@ -1411,15 +1316,13 @@ msgid "definition"
 msgstr "définition"
 
 msgid "A statement or formal explanation of the meaning of a concept."
-msgstr ""
-"Une déclaration ou une explication formelle de la signification d’un concept."
+msgstr "Une déclaration ou une explication formelle de la signification d’un concept."
 
 msgid "editorial note"
 msgstr "note éditoriale"
 
 msgid "A note for an editor, translator or maintainer of the vocabulary."
-msgstr ""
-"Note destinée à l’éditeur, au traducteur ou au responsable du vocabulaire."
+msgstr "Note destinée à l’éditeur, au traducteur ou au responsable du vocabulaire."
 
 msgid "example"
 msgstr "exemple"
@@ -1431,8 +1334,7 @@ msgid "history note"
 msgstr "note historique"
 
 msgid "A note about the past state/use/meaning of a concept."
-msgstr ""
-"Note sur l’état, l’utilisation ou la signification passée d’un concept."
+msgstr "Note sur l’état, l’utilisation ou la signification passée d’un concept."
 
 msgid "scope note"
 msgstr "note d’application"
@@ -1461,26 +1363,20 @@ msgstr "Relie un concept à un autre concept plus étroit."
 msgid "has related"
 msgstr "est associé à"
 
-msgid ""
-"Relates a concept to a concept with which there is an associative semantic "
-"relationship."
-msgstr ""
-"Relie un concept à un autre concept pour lequel il existe une relation "
-"sémantique associative."
+msgid "Relates a concept to a concept with which there is an associative semantic relationship."
+msgstr "Relie un concept à un autre concept pour lequel il existe une relation sémantique associative."
 
 msgid "has broader transitive"
 msgstr "a pour générique et transitif"
 
 msgid "skos:broaderTransitive is a transitive superproperty of skos:broader."
-msgstr ""
-"skos:broaderTransitive est une super-propriété transitive de skos:broader."
+msgstr "skos:broaderTransitive est une super-propriété transitive de skos:broader."
 
 msgid "has narrower transitive"
 msgstr "a pour spécifique et transitif"
 
 msgid "skos:narrowerTransitive is a transitive superproperty of skos:narrower."
-msgstr ""
-"skos:narrowerTransitive est une super-propriété transitive de skos:narrower."
+msgstr "skos:narrowerTransitive est une super-propriété transitive de skos:narrower."
 
 msgid "has member"
 msgstr "a pour membre"
@@ -1497,95 +1393,82 @@ msgstr "Relie une collection ordonnée à la liste RDF contenant ses membres."
 msgid "is in mapping relation with"
 msgstr "est en relation d’équivalence avec"
 
-msgid ""
-"Relates two concepts coming, by convention, from different schemes, and that "
-"have comparable meanings"
-msgstr ""
-"Met en relation deux concepts provenant, par convention, de schémas "
-"différents, et qui ont des significations comparables"
+msgid "Relates two concepts coming, by convention, from different schemes, and that have comparable meanings"
+msgstr "Met en relation deux concepts provenant, par convention, de schémas différents, et qui ont des significations comparables"
 
 msgid "has broader match"
 msgstr "a une correspondance plus large"
 
-msgid ""
-"skos:broadMatch is used to state a hierarchical mapping link between two "
-"conceptual resources in different concept schemes."
-msgstr ""
-"skos:broadMatch est utilisé pour indiquer un lien de correspondance "
-"hiérarchique entre deux ressources conceptuelles dans des schémas "
-"conceptuels différents."
+msgid "skos:broadMatch is used to state a hierarchical mapping link between two conceptual resources in different concept schemes."
+msgstr "skos:broadMatch est utilisé pour indiquer un lien de correspondance hiérarchique entre deux ressources conceptuelles dans des schémas conceptuels différents."
 
 msgid "has narrower match"
 msgstr "a une correspondance plus étroite"
 
-msgid ""
-"skos:narrowMatch is used to state a hierarchical mapping link between two "
-"conceptual resources in different concept schemes."
-msgstr ""
-"skos:narrowMatch est utilisé pour indiquer un lien de correspondance "
-"hiérarchique entre deux ressources conceptuelles dans des schémas "
-"conceptuels différents."
+msgid "skos:narrowMatch is used to state a hierarchical mapping link between two conceptual resources in different concept schemes."
+msgstr "skos:narrowMatch est utilisé pour indiquer un lien de correspondance hiérarchique entre deux ressources conceptuelles dans des schémas conceptuels différents."
 
 msgid "has related match"
 msgstr "a une correspondance associative"
 
-msgid ""
-"skos:relatedMatch is used to state an associative mapping link between two "
-"conceptual resources in different concept schemes."
-msgstr ""
-"skos:relatedMatch est utilisé pour indiquer un lien de correspondance "
-"associatif entre deux ressources conceptuelles dans différents schémas "
-"conceptuels."
+msgid "skos:relatedMatch is used to state an associative mapping link between two conceptual resources in different concept schemes."
+msgstr "skos:relatedMatch est utilisé pour indiquer un lien de correspondance associatif entre deux ressources conceptuelles dans différents schémas conceptuels."
 
 msgid "has exact match"
 msgstr "a une correspondance exacte"
 
-msgid ""
-"skos:exactMatch is used to link two concepts, indicating a high degree of "
-"confidence that the concepts can be used interchangeably across a wide range "
-"of information retrieval applications. skos:exactMatch is a transitive "
-"property, and is a sub-property of skos:closeMatch."
-msgstr ""
-"skos:exactMatch est utilisé pour lier deux concepts en indiquant avec un "
-"degré élevé de confiance qu’ils peuvent être utilisés de manière "
-"interchangeable dans un large éventail d’applications de recherche "
-"d’informations. skos:exactMatch est une propriété transitive et est une sous-"
-"propriété de skos:closeMatch."
+msgid "skos:exactMatch is used to link two concepts, indicating a high degree of confidence that the concepts can be used interchangeably across a wide range of information retrieval applications. skos:exactMatch is a transitive property, and is a sub-property of skos:closeMatch."
+msgstr "skos:exactMatch est utilisé pour lier deux concepts en indiquant avec un degré élevé de confiance qu’ils peuvent être utilisés de manière interchangeable dans un large éventail d’applications de recherche d’informations. skos:exactMatch est une propriété transitive et est une sous-propriété de skos:closeMatch."
 
 msgid "has close match"
 msgstr "a une correspondance étroite"
 
-msgid ""
-"skos:closeMatch is used to link two concepts that are sufficiently similar "
-"that they can be used interchangeably in some information retrieval "
-"applications. In order to avoid the possibility of \"compound errors\" when "
-"combining mappings across more than two concept schemes, skos:closeMatch is "
-"not declared to be a transitive property."
-msgstr ""
-"skos:closeMatch est utilisé pour lier deux concepts qui sont suffisamment "
-"similaires pour être utilisés de manière interchangeable dans certaines "
-"applications de recherche d’informations. Afin d’éviter la possibilité "
-"d’« erreurs composées » lors de la combinaison de correspondances entre plus "
-"de deux schémas conceptuels, skos:closeMatch n’est pas déclaré comme étant "
-"une propriété transitive."
+msgid "skos:closeMatch is used to link two concepts that are sufficiently similar that they can be used interchangeably in some information retrieval applications. In order to avoid the possibility of \"compound errors\" when combining mappings across more than two concept schemes, skos:closeMatch is not declared to be a transitive property."
+msgstr "skos:closeMatch est utilisé pour lier deux concepts qui sont suffisamment similaires pour être utilisés de manière interchangeable dans certaines applications de recherche d’informations. Afin d’éviter la possibilité d’« erreurs composées » lors de la combinaison de correspondances entre plus de deux schémas conceptuels, skos:closeMatch n’est pas déclaré comme étant une propriété transitive."
 
-msgid "The table \"term\" was renamed to \"thesaurus_term\"."
-msgstr "La table « term » a été renommée en « thesaurus_term »."
+#~ msgid "Thesaurus based on item #{item_id} does not exist or is not available to current user."
+#~ msgstr "Le thésaurus basé sur l’article #{item_id} n’existe pas ou n’est pas disponible pour l’utilisateur actuel."
 
-msgid "Search a concept"
-msgstr "Rechercher un concept"
+#, php-format
+#~ msgid "There cannot be more than %d ancestors."
+#~ msgstr "Il ne peut pas y avoir plus de %d ancêtres."
 
-msgid "Browse the thesaurus"
-msgstr "Parcourir le thésaurus"
+#, php-format
+#~ msgid "There cannot be more than %d levels of descendants."
+#~ msgstr "Il ne peut pas y avoir plus de %d niveaux de descendants."
 
+#~ msgid "A term must be an item."
+#~ msgstr "Un concept doit être un contenu."
 
-#~ msgid ""
-#~ "Add the thesaurus data type to the resource templates that use the custom "
-#~ "vocab of a thesaurus, without removing the custom vocab"
-#~ msgstr ""
-#~ "Ajoute le type de données thésaurus aux modèles de ressource qui "
-#~ "utilisent le vocabulaire personnalisé d’un thésaurus, sans supprimer le "
-#~ "vocabulaire personnalisé"
+#~ msgid "A term must have a scheme."
+#~ msgstr "Un concept doit avoir un schéma."
+
+#~ msgid "This item is already a term in this scheme."
+#~ msgstr "Ce contenu est déjà un concept dans ce schéma."
+
+#~ msgid "The scheme of the broader term must be the same than term one."
+#~ msgstr "Le schéma du concept générique doit être le même que le concept."
+
+#~ msgid "A term must not be a ancestor of itself."
+#~ msgstr "Un concept ne peut pas être un ancêtre de lui-même."
+
+#~ msgid "Select a concept"
+#~ msgstr "Sélectionner un concept"
+
+#~ msgid "It is recommended to install module CustomVocab to take full advantage of this module."
+#~ msgstr "Il est recommandé d’installer le module CustomVocab pour profiter pleinement de ce module."
+
+#~ msgid "Root"
+#~ msgstr "Racine"
+
+#~ msgid "Optional: the thesaurus data type does not require it. It is kept as a complement for compatibility with the custom vocab."
+#~ msgstr "Facultatif : le type de données thésaurus ne le nécessite pas. Il est conservé comme complément pour compatibilité avec le vocabulaire personnalisé."
+
+#~ msgid "The thesaurus has no item set with class \"skos:Collection\" or \"skos:OrderedCollection\"."
+#~ msgstr "Le thésaurus n’a pas de collection avec la classe « skos:Collection » ou « skos:OrderedCollection »."
+
+#~ msgid "Add the thesaurus data type to the resource templates that use the custom vocab of a thesaurus, without removing the custom vocab"
+#~ msgstr "Ajoute le type de données thésaurus aux modèles de ressource qui utilisent le vocabulaire personnalisé d’un thésaurus, sans supprimer le vocabulaire personnalisé"
 
 #~ msgid "Convert"
 #~ msgstr "Convertir"
@@ -1593,25 +1476,11 @@ msgstr "Parcourir le thésaurus"
 #~ msgid "Convert a file into a thesaurus"
 #~ msgstr "Convertir un fichier en un thésaurus"
 
-#~ msgid ""
-#~ "Import a hierarchic list of concepts from a standard SKOS file or a "
-#~ "structured text file. According to the chosen destination, the result can "
-#~ "be previewed, imported as a custom vocabulary (list of terms), or "
-#~ "imported as a thesaurus (items with relations)."
-#~ msgstr ""
-#~ "Importer une liste hiérarchique de concepts depuis un fichier SKOS "
-#~ "standard ou un fichier texte structuré. Selon la destination choisie, le "
-#~ "résultat peut être prévisualisé, importé comme vocabulaire personnalisé "
-#~ "(liste de termes) ou importé comme thésaurus (contenus avec relations)."
+#~ msgid "Import a hierarchic list of concepts from a standard SKOS file or a structured text file. According to the chosen destination, the result can be previewed, imported as a custom vocabulary (list of terms), or imported as a thesaurus (items with relations)."
+#~ msgstr "Importer une liste hiérarchique de concepts depuis un fichier SKOS standard ou un fichier texte structuré. Selon la destination choisie, le résultat peut être prévisualisé, importé comme vocabulaire personnalisé (liste de termes) ou importé comme thésaurus (contenus avec relations)."
 
-#~ msgid ""
-#~ "Standard SKOS (rdf, ttl, jsonld, nt), or a simple text file with one "
-#~ "concept by line and tabulations or codes to indicate the hierarchic level "
-#~ "(txt, csv, tsv)."
-#~ msgstr ""
-#~ "SKOS standard (rdf, ttl, jsonld, nt), ou un simple fichier texte avec un "
-#~ "concept par ligne et des tabulations ou des codes pour indiquer le niveau "
-#~ "hiérarchique (txt, csv, tsv)."
+#~ msgid "Standard SKOS (rdf, ttl, jsonld, nt), or a simple text file with one concept by line and tabulations or codes to indicate the hierarchic level (txt, csv, tsv)."
+#~ msgstr "SKOS standard (rdf, ttl, jsonld, nt), ou un simple fichier texte avec un concept par ligne et des tabulations ou des codes pour indiquer le niveau hiérarchique (txt, csv, tsv)."
 
 #~ msgid "Missing file."
 #~ msgstr "Fichier manquant."
@@ -1619,27 +1488,17 @@ msgstr "Parcourir le thésaurus"
 #~ msgid "An error occurred when uploading the file."
 #~ msgstr "Une erreur est survenue lors du chargement du fichier."
 
-#~ msgid "Convert a list into a thesaurus."
-#~ msgstr "Convertir une liste en un thésaurus."
-
 #~ msgid "Flat"
 #~ msgstr "Plat"
 
-#~ msgid ""
-#~ "Properties and separator should be set in {link}main settings{link_end}."
-#~ msgstr ""
-#~ "Les propriétés et le séparateur doivent être définis dans les {link}"
-#~ "paramètres généraux{link_end}."
+#~ msgid "Properties and separator should be set in {link}main settings{link_end}."
+#~ msgstr "Les propriétés et le séparateur doivent être définis dans les {link}paramètres généraux{link_end}."
 
 #~ msgid "Thesaurus text file"
 #~ msgstr "Fichier texte du thésaurus"
 
-#~ msgid ""
-#~ "The thesaurus is a simple txt file, with one concept by line, and "
-#~ "tabulations to indicate the hierarchic level."
-#~ msgstr ""
-#~ "Le thésaurus est un simple fichier texte avec un concept par ligne et des "
-#~ "tabulations pour indiquer le niveau hiérarchique."
+#~ msgid "The thesaurus is a simple txt file, with one concept by line, and tabulations to indicate the hierarchic level."
+#~ msgstr "Le thésaurus est un simple fichier texte avec un concept par ligne et des tabulations pour indiquer le niveau hiérarchique."
 
 #~ msgid "Output"
 #~ msgstr "Sortie"
@@ -1659,22 +1518,14 @@ msgstr "Parcourir le thésaurus"
 #~ msgid "Upload thesaurus"
 #~ msgstr "Chargement du thésaurus"
 
-#~ msgid ""
-#~ "The process to import a thesaurus with codes is useful only when codes "
-#~ "are prepended/appended to descriptors."
-#~ msgstr ""
-#~ "Le traitement pour importer un thésaurus avec des codes est utiles "
-#~ "seulement quand des codes sont préfixés ou suffixés aux valeurs."
+#~ msgid "The process to import a thesaurus with codes is useful only when codes are prepended/appended to descriptors."
+#~ msgstr "Le traitement pour importer un thésaurus avec des codes est utiles seulement quand des codes sont préfixés ou suffixés aux valeurs."
 
 #~ msgid "The file is successfully converted."
 #~ msgstr "Le fichier a été converti avec succès."
 
-#~ msgid ""
-#~ "The file is successfully converted. You can now copy-paste below data "
-#~ "into a custom vocab."
-#~ msgstr ""
-#~ "Le fichier est converti avec succès. Vous pouvez maintenant copier-coller "
-#~ "les données ci-dessous dans un vocabulaire personnalisé."
+#~ msgid "The file is successfully converted. You can now copy-paste below data into a custom vocab."
+#~ msgstr "Le fichier est converti avec succès. Vous pouvez maintenant copier-coller les données ci-dessous dans un vocabulaire personnalisé."
 
 #~ msgid "Convert first a file to get the flat thesaurus."
 #~ msgstr "Convertir d’abord un fichier pour obtenir un thésaurus plat."
@@ -1701,12 +1552,8 @@ msgstr "Parcourir le thésaurus"
 #~ msgid "Template to display"
 #~ msgstr "Gabarit à afficher"
 
-#~ msgid ""
-#~ "Templates are in folder \"common/block-layout\" of the theme and should "
-#~ "start with \"thesaurus\"."
-#~ msgstr ""
-#~ "Les gabarits sont dans le dossier « common/block-layout » du thème et "
-#~ "doivent commencer avec « thesaurus »."
+#~ msgid "Templates are in folder \"common/block-layout\" of the theme and should start with \"thesaurus\"."
+#~ msgstr "Les gabarits sont dans le dossier « common/block-layout » du thème et doivent commencer avec « thesaurus »."
 
 #, php-format
 #~ msgid "This module requires the module \"%s\"."
@@ -1719,105 +1566,59 @@ msgstr "Parcourir le thésaurus"
 #~ msgid "This module has resources that cannot be installed."
 #~ msgstr "Ce module a des ressources qui ne peuvent pas être installées."
 
-#~ msgid ""
-#~ "This module cannot install its tables, because they exist already. Try to "
-#~ "remove them first."
-#~ msgstr ""
-#~ "Ce module ne peut pas installer ses tables car elles existent déjà. "
-#~ "Essayez de les supprimer manuellement."
+#~ msgid "This module cannot install its tables, because they exist already. Try to remove them first."
+#~ msgstr "Ce module ne peut pas installer ses tables car elles existent déjà. Essayez de les supprimer manuellement."
 
 #, php-format
 #~ msgid "The module removed tables \"%s\" from a previous broken install."
-#~ msgstr ""
-#~ "Le module a supprimé les tables « %s » depuis une installation échouée."
+#~ msgstr "Le module a supprimé les tables « %s » depuis une installation échouée."
 
 #, php-format
-#~ msgid ""
-#~ "The module \"%s\" was automatically deactivated because the dependencies "
-#~ "are unavailable."
-#~ msgstr ""
-#~ "Le module « %s » a été automatiquement désactivé car ses dépendances ne "
-#~ "sont plus disponibles."
+#~ msgid "The module \"%s\" was automatically deactivated because the dependencies are unavailable."
+#~ msgstr "Le module « %s » a été automatiquement désactivé car ses dépendances ne sont plus disponibles."
 
 #, php-format
-#~ msgid ""
-#~ "An error occured when loading vocabulary \"%s\": file has no json content."
-#~ msgstr ""
-#~ "Une erreur est survenue en chargeant le vocabulaire « %s » : le fichier "
-#~ "n’a pas de contenu json."
+#~ msgid "An error occured when loading vocabulary \"%s\": file has no json content."
+#~ msgstr "Une erreur est survenue en chargeant le vocabulaire « %s » : le fichier n’a pas de contenu json."
 
 #, php-format
-#~ msgid ""
-#~ "An error occured when adding the prefix \"%s\": another vocabulary "
-#~ "exists. Resolve the conflict before installing this module."
-#~ msgstr ""
-#~ "Une erreur est survenue en ajoutant le préfixe « %s » : un autre "
-#~ "vocabulaire existe. Merci de résoudre le conflit avant d’installer ce "
-#~ "module."
+#~ msgid "An error occured when adding the prefix \"%s\": another vocabulary exists. Resolve the conflict before installing this module."
+#~ msgstr "Une erreur est survenue en ajoutant le préfixe « %s » : un autre vocabulaire existe. Merci de résoudre le conflit avant d’installer ce module."
 
 #, php-format
-#~ msgid ""
-#~ "A custom vocab exists for \"%s\". Remove it or rename it before "
-#~ "installing this module."
-#~ msgstr ""
-#~ "Un vocabulaire personnalisé existe pour « %s » : renommez-le ou supprimez-"
-#~ "le avant d’installer ce module."
+#~ msgid "A custom vocab exists for \"%s\". Remove it or rename it before installing this module."
+#~ msgstr "Un vocabulaire personnalisé existe pour « %s » : renommez-le ou supprimez-le avant d’installer ce module."
 
 #, php-format
-#~ msgid ""
-#~ "A resource template exists for %s. Rename it or remove it before "
-#~ "installing this module."
-#~ msgstr ""
-#~ "Un modèle de ressource nommé « %s » existe : merci de le renommer ou de "
-#~ "le supprimer avant d’installer ce module."
+#~ msgid "A resource template exists for %s. Rename it or remove it before installing this module."
+#~ msgstr "Un modèle de ressource nommé « %s » existe : merci de le renommer ou de le supprimer avant d’installer ce module."
 
 #, php-format
 #~ msgid "The vocabulary \"%s\" was already installed and was kept."
 #~ msgstr "Le vocabulaire « %s » a déjà été installé et a été conservé."
 
 #, php-format
-#~ msgid ""
-#~ "An error occured when adding the prefix \"%s\": another vocabulary exists "
-#~ "with the same prefix. Resolve the conflict before installing this module."
-#~ msgstr ""
-#~ "Une erreur est survenue lors de l’ajout du préfixe « %s » : un autre "
-#~ "vocabulaire existe avec le même préfixe. Merci de résoudre le conflit "
-#~ "avant d’installer ce module."
+#~ msgid "An error occured when adding the prefix \"%s\": another vocabulary exists with the same prefix. Resolve the conflict before installing this module."
+#~ msgstr "Une erreur est survenue lors de l’ajout du préfixe « %s » : un autre vocabulaire existe avec le même préfixe. Merci de résoudre le conflit avant d’installer ce module."
 
 #, php-format
-#~ msgid ""
-#~ "An error occured when adding the prefix \"%s\" and the associated "
-#~ "properties: %s"
-#~ msgstr ""
-#~ "Une erreur est survenue en ajoutant le préfixe « %s » et les propriétés "
-#~ "associées : %s"
+#~ msgid "An error occured when adding the prefix \"%s\" and the associated properties: %s"
+#~ msgstr "Une erreur est survenue en ajoutant le préfixe « %s » et les propriétés associées : %s"
 
 #, php-format
-#~ msgid ""
-#~ "An error occured when updating vocabulary \"%s\" and the associated "
-#~ "properties: %s"
-#~ msgstr ""
-#~ "Une erreur est survenue en ajoutant le préfixe « %s » et les propriétés "
-#~ "associées : %s"
+#~ msgid "An error occured when updating vocabulary \"%s\" and the associated properties: %s"
+#~ msgstr "Une erreur est survenue en ajoutant le préfixe « %s » et les propriétés associées : %s"
 
 #, php-format
-#~ msgid ""
-#~ "The following \"%1$s\" of the vocabulary \"%2$s\" were replaced: %3$s"
-#~ msgstr ""
-#~ "Les « %1$s » suivantes du vocabulaire « %2$s » ont été remplacées : %3$s"
+#~ msgid "The following \"%1$s\" of the vocabulary \"%2$s\" were replaced: %3$s"
+#~ msgstr "Les « %1$s » suivantes du vocabulaire « %2$s » ont été remplacées : %3$s"
 
-#~ msgid ""
-#~ "Resources, values and templates were updated, but you may check settings "
-#~ "where the old ones were used."
-#~ msgstr ""
-#~ "Les ressources, valeurs et modèles ont été mis à jour, mais vous pouvez "
-#~ "vérifier les paramètres où les anciennes valeurs étaient utilisées."
+#~ msgid "Resources, values and templates were updated, but you may check settings where the old ones were used."
+#~ msgstr "Les ressources, valeurs et modèles ont été mis à jour, mais vous pouvez vérifier les paramètres où les anciennes valeurs étaient utilisées."
 
 #, php-format
-#~ msgid ""
-#~ "The resource template named \"%s\" is already available and is skipped."
-#~ msgstr ""
-#~ "Le modèle de ressource nommé « %s » est déjà disponible et a été conservé."
+#~ msgid "The resource template named \"%s\" is already available and is skipped."
+#~ msgstr "Le modèle de ressource nommé « %s » est déjà disponible et a été conservé."
 
 #, php-format
 #~ msgid "The custom vocab named \"%s\" is not available."
@@ -1828,25 +1629,18 @@ msgstr "Parcourir le thésaurus"
 
 #, php-format
 #~ msgid "The file \"%s\" cannot be read. Check the url."
-#~ msgstr ""
-#~ "Le fichier « %s » ne peut pas être lu. Merci de vérifier le système de "
-#~ "fichiers ou l’url."
+#~ msgstr "Le fichier « %s » ne peut pas être lu. Merci de vérifier le système de fichiers ou l’url."
 
 #, php-format
 #~ msgid "The file \"%s\" cannot be read. Check the file."
-#~ msgstr ""
-#~ "Le fichier « %s » ne peut pas être lu. Merci de vérifier le système de "
-#~ "fichiers."
+#~ msgstr "Le fichier « %s » ne peut pas être lu. Merci de vérifier le système de fichiers."
 
 #~ msgid "A vocabulary must have a namespace uri and a prefix."
-#~ msgstr ""
-#~ "Un vocabulaire doit avoir une uri pour l’espace de nom et un préfixe."
+#~ msgstr "Un vocabulaire doit avoir une uri pour l’espace de nom et un préfixe."
 
 #, php-format
 #~ msgid "Structure saved and reindexed (%1$sjob #%2$d%3$s, %4$slogs%3$s)."
-#~ msgstr ""
-#~ "Structure enregistrée et réindexée (%1$stâche #%2$d%3$s, "
-#~ "%4$sjournaux%3$s)."
+#~ msgstr "Structure enregistrée et réindexée (%1$stâche #%2$d%3$s, %4$sjournaux%3$s)."
 
 #~ msgid "convert"
 #~ msgstr "convertir"
@@ -1866,18 +1660,9 @@ msgstr "Parcourir le thésaurus"
 #~ msgid "Process"
 #~ msgstr "Traitement"
 
-#~ msgid ""
-#~ "The indexing must be run each time the structure of the thesaurus is "
-#~ "updated."
-#~ msgstr ""
-#~ "L’indexation doit être lancée chaque fois que la structure du thésaurus "
-#~ "est mise à jour."
-
 #, php-format
 #~ msgid "This indexing job is available via module %1$sBulk Check%2$s too."
-#~ msgstr ""
-#~ "La tâche d’indexation est également disponible via le module %1$sBulk "
-#~ "Check%2$s."
+#~ msgstr "La tâche d’indexation est également disponible via le module %1$sBulk Check%2$s."
 
 #~ msgid "Index all thesausus in background"
 #~ msgstr "Indexer tous les thésausus en arrière-plan"
@@ -1886,9 +1671,5 @@ msgstr "Parcourir le thésaurus"
 #~ msgstr "Cette version du module requiert le module Custom Vocab."
 
 #, php-format
-#~ msgid ""
-#~ "A custom vocab named \"%s\" exists and has not the needed language "
-#~ "(\"%s\"): check it or remove it before installing this module."
-#~ msgstr ""
-#~ "A custom vocab named « %s » exists and has not the needed language "
-#~ "(« %s »): check it or remove it before installing this module."
+#~ msgid "A custom vocab named \"%s\" exists and has not the needed language (\"%s\"): check it or remove it before installing this module."
+#~ msgstr "A custom vocab named « %s » exists and has not the needed language (« %s »): check it or remove it before installing this module."
