@@ -45,6 +45,13 @@ class Module extends AbstractModule
     protected $isStructureWarned = false;
 
     /**
+     * Warn only once by request that the concepts follow their scheme.
+     *
+     * @var bool
+     */
+    protected $isDeleteWarned = false;
+
+    /**
      * Warn that the concepts are converted back into items on uninstall.
      *
      * The checkbox is checked by default, because the concepts cannot be kept:
@@ -68,7 +75,9 @@ class Module extends AbstractModule
         $escape = $view->plugin('escapeHtml');
         $translator = $this->getServiceLocator()->get('MvcTranslator');
 
-        $html = '<p style="color:#c00"><strong>' . $escape($translator->translate('WARNING')) . '</strong>: '; // @translate
+        $html = '<p style="color:#c00"><strong>'
+            . $escape($translator->translate('WARNING')) // @translate
+            . '</strong>: ';
         $html .= $escape(sprintf(
             $translator->translate('%d concepts still exist. They are a specific resource, so they cannot be kept once the module is removed: choose to convert them into items or to delete them.'), // @translate
             $totalConcepts
@@ -121,16 +130,97 @@ class Module extends AbstractModule
             return;
         }
 
+        $services = $this->getServiceLocator();
+        $messenger = $services->get('ControllerPluginManager')->get('messenger');
+
+        // The deletion is the default, like the cascade of the foreign key. The
+        // conversion is done only when it is explicitly asked in the sidebar of
+        // confirmation.
+        $convert = $services->get('Request')->getPost('thesaurus-scheme-delete-mode') === 'convert';
+        if ($convert) {
+            $total = $this->convertConceptsToItems($id);
+            if ($total) {
+                $messenger->addWarning(new PsrMessage(
+                    'The {count} concepts of the thesaurus were converted into items, so they are kept without their structure.', // @translate
+                    ['count' => $total]
+                ));
+            }
+            return;
+        }
+
         $total = $this->deleteConcepts($id);
         if (!$total) {
             return;
         }
 
-        $message = new PsrMessage(
+        $messenger->addWarning(new PsrMessage(
             'The {count} concepts of the thesaurus were deleted with it.', // @translate
             ['count' => $total]
-        );
-        $this->getServiceLocator()->get('ControllerPluginManager')->get('messenger')->addWarning($message);
+        ));
+    }
+
+    /**
+     * Warn that the concepts of a thesaurus are removed with their scheme.
+     *
+     * The sidebar of confirmation of the deletion of an item includes the
+     * partial of the details, that triggers the event "view.details".
+     *
+     * @see \Omeka\Controller\Admin\ItemController::deleteConfirmAction()
+     */
+    public function warnDeleteScheme(Event $event): void
+    {
+        $view = $event->getTarget();
+
+        // The event "view.details" is triggered by the sidebar of the details
+        // too, where the question is not asked, but not by the page of edition,
+        // that triggers "view.delete.confirm" with another key.
+        $resource = $event->getParam('resource');
+        if ($resource) {
+            $isDeleteConfirm = true;
+        } else {
+            $resource = $event->getParam('entity');
+            $isDeleteConfirm = $view->params()->fromRoute('action') === 'delete-confirm';
+        }
+
+        if (!$isDeleteConfirm || !$resource || $resource->resourceName() !== 'items') {
+            return;
+        }
+
+        // The sidebar of the page of edition is displayed for any item, but the
+        // markup is output only once.
+        if ($this->isDeleteWarned) {
+            return;
+        }
+        $this->isDeleteWarned = true;
+
+        /** @var \Doctrine\DBAL\Connection $connection */
+        $connection = $this->getServiceLocator()->get('Omeka\Connection');
+        $totalConcepts = (int) $connection
+            ->executeQuery('SELECT COUNT(*) FROM `concept` WHERE `scheme_id` = ?', [$resource->id()])
+            ->fetchOne();
+        if (!$totalConcepts) {
+            return;
+        }
+
+        $escape = $view->plugin('escapeHtml');
+        $translator = $this->getServiceLocator()->get('MvcTranslator');
+
+        $html = '<p style="color:#c00"><strong>'
+            . $escape($translator->translate('WARNING')) // @translate
+            . '</strong>: ';
+        $html .= $escape(sprintf(
+            $translator->translate('This item is a thesaurus scheme with %d concepts. A concept cannot exist without its scheme.'), // @translate
+            $totalConcepts
+        ));
+        $html .= '</p>';
+        $html .= '<label><input name="thesaurus-scheme-delete-mode" type="radio" form="confirmform" value="delete" checked="checked"> ';
+        $html .= $escape($translator->translate('Delete the concepts, with their values and the values that point to them.')); // @translate
+        $html .= '</label><br/>';
+        $html .= '<label><input name="thesaurus-scheme-delete-mode" type="radio" form="confirmform" value="convert"> ';
+        $html .= $escape($translator->translate('Convert the concepts into items. The values that point to them are kept, but the thesaurus structure is lost.')); // @translate
+        $html .= '</label>';
+
+        echo $html;
     }
 
     /**
@@ -212,39 +302,78 @@ class Module extends AbstractModule
             return;
         }
 
-        /** @var \Doctrine\DBAL\Connection $connection */
-        $connection = $services->get('Omeka\Connection');
-
-        $sqls = [
-            <<<'SQL'
-                INSERT INTO `item` (`id`)
-                SELECT `id` FROM `concept`
-                ON DUPLICATE KEY UPDATE `id` = `item`.`id`
-                SQL,
-            <<<'SQL'
-                UPDATE `resource` SET `resource_type` = 'Omeka\\Entity\\Item'
-                WHERE `id` IN (SELECT `id` FROM (SELECT `id` FROM `concept`) x)
-                SQL,
-            <<<'SQL'
-                UPDATE `value` SET `type` = 'resource:item'
-                WHERE `type` = 'resource:concept'
-                SQL,
-        ];
-
-        $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
-        try {
-            foreach ($sqls as $sql) {
-                $connection->executeStatement($sql);
-            }
-        } finally {
-            $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
-        }
+        $this->convertConceptsToItems();
 
         $message = new PsrMessage(
             'The {count} concepts were converted back into items, so they are no longer structured as a thesaurus.', // @translate
             ['count' => $totalConcepts]
         );
         $services->get('ControllerPluginManager')->get('messenger')->addWarning($message);
+    }
+
+    /**
+     * Convert concepts into items, keeping their ids, values and links.
+     *
+     * @param int|null $schemeId Limit the conversion to the concepts of a
+     *   scheme. The rows of the table "concept" are removed in that case, since
+     *   the table is kept.
+     * @return int The number of converted concepts.
+     */
+    protected function convertConceptsToItems(?int $schemeId = null): int
+    {
+        /** @var \Doctrine\DBAL\Connection $connection */
+        $connection = $this->getServiceLocator()->get('Omeka\Connection');
+
+        $bind = [];
+        if ($schemeId) {
+            $criteria = 'WHERE `scheme_id` = :scheme_id';
+            $bind = ['scheme_id' => $schemeId];
+        } else {
+            $criteria = '';
+        }
+
+        $total = (int) $connection
+            ->executeQuery("SELECT COUNT(*) FROM `concept` $criteria", $bind)
+            ->fetchOne();
+        if (!$total) {
+            return 0;
+        }
+
+        $sqls = [
+            <<<SQL
+                INSERT INTO `item` (`id`)
+                SELECT `id` FROM `concept` $criteria
+                ON DUPLICATE KEY UPDATE `id` = `item`.`id`
+                SQL,
+            <<<SQL
+                UPDATE `resource` SET `resource_type` = 'Omeka\\\\Entity\\\\Item'
+                WHERE `id` IN (SELECT `id` FROM (SELECT `id` FROM `concept` $criteria) x)
+                SQL,
+            <<<SQL
+                UPDATE `value` SET `type` = 'resource:item'
+                WHERE `type` = 'resource:concept'
+                    AND `value_resource_id` IN (SELECT `id` FROM (SELECT `id` FROM `concept` $criteria) x)
+                SQL,
+        ];
+
+        // The table "concept" is kept when only a scheme is converted, so its
+        // rows must be removed: the resources are items now.
+        if ($schemeId) {
+            $sqls[] = <<<SQL
+                DELETE FROM `concept` $criteria
+                SQL;
+        }
+
+        $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
+        try {
+            foreach ($sqls as $sql) {
+                $connection->executeStatement($sql, $bind);
+            }
+        } finally {
+            $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
+        }
+
+        return $total;
     }
 
     protected function preInstall(): void
@@ -443,6 +572,21 @@ class Module extends AbstractModule
             \Omeka\Api\Adapter\ItemAdapter::class,
             'api.delete.pre',
             [$this, 'deleteSchemeConcepts']
+        );
+
+        // Warn in the sidebar of confirmation of the deletion of a scheme. The
+        // event "view.details" is used by the sidebar of the browse; the event
+        // "view.delete.confirm" is used by the page of edition, but it requires
+        // a core that triggers it, so the module works with both.
+        $sharedEventManager->attach(
+            'Omeka\Controller\Admin\Item',
+            'view.details',
+            [$this, 'warnDeleteScheme']
+        );
+        $sharedEventManager->attach(
+            'Omeka\Controller\Admin\Item',
+            'view.delete.confirm',
+            [$this, 'warnDeleteScheme']
         );
 
         // Warn when the structure of a thesaurus may be outdated.
