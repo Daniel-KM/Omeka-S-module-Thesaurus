@@ -5,6 +5,7 @@ namespace Thesaurus\Job;
 use Common\Stdlib\PsrMessage;
 use Doctrine\ORM\EntityManager;
 use Omeka\Api\Representation\ItemRepresentation;
+use Thesaurus\Api\Representation\ConceptRepresentation;
 use Omeka\Job\AbstractJob;
 
 class IndexThesaurus extends AbstractJob
@@ -211,14 +212,14 @@ class IndexThesaurus extends AbstractJob
     /**
      * Get all linked resources of this item for a term.
      */
-    protected function resourcesFromValue(ItemRepresentation $item, string $term): array
+    protected function resourcesFromValue(ItemRepresentation|ConceptRepresentation $item, string $term): array
     {
         $result = [];
         $values = $item->values();
         if (isset($values[$term])) {
             /** @var \Omeka\Api\Representation\ValueRepresentation $value */
             foreach ($values[$term]['values'] as $value) {
-                if (in_array($value->type(), ['resource', 'resource:item'])) {
+                if (in_array($value->type(), ['resource', 'resource:item', 'resource:concept'])) {
                     // Manage private resources.
                     if ($resource = $value->valueResource()) {
                         // Manage duplicates.
@@ -259,11 +260,11 @@ class IndexThesaurus extends AbstractJob
     /**
      * Recursive method to get the flat descendant tree of an item.
      *
-     * @param ItemRepresentation $item
+     * @param ItemRepresentation|ConceptRepresentation $item
      * @param array $branch Internal param for recursive process.
      * @param int $level Internal level.
      */
-    protected function recursiveFlatBranch(ItemRepresentation $item, array $branch = [], int $level = 0): array
+    protected function recursiveFlatBranch(ItemRepresentation|ConceptRepresentation $item, array $branch = [], int $level = 0): array
     {
         if ($level > $this->maxAncestors) {
             throw new \Omeka\Api\Exception\BadResponseException(new PsrMessage(

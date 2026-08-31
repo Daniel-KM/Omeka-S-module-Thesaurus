@@ -9,6 +9,9 @@ return [
         ],
     ],
     'data_types' => [
+        'invokables' => [
+            'resource:concept' => DataType\Resource\Concept::class,
+        ],
         'abstract_factories' => [
             Service\DataType\ThesaurusFactory::class,
         ],

@@ -283,7 +283,7 @@ class CreateThesaurus extends AbstractJob
             $conceptJson = json_decode(json_encode($concept), true);
             foreach ($narrowerIds as $narrowerId) {
                 $conceptJson['skos:narrower'][] = [
-                    'type' => 'resource',
+                    'type' => 'resource:concept',
                     'property_id' => $properties['skos:narrower'],
                     'value_resource_id' => $narrowerId,
                 ];
@@ -298,7 +298,7 @@ class CreateThesaurus extends AbstractJob
             $schemeJson = json_decode(json_encode($scheme), true);
             foreach ($topIds as $topId) {
                 $schemeJson['skos:hasTopConcept'][] = [
-                    'type' => 'resource',
+                    'type' => 'resource:concept',
                     'property_id' => $properties['skos:hasTopConcept'],
                     'value_resource_id' => $topId,
                 ];
@@ -523,7 +523,7 @@ class CreateThesaurus extends AbstractJob
             if ($level) {
                 $data['skos:broader'] = [
                     [
-                        'type' => 'resource',
+                        'type' => 'resource:concept',
                         'property_id' => $this->easyMeta->propertyId('skos:broader'),
                         'value_resource_id' => $levels[$parentLevel],
                     ],
@@ -723,7 +723,7 @@ class CreateThesaurus extends AbstractJob
             $parentLevel = $level ? $level - 1 : false;
             if ($level && isset($levels[$parentLevel])) {
                 $data['skos:broader'] = [[
-                    'type' => 'resource',
+                    'type' => 'resource:concept',
                     'property_id' => $this->easyMeta->propertyId('skos:broader'),
                     'value_resource_id' => $levels[$parentLevel],
                 ]];
@@ -767,7 +767,7 @@ class CreateThesaurus extends AbstractJob
                 $append = [];
                 foreach ($uris as $uri) {
                     if (isset($uriToId[$uri])) {
-                        $append[] = ['type' => 'resource', 'property_id' => $relatedPid, 'value_resource_id' => $uriToId[$uri]];
+                        $append[] = ['type' => 'resource:concept', 'property_id' => $relatedPid, 'value_resource_id' => $uriToId[$uri]];
                     }
                 }
                 if ($append) {
@@ -921,7 +921,7 @@ class CreateThesaurus extends AbstractJob
             if ($level) {
                 $data['skos:broader'] = [
                     [
-                        'type' => 'resource',
+                        'type' => 'resource:concept',
                         'property_id' => $this->easyMeta->propertyId('skos:broader'),
                         'value_resource_id' => $levels[$parentLevel],
                     ],

@@ -44,6 +44,11 @@ class UpdateStructure extends AbstractJob
     /**
      * @var \Doctrine\ORM\EntityRepository
      */
+    protected $conceptRepository;
+
+    /**
+     * @var \Doctrine\ORM\EntityRepository
+     */
     protected $vocabularyRepository;
 
     /**
@@ -69,6 +74,7 @@ class UpdateStructure extends AbstractJob
 
         $this->entityManager = $services->get('Omeka\EntityManager');
         $this->itemRepository = $this->entityManager->getRepository(\Omeka\Entity\Item::class);
+        $this->conceptRepository = $this->entityManager->getRepository(\Thesaurus\Entity\Concept::class);
         $this->vocabularyRepository = $this->entityManager->getRepository(\Omeka\Entity\Vocabulary::class);
         $this->propertyRepository = $this->entityManager->getRepository(\Omeka\Entity\Property::class);
 
@@ -297,7 +303,7 @@ DQL;
         $dql->execute($params);
 
         foreach ($topConcepts as $topConceptId) {
-            $topConcept = $this->itemRepository->find($topConceptId);
+            $topConcept = $this->conceptRepository->find($topConceptId);
             if (!$topConcept) {
                 continue;
             }
@@ -306,7 +312,7 @@ DQL;
             $value->setResource($scheme);
             $value->setProperty($hasTopConcept);
             $value->setValueResource($topConcept);
-            $value->setType('resource:item');
+            $value->setType('resource:concept');
             $this->entityManager->persist($value);
         }
         $this->entityManager->flush();
@@ -338,7 +344,7 @@ DQL;
                 if (!empty($data['remove'])) {
                     continue;
                 }
-                $concept = $this->itemRepository->find($conceptId);
+                $concept = $this->conceptRepository->find($conceptId);
                 if (!$concept) {
                     continue;
                 }
@@ -356,26 +362,26 @@ DQL;
                         $value->setType('resource:item');
                         $this->entityManager->persist($value);
                     } else {
-                        $parent = $this->itemRepository->find($data['parent']);
+                        $parent = $this->conceptRepository->find($data['parent']);
                         if ($parent) {
                             // Omeka entities are not fluid.
                             $value = new \Omeka\Entity\Value;
                             $value->setResource($concept);
                             $value->setProperty($broader);
                             $value->setValueResource($parent);
-                            $value->setType('resource:item');
+                            $value->setType('resource:concept');
                             $this->entityManager->persist($value);
                         }
                     }
                     foreach ($data['children'] as $child) {
-                        $childConcept = $this->itemRepository->find($data['parent']);
+                        $childConcept = $this->conceptRepository->find($data['parent']);
                         if ($childConcept) {
                             // Omeka entities are not fluid.
                             $value = new \Omeka\Entity\Value;
                             $value->setResource($concept);
                             $value->setProperty($narrower);
                             $value->setValueResource($childConcept);
-                            $value->setType('resource:item');
+                            $value->setType('resource:concept');
                             $this->entityManager->persist($value);
                         }
                     }
@@ -427,14 +433,14 @@ DQL;
                         $value->setType('resource:item');
                         $this->entityManager->persist($value);
                     } else {
-                        $parent = $this->itemRepository->find($data['parent']);
+                        $parent = $this->conceptRepository->find($data['parent']);
                         if ($parent) {
                             // Omeka entities are not fluid.
                             $value = new \Omeka\Entity\Value;
                             $value->setResource($concept);
                             $value->setProperty($broader);
                             $value->setValueResource($parent);
-                            $value->setType('resource:item');
+                            $value->setType('resource:concept');
                             $this->entityManager->persist($value);
                         }
                     }
@@ -462,14 +468,14 @@ DQL;
                     }
 
                     foreach ($data['children'] as $child) {
-                        $childConcept = $this->itemRepository->find($child);
+                        $childConcept = $this->conceptRepository->find($child);
                         if ($childConcept) {
                             // Omeka entities are not fluid.
                             $value = new \Omeka\Entity\Value;
                             $value->setResource($concept);
                             $value->setProperty($narrower);
                             $value->setValueResource($childConcept);
-                            $value->setType('resource:item');
+                            $value->setType('resource:concept');
                             $this->entityManager->persist($value);
                         }
                     }
