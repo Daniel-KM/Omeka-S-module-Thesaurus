@@ -49,6 +49,9 @@ class ConceptController extends AbstractActionController
 
         if ($this->getRequest()->isPost()) {
             $data = $this->params()->fromPost();
+            // The values are posted as a single json field to bypass the limit
+            // of php max_input_vars, like for the other resources.
+            $data = $this->mergeValuesJson($data);
             $form->setData($data);
             if ($form->isValid()) {
                 $response = $this->api($form)->update('concepts', $this->params('id'), $data);
