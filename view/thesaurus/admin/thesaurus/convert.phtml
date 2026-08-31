@@ -16,7 +16,7 @@ $this->headLink()
 $this->headScript()
     ->appendFile($assetUrl('js/thesaurus-convert.js', 'Thesaurus'), 'text/javascript', ['defer' => 'defer']);
 
-$this->htmlElement('body')->appendAttribute('class', 'thesaurus tree convert');
+$this->htmlElement('body')->appendAttribute('class', 'thesaurus convert');
 
 $form->prepare();
 

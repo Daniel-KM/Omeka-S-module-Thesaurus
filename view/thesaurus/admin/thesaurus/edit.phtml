@@ -10,7 +10,7 @@
 $plugins = $this->getHelperPluginManager();
 $translate = $plugins->get('translate');
 
-$this->htmlElement('body')->appendAttribute('class', 'edit items thesaurus');
+$this->htmlElement('body')->appendAttribute('class', 'thesaurus edit');
 $deleteButton = $item->userIsAllowed('delete')
     ? '<a href="#" class="delete button">' . $translate('Delete') . '</a>'
     : null;

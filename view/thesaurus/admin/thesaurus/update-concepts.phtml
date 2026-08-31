@@ -11,7 +11,7 @@ $assetUrl = $plugins->get('assetUrl');
 $this->headLink()
     ->appendStylesheet($assetUrl('css/thesaurus-admin.css', 'Thesaurus'));
 
-$this->htmlElement('body')->appendAttribute('class', 'thesaurus tree update-concepts');
+$this->htmlElement('body')->appendAttribute('class', 'thesaurus update-concepts');
 
 $form->prepare();
 ?>

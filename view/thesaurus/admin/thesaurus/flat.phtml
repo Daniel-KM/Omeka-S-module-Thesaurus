@@ -13,7 +13,7 @@ $escape = $plugins->get('escapeHtml');
 $translate = $plugins->get('translate');
 $hyperlink = $plugins->get('hyperlink');
 
-$this->htmlElement('body')->appendAttribute('class', 'thesaurus tree convert');
+$this->htmlElement('body')->appendAttribute('class', 'thesaurus flat');
 
 $canCreate = $this->userIsAllowed('Omeka\Api\Adapter\ItemAdapter', 'create');
 $action = $url('admin/thesaurus/default', ['action' => 'upload']);

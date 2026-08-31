@@ -1,7 +1,7 @@
 @media all {
     header nav .thesaurus::before,
-    .thesaurus .subhead::before,
-    .thesaurus .no-resources:before {
+    .thesaurus .no-resources:before,
+    .concepts .no-resources:before {
         content: '';
     }
 
@@ -12,6 +12,15 @@
 
     body.thesaurus.show .jstree-node a i.jstree-icon.jstree-themeicon::before {
         content: '';
+    }
+
+    /* Icon of the sub-head of the pages, like the core does for the items,
+       the item sets and the medias. */
+    .thesaurus .subhead:before {
+        content: "\f542";
+    }
+    .concepts .subhead:before {
+        content: "\f02b";
     }
     /* Icons to open and edit a concept from the tree. The core styles only
        its own links, so the same rules are applied here, else the icons

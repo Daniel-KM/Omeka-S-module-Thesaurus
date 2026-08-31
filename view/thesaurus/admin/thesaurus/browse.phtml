@@ -19,7 +19,7 @@ $this->headLink()
 $this->headScript()
     ->appendFile($assetUrl('js/common-page-action-menu.js', 'Common'), 'text/javascript', ['defer' => 'defer']);
 
-$this->htmlElement('body')->appendAttribute('class', 'items browse');
+$this->htmlElement('body')->appendAttribute('class', 'thesaurus browse');
 
 $sortHeadings = [
     [
@@ -78,7 +78,7 @@ $sortHeadings = [
             </ul>
         </div>
     </div>
-    <?= $hyperlink($translate('Add new item'), $url('admin/thesaurus/default', ['action' => 'add'], true), ['class' => 'button']) ?>
+    <?= $hyperlink($translate('Add new thesaurus'), $url('admin/thesaurus/default', ['action' => 'add'], true), ['class' => 'button']) ?>
     <?php endif; ?>
 </div>
 
