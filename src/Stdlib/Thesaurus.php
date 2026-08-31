@@ -1056,8 +1056,11 @@ class Thesaurus
                 // ],
                 // 'li_attr' => [],
                 // 'a_attr' => [],
-                // To be compatible with Omeka core jstree-plugins.
-                'data' => [],
+                // To be compatible with Omeka core jstree-plugins, that reads
+                // and writes the key "data" of each node. It must be an object:
+                // an empty array is serialized as a json array by the browser
+                // and the flag "remove" set by the plugin would be lost.
+                'data' => (object) [],
             ];
         }
         unset($element);
