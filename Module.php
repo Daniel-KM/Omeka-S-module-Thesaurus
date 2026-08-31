@@ -105,7 +105,8 @@ class Module extends AbstractModule
             ->allow('reviewer', [$conceptEntity], ['create', 'update'])
             ->allow('reviewer', [$conceptEntity], ['delete'], $ownsAssertion)
             ->allow('editor', [$conceptAdapter], $writeOperations)
-            ->allow('editor', [$conceptEntity], ['create', 'update', 'delete']);
+            ->allow('editor', [$conceptEntity], ['create', 'update', 'delete'])
+            ->allow(null, [Controller\Admin\ConceptController::class], ['show', 'show-details']);
 
         $acl
             ->allow(

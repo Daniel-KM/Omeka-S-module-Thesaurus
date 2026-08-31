@@ -84,6 +84,12 @@ return [
         'factories' => [
             Controller\Admin\ThesaurusController::class => Service\Controller\Admin\ThesaurusControllerFactory::class,
         ],
+        'invokables' => [
+            Controller\Admin\ConceptController::class => Controller\Admin\ConceptController::class,
+        ],
+        'aliases' => [
+            'concept' => Controller\Admin\ConceptController::class,
+        ],
     ],
     'controller_plugins' => [
         'factories' => [
