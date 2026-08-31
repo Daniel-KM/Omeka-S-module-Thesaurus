@@ -8,6 +8,7 @@ use Laminas\View\Model\JsonModel;
 use Laminas\View\Model\ViewModel;
 use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Controller\Admin\ItemController;
+use Omeka\Form\ConfirmForm;
 use Omeka\Mvc\Exception\NotFoundException;
 use Omeka\Mvc\Exception\RuntimeException;
 use Thesaurus\Form\ConfirmAllForm;
@@ -331,6 +332,14 @@ class ThesaurusController extends ItemController
      */
     public function convertItemsToConceptsAction()
     {
+        // The task is destructive, so it is confirmed via the sidebar.
+        $form = $this->getForm(ConfirmForm::class);
+        $form->setData($this->getRequest()->getPost());
+        if (!$this->getRequest()->isPost() || !$form->isValid()) {
+            $this->messenger()->addFormErrors($form);
+            return $this->redirect()->toRoute('admin/thesaurus/default');
+        }
+
         $id = (int) $this->params('id');
 
         $dispatcher = $this->jobDispatcher();
@@ -351,8 +360,49 @@ class ThesaurusController extends ItemController
         return $this->redirect()->toRoute('admin/thesaurus/default');
     }
 
+    /**
+     * Explain and confirm a one time task in the sidebar.
+     */
+    public function maintenanceSidebarAction()
+    {
+        $tasks = [
+            'migrate-data-types' => [
+                'label' => 'Migrate data types', // @translate
+                'description' => 'The data type "thesaurus" is added to the resource templates and to the configs that use the custom vocab of a thesaurus, so the concepts can be selected in a tree. The custom vocabs are not removed and the existing values are not modified.', // @translate
+                'button' => 'Migrate data types', // @translate
+            ],
+            'convert-items-to-concepts' => [
+                'label' => 'Convert items into concepts', // @translate
+                'description' => 'The items that belong to a thesaurus are converted into concepts, that are a dedicated resource type since version 3.4.26. The ids and the values are kept, so the links to the concepts remain valid, but the items are removed from the browse of the items. The items with a media cannot be converted.', // @translate
+                'button' => 'Convert items into concepts', // @translate
+            ],
+        ];
+
+        $task = (string) $this->params()->fromQuery('task');
+        if (!isset($tasks[$task])) {
+            throw new NotFoundException();
+        }
+
+        $view = new ViewModel([
+            'task' => $task,
+            'taskData' => $tasks[$task],
+            'form' => $this->getForm(ConfirmForm::class),
+        ]);
+        return $view
+            ->setTerminal(true)
+            ->setTemplate('thesaurus/admin/thesaurus/maintenance-sidebar');
+    }
+
     public function migrateDataTypesAction()
     {
+        // The task is destructive, so it is confirmed via the sidebar.
+        $form = $this->getForm(ConfirmForm::class);
+        $form->setData($this->getRequest()->getPost());
+        if (!$this->getRequest()->isPost() || !$form->isValid()) {
+            $this->messenger()->addFormErrors($form);
+            return $this->redirect()->toRoute('admin/thesaurus/default');
+        }
+
         $dispatcher = $this->jobDispatcher();
         $job = $dispatcher->dispatch(\Thesaurus\Job\MigrateDataTypes::class, []);
         $message = new PsrMessage(

@@ -16,6 +16,8 @@ $escapeAttr = $plugins->get('escapeHtmlAttr');
 
 $this->headLink()
     ->appendStylesheet($assetUrl('css/common-page-action-menu.css', 'Common'));
+$this->headScript()
+    ->appendFile($assetUrl('js/common-page-action-menu.js', 'Common'), 'text/javascript', ['defer' => 'defer']);
 
 $this->htmlElement('body')->appendAttribute('class', 'items browse');
 
@@ -62,8 +64,17 @@ $sortHeadings = [
                 title="<?= $escapeAttr($translate('Expand')) ?>"><?= $escape($translate('Maintenance')) ?></a>
             <ul class="collapsible">
                 <li><a href="<?= $escapeAttr($url('admin/thesaurus/default', ['action' => 'convert'], true)) ?>"><?= $escape($translate('Import')) ?></a></li>
-                <li><a href="<?= $escapeAttr($url('admin/thesaurus/default', ['action' => 'migrate-data-types'], true)) ?>"><?= $escape($translate('Migrate data types')) ?></a></li>
-                <li><a href="<?= $escapeAttr($url('admin/thesaurus/default', ['action' => 'convert-items-to-concepts'], true)) ?>"><?= $escape($translate('Convert items into concepts')) ?></a></li>
+                <li class="separator"><span><?= $escape($translate('One time tasks')) ?></span></li>
+                <li><?= $hyperlink($translate('Migrate data types…'), '#', [
+                    'data-sidebar-selector' => '#sidebar',
+                    'data-sidebar-content-url' => $url('admin/thesaurus/default', ['action' => 'maintenance-sidebar'], ['query' => ['task' => 'migrate-data-types']]),
+                    'class' => 'link sidebar-content',
+                ]) ?></li>
+                <li><?= $hyperlink($translate('Convert items into concepts…'), '#', [
+                    'data-sidebar-selector' => '#sidebar',
+                    'data-sidebar-content-url' => $url('admin/thesaurus/default', ['action' => 'maintenance-sidebar'], ['query' => ['task' => 'convert-items-to-concepts']]),
+                    'class' => 'link sidebar-content',
+                ]) ?></li>
             </ul>
         </div>
     </div>

@@ -1,0 +1,27 @@
+<?php
+/**
+ * Explain and confirm a one time task, in the sidebar of the list of thesaurus.
+ *
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var string $task
+ * @var array $taskData
+ * @var \Omeka\Form\ConfirmForm $form
+ */
+
+$plugins = $this->getHelperPluginManager();
+$url = $plugins->get('url');
+$escape = $plugins->get('escapeHtml');
+$translate = $plugins->get('translate');
+
+$form
+    ->setAttribute('action', $url('admin/thesaurus/default', ['action' => $task]))
+    ->setButtonLabel($translate($taskData['button']));
+$form->prepare();
+?>
+
+<div id="sidebar-confirm">
+    <h3><?= $escape($translate($taskData['label'])) ?></h3>
+    <p class="explanation"><?= $escape($translate($taskData['description'])) ?></p>
+    <p class="explanation"><?= $escape($translate('The task is done in background: the progress and the result are available in the logs of the job.')) ?></p>
+    <?= $this->form($form) ?>
+</div>
