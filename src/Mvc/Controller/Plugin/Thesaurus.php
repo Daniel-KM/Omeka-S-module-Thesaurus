@@ -3,9 +3,9 @@
 namespace Thesaurus\Mvc\Controller\Plugin;
 
 use Laminas\Mvc\Controller\Plugin\AbstractPlugin;
-use Omeka\Api\Representation\AbstractResourceEntityRepresentation;
 use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Api\Representation\ItemSetRepresentation;
+use Thesaurus\Api\Representation\ConceptRepresentation;
 use Thesaurus\Stdlib\Thesaurus as ThesaurusLib;
 
 /**
@@ -27,7 +27,7 @@ class Thesaurus extends AbstractPlugin
     /**
      * Manage a thesaurus.
      *
-     * @param AbstractResourceEntityRepresentation|int|null $itemOrItemSetOrId
+     * @param ItemRepresentation|ConceptRepresentation|int|null $itemOrItemSetOrId
      *   The item should be a scheme or a concept. If it is an item set, it
      *   should be a skos collection or a skos ordered collection that contains
      *   a scheme, that wll be the item that will be set.
@@ -66,7 +66,7 @@ class Thesaurus extends AbstractPlugin
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::setItem()
      */
-    public function setItem(?ItemRepresentation $item): self
+    public function setItem(ItemRepresentation|ConceptRepresentation|null $item): self
     {
         $this->thesaurus->setItem($item);
         return $this;
@@ -77,7 +77,7 @@ class Thesaurus extends AbstractPlugin
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::getItem()
      */
-    public function getItem(): ?ItemRepresentation
+    public function getItem(): ItemRepresentation|ConceptRepresentation|null
     {
         return $this->thesaurus->getItem();
     }
@@ -95,7 +95,7 @@ class Thesaurus extends AbstractPlugin
     /**
      * Check if the specified item is in the thesaurus.
      *
-     * @param ItemRepresentation|int $itemOrId
+     * @param ItemRepresentation|ConceptRepresentation|int $itemOrId
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::isInThesaurus()
      */
@@ -108,11 +108,11 @@ class Thesaurus extends AbstractPlugin
      * Get the item representation from item data or id, or get current item.
      *
      * @param array|int|string $itemData
-     * @return ItemRepresentation Return the current item when empty
+     * @return ItemRepresentation|ConceptRepresentation Return the current item when empty
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::itemFromData()
      */
-    public function itemFromData($itemData = null): ?ItemRepresentation
+    public function itemFromData($itemData = null): ItemRepresentation|ConceptRepresentation|null
     {
         return $this->thesaurus->itemFromData($itemData);
     }
@@ -120,7 +120,7 @@ class Thesaurus extends AbstractPlugin
     /**
      * Return the data for the item used to build the thesaurus or any item.
      *
-     * @param ItemRepresentation|int $item
+     * @param ItemRepresentation|ConceptRepresentation|int $item
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::itemToData()
      */
@@ -205,7 +205,7 @@ class Thesaurus extends AbstractPlugin
      * Get the current item as an array with a single element (may be empty).
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::selfItem()
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function selfItem(): array
     {
@@ -226,7 +226,7 @@ class Thesaurus extends AbstractPlugin
      * Get the top concepts of the scheme.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::tops()
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function tops(): array
     {
@@ -237,7 +237,7 @@ class Thesaurus extends AbstractPlugin
      * Get the top concept of this item, that may be itself.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::top()
-     * @return ItemRepresentation|array|null
+     * @return ItemRepresentation|ConceptRepresentation|array|null
      */
     public function top()
     {
@@ -248,7 +248,7 @@ class Thesaurus extends AbstractPlugin
      * Get the broader concept of this item.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::broader()
-     * @return ItemRepresentation|array|null
+     * @return ItemRepresentation|ConceptRepresentation|array|null
      */
     public function broader()
     {
@@ -259,7 +259,7 @@ class Thesaurus extends AbstractPlugin
      * Get the broader concept of this item, with self last.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::broaderOrSelf()
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function broaderOrSelf()
     {
@@ -270,7 +270,7 @@ class Thesaurus extends AbstractPlugin
      * Get the narrower concepts of this item.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::narrowers()
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function narrowers(): array
     {
@@ -281,7 +281,7 @@ class Thesaurus extends AbstractPlugin
      * Get the list of narrower concepts of this item, with self first.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::descendantsOrSelf()
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function narrowersOrSelf(): array
     {
@@ -292,7 +292,7 @@ class Thesaurus extends AbstractPlugin
      * Get the related concepts of this item.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::relateds()
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function relateds(): array
     {
@@ -303,7 +303,7 @@ class Thesaurus extends AbstractPlugin
      * Get the related concepts of this item, with self.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::relatedsOrSelf()
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function relatedsOrSelf(): array
     {
@@ -314,7 +314,7 @@ class Thesaurus extends AbstractPlugin
      * Get the sibling concepts of this item (self not included).
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::siblings()
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function siblings(): array
     {
@@ -325,7 +325,7 @@ class Thesaurus extends AbstractPlugin
      * Get the sibling concepts of this item (self included).
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::siblingsOrSelf()
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function siblingsOrSelf(): array
     {
@@ -336,7 +336,7 @@ class Thesaurus extends AbstractPlugin
      * Get the list of ascendants of this item, from closest to top concept.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::ascendants()
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function ascendants(bool $fromTop = false): array
     {
@@ -347,7 +347,7 @@ class Thesaurus extends AbstractPlugin
      * Get the list of ascendants of this item, from self to top concept.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::ascendantsOrSelf()
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function ascendantsOrSelf(bool $fromTop = false): array
     {
@@ -358,7 +358,7 @@ class Thesaurus extends AbstractPlugin
      * Get the list of descendants of this item.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::descendants()
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function descendants(): array
     {
@@ -369,7 +369,7 @@ class Thesaurus extends AbstractPlugin
      * Get the list of descendants of this item, with self first.
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::descendantsOrSelf()
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function descendantsOrSelf(): array
     {

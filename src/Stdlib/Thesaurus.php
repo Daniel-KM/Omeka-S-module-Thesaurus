@@ -11,9 +11,9 @@ use Doctrine\ORM\Query\Parameter;
 use Laminas\Log\Logger;
 use Omeka\Api\Adapter\ItemAdapter;
 use Omeka\Api\Manager as ApiManager;
-use Omeka\Api\Representation\AbstractResourceEntityRepresentation;
 use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Api\Representation\ItemSetRepresentation;
+use Thesaurus\Api\Representation\ConceptRepresentation;
 use Omeka\Entity\User;
 
 /**
@@ -93,7 +93,7 @@ class Thesaurus
     protected $tops = [];
 
     /**
-     * @var ItemRepresentation
+     * @var ItemRepresentation|ConceptRepresentation
      */
     protected $item;
 
@@ -182,7 +182,7 @@ class Thesaurus
     /**
      * Manage a thesaurus.
      *
-     * @param AbstractResourceEntityRepresentation|int|null $itemOrItemSetOrId
+     * @param ItemRepresentation|ConceptRepresentation|int|null $itemOrItemSetOrId
      *   The item should be a scheme or a concept. If it is an item set, it
      *   should be a skos collection or a skos ordered collection that contains
      *   a scheme, that wll be the item that will be set.
@@ -216,7 +216,7 @@ class Thesaurus
                 } else {
                     $itemOrItemSetOrId = null;
                 }
-            } elseif (!$itemOrItemSetOrId instanceof ItemRepresentation) {
+            } elseif (!($itemOrItemSetOrId instanceof ItemRepresentation || $itemOrItemSetOrId instanceof ConceptRepresentation)) {
                 $itemOrItemSetOrId = null;
             }
         }
@@ -245,7 +245,7 @@ class Thesaurus
      *
      * @todo Allow to set the item id directly and prepare the stored item lately, since it is not needed most of the time.
      */
-    public function setItem(?ItemRepresentation $item): self
+    public function setItem(ItemRepresentation|ConceptRepresentation|null $item): self
     {
         $this->item = $item;
         return $this->init();
@@ -254,7 +254,7 @@ class Thesaurus
     /**
      * Return the item used to build the thesaurus or the last item used.
      */
-    public function getItem(): ?ItemRepresentation
+    public function getItem(): ItemRepresentation|ConceptRepresentation|null
     {
         return $this->item;
     }
@@ -289,7 +289,7 @@ class Thesaurus
     /**
      * Check if the specified item is in the thesaurus.
      *
-     * @param ItemRepresentation|int $itemOrId
+     * @param ItemRepresentation|ConceptRepresentation|int $itemOrId
      */
     public function isInThesaurus($itemOrId = null): bool
     {
@@ -305,9 +305,9 @@ class Thesaurus
      * Get the item representation from item data or id, or get current item.
      *
      * @param array|int|string $itemData
-     * @return ItemRepresentation Return the current item when empty
+     * @return ItemRepresentation|ConceptRepresentation Return the current item when empty
      */
-    public function itemFromData($itemData = null): ?ItemRepresentation
+    public function itemFromData($itemData = null): ItemRepresentation|ConceptRepresentation|null
     {
         if (empty($itemData)) {
             return $this->item;
@@ -332,7 +332,7 @@ class Thesaurus
     /**
      * Return the data for the item used to build the thesaurus or any item.
      *
-     * @param ItemRepresentation|int $item
+     * @param ItemRepresentation|ConceptRepresentation|int $item
      */
     public function itemToData($itemOrId = null): ?array
     {
@@ -456,7 +456,7 @@ class Thesaurus
     /**
      * Get the current item as an array with a single element (may be empty).
      *
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function selfItem(): array
     {
@@ -487,7 +487,7 @@ class Thesaurus
     /**
      * Get the top concepts of the scheme.
      *
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function tops(): array
     {
@@ -499,7 +499,7 @@ class Thesaurus
      *
      * @todo Check performance to get the root concept.
      *
-     * @return ItemRepresentation|array|null
+     * @return ItemRepresentation|ConceptRepresentation|array|null
      */
     public function top()
     {
@@ -511,7 +511,7 @@ class Thesaurus
     /**
      * Get the broader concept of this item.
      *
-     * @return ItemRepresentation|array|null
+     * @return ItemRepresentation|ConceptRepresentation|array|null
      */
     public function broader()
     {
@@ -523,7 +523,7 @@ class Thesaurus
     /**
      * Get the broader concept of this item, with self last.
      *
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function broaderOrSelf()
     {
@@ -544,7 +544,7 @@ class Thesaurus
     /**
      * Get the narrower concepts of this item.
      *
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function narrowers(): array
     {
@@ -556,7 +556,7 @@ class Thesaurus
     /**
      * Get the list of narrower concepts of this item, with self first.
      *
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function narrowersOrSelf(): array
     {
@@ -570,7 +570,7 @@ class Thesaurus
     /**
      * Get the related concepts of this item.
      *
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function relateds(): array
     {
@@ -585,7 +585,7 @@ class Thesaurus
     /**
      * Get the related concepts of this item, with self.
      *
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function relatedsOrSelf(): array
     {
@@ -599,7 +599,7 @@ class Thesaurus
     /**
      * Get the sibling concepts of this item (self not included).
      *
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function siblings(): array
     {
@@ -614,7 +614,7 @@ class Thesaurus
     /**
      * Get the sibling concepts of this item (self included).
      *
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function siblingsOrSelf(): array
     {
@@ -634,7 +634,7 @@ class Thesaurus
     /**
      * Get the list of ascendants of this item, from closest to top concept.
      *
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function ascendants(bool $fromTop = false): array
     {
@@ -650,7 +650,7 @@ class Thesaurus
     /**
      * Get the list of ascendants of this item, from self to top concept.
      *
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function ascendantsOrSelf(bool $fromTop = false): array
     {
@@ -665,7 +665,7 @@ class Thesaurus
     /**
      * Get the list of descendants of this item.
      *
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function descendants(): array
     {
@@ -677,7 +677,7 @@ class Thesaurus
     /**
      * Get the list of descendants of this item, with self first.
      *
-     * @return ItemRepresentation[]|array
+     * @return ItemRepresentation[]|ConceptRepresentation[]|array
      */
     public function descendantsOrSelf(): array
     {
@@ -1167,9 +1167,9 @@ class Thesaurus
     /**
      * Get the name of the current resource class.
      *
-     * @param ItemRepresentation $item
+     * @param ItemRepresentation|ConceptRepresentation $item
      */
-    protected function resourceClassName(ItemRepresentation $item): string
+    protected function resourceClassName(ItemRepresentation|ConceptRepresentation $item): string
     {
         $resourceClass = $item->resourceClass();
         return $resourceClass
@@ -1180,10 +1180,10 @@ class Thesaurus
     /**
      * Get first linked resource of this item for a term.
      *
-     * @param ItemRepresentation $item
+     * @param ItemRepresentation|ConceptRepresentation $item
      * @param string $term
      */
-    protected function resourceFromValue(ItemRepresentation $item, $term): ?ItemRepresentation
+    protected function resourceFromValue(ItemRepresentation|ConceptRepresentation $item, $term): ItemRepresentation|ConceptRepresentation|null
     {
         $values = $item->values();
         if (isset($values[$term])) {
@@ -1193,7 +1193,7 @@ class Thesaurus
                 // "resource:item", but may be a custom vocab resource.
                 // Check for private resources too.
                 $vr = $value->valueResource();
-                if ($vr instanceof ItemRepresentation) {
+                if ($vr instanceof ItemRepresentation || $vr instanceof ConceptRepresentation) {
                     return $vr;
                 }
             }
@@ -1219,11 +1219,11 @@ class Thesaurus
     /**
      * Get all linked resources of this item for a term.
      *
-     * @param ItemRepresentation $item
+     * @param ItemRepresentation|ConceptRepresentation $item
      * @param string $term
-     * @return ItemRepresentation[] Items are indexed by id.
+     * @return ItemRepresentation[]|ConceptRepresentation[] Items are indexed by id.
      */
-    protected function resourcesItemsFromValue(ItemRepresentation $item, $term): array
+    protected function resourcesItemsFromValue(ItemRepresentation|ConceptRepresentation $item, $term): array
     {
         $result = [];
         $values = $item->values();
@@ -1234,7 +1234,7 @@ class Thesaurus
                 // "resource:item", but may be a custom vocab resource.
                 // Check for private resources too.
                 $vr = $value->valueResource();
-                if ($vr instanceof ItemRepresentation) {
+                if ($vr instanceof ItemRepresentation || $vr instanceof ConceptRepresentation) {
                     // The use of id manages duplicates too.
                     $result[$vr->id()] = $vr;
                 }
@@ -1383,11 +1383,11 @@ class Thesaurus
     /**
      * Recursive method to get the descendant tree of an item.
      *
-     * @param ItemRepresentation $item
+     * @param ItemRepresentation|ConceptRepresentation $item
      * @param array $branch Internal param for recursive process.
      * @param int $level
      */
-    protected function recursiveBranchItems(ItemRepresentation $item, array $branch = [], $level = 0): array
+    protected function recursiveBranchItems(ItemRepresentation|ConceptRepresentation $item, array $branch = [], $level = 0): array
     {
         if ($level > $this->maxAncestors) {
             throw new \Omeka\Api\Exception\BadResponseException(new PsrMessage(
