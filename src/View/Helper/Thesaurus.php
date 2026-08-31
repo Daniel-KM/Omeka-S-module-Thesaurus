@@ -177,30 +177,6 @@ class Thesaurus extends AbstractHelper
     }
 
     /**
-     * This item is a collection if it has class Collection or OrderedCollection
-     * or properties skos:member or skos:memberList.
-     *
-     * Note: an OrderedCollection is a collection.
-     *
-     * @uses \Thesaurus\Stdlib\Thesaurus::isCollection()
-     */
-    public function isCollection(bool $strict = false): bool
-    {
-        return $this->thesaurus->isCollection($strict);
-    }
-
-    /**
-     * This item is an ordered collection if it has the class OrderedCollection,
-     * or a property skos:memberList.
-     *
-     * @uses \Thesaurus\Stdlib\Thesaurus::isOrderedCollection()
-     */
-    public function isOrderedCollection(): bool
-    {
-        return $this->thesaurus->isOrderedCollection();
-    }
-
-    /**
      * Get the current item as an array with a single element (may be empty).
      *
      * @uses \Thesaurus\Stdlib\Thesaurus::selfItem()

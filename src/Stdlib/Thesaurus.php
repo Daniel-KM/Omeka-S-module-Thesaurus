@@ -135,16 +135,6 @@ class Thesaurus
     /**
      * @var bool
      */
-    protected $isCollection;
-
-    /**
-     * @var bool
-     */
-    protected $isOrderedCollection;
-
-    /**
-     * @var bool
-     */
     protected $isPublic;
 
     /**
@@ -184,8 +174,8 @@ class Thesaurus
      *
      * @param ItemRepresentation|ConceptRepresentation|int|null $itemOrItemSetOrId
      *   The item should be a scheme or a concept. If it is an item set, it
-     *   should be a skos collection or a skos ordered collection that contains
-     *   a scheme, that wll be the item that will be set.
+     *   should be a standard item set that contains a scheme, that will be the
+     *   item that will be set.
      *
      *   The thesaurus will be init with this concept or scheme. It will be used
      *   by default in other methods, for example to get ascendants or
@@ -202,20 +192,16 @@ class Thesaurus
         }
         if ($itemOrItemSetOrId) {
             if ($itemOrItemSetOrId instanceof ItemSetRepresentation) {
-                $class = $itemOrItemSetOrId->resourceClass();
-                $classTerm = $class ? $class->term() : null;
-                if (in_array($classTerm, ['skos:Collection', 'skos:OrderedCollection'])) {
-                    $this->cacheTerms();
-                    // TODO Api read with item set.
-                    $itemOrItemSetOrId = $this->api->search('items', [
-                        'item_set_id' => $itemOrItemSetOrId->id(),
-                        'resource_class_id' => $this->terms['class'][self::CLASS_ROOT],
-                        'limit' => 1,
-                    ], ['initialize' => false])->getContent();
-                    $itemOrItemSetOrId = count($itemOrItemSetOrId) ? reset($itemOrItemSetOrId) : null;
-                } else {
-                    $itemOrItemSetOrId = null;
-                }
+                // The item set is a standard one, so check the scheme it
+                // contains, whatever the class.
+                $this->cacheTerms();
+                // TODO Api read with item set.
+                $itemOrItemSetOrId = $this->api->search('items', [
+                    'item_set_id' => $itemOrItemSetOrId->id(),
+                    'resource_class_id' => $this->terms['class'][self::CLASS_ROOT],
+                    'limit' => 1,
+                ], ['initialize' => false])->getContent();
+                $itemOrItemSetOrId = count($itemOrItemSetOrId) ? reset($itemOrItemSetOrId) : null;
             } elseif (!($itemOrItemSetOrId instanceof ItemRepresentation || $itemOrItemSetOrId instanceof ConceptRepresentation)) {
                 $itemOrItemSetOrId = null;
             }
@@ -275,15 +261,64 @@ class Thesaurus
         $this->itemSet = false;
 
         $scheme = $this->scheme();
+        if (!$scheme) {
+            return null;
+        }
+
+        // The item set of a thesaurus is a standard collection, without any
+        // skos class, and it may be private, like the scheme.
+        $filters = $this->entityManager->getFilters();
+        $enabled = $filters->isEnabled('resource_visibility');
+        if ($enabled) {
+            $filters->disable('resource_visibility');
+        }
+        $itemSets = [];
         foreach ($scheme->itemSets() as $itemSet) {
-            $class = $itemSet->resourceClass();
-            if ($class && in_array($class->term(), ['skos:Collection', 'skos:OrderedCollection'])) {
-                $this->itemSet = $itemSet;
-                break;
-            }
+            $itemSets[$itemSet->id()] = $itemSet;
+        }
+        if ($enabled) {
+            // Re-enabling recreates the filter, so the service locator must be
+            // set again.
+            $filters->enable('resource_visibility')
+                ->setServiceLocator($this->itemAdapter->getServiceLocator());
+        }
+
+        // A scheme may belong to other item sets, for example a thematic one,
+        // so the item set of the thesaurus is determined only when there is no
+        // ambiguity: a single item set, or the one used by the deprecated
+        // custom vocab of the thesaurus.
+        if (count($itemSets) === 1) {
+            $this->itemSet = reset($itemSets);
+        } elseif (count($itemSets) > 1) {
+            $itemSetId = $this->itemSetIdFromCustomVocab(array_keys($itemSets));
+            $this->itemSet = $itemSetId ? $itemSets[$itemSetId] : false;
         }
 
         return $this->itemSet ?: null;
+    }
+
+    /**
+     * Get the item set used by a custom vocab among the ones of the scheme.
+     *
+     * The module CustomVocab is optional and deprecated for thesaurus, so the
+     * table may not exist.
+     */
+    protected function itemSetIdFromCustomVocab(array $itemSetIds): ?int
+    {
+        $sql = <<<'SQL'
+            SELECT `item_set_id`
+            FROM `custom_vocab`
+            WHERE `item_set_id` IN (:item_set_ids)
+            LIMIT 1
+            SQL;
+        try {
+            $itemSetId = $this->entityManager->getConnection()
+                ->executeQuery($sql, ['item_set_ids' => $itemSetIds], ['item_set_ids' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY])
+                ->fetchOne();
+        } catch (\Exception $e) {
+            return null;
+        }
+        return $itemSetId ? (int) $itemSetId : null;
     }
 
     /**
@@ -415,42 +450,6 @@ class Thesaurus
     {
         return $this->isSkos
             && !empty($this->structure[$this->itemId]['top']);
-    }
-
-    /**
-     * This item is a collection if it has class Collection or OrderedCollection
-     * or properties skos:member or skos:memberList.
-     *
-     * Note: an OrderedCollection is a Collection.
-     */
-    public function isCollection(bool $strict = false): bool
-    {
-        if ($this->isCollection === null) {
-            if ($strict) {
-                $this->isScheme = $this->resourceClassName($this->item) === 'skos:Collection'
-                    || isset($this->item->values()['skos:member']);
-            } else {
-                $class = $this->resourceClassName($this->item);
-                $this->isScheme = $class === 'skos:Collection'
-                    || $class === 'skos:OrderedCollection'
-                    || isset($this->item->values()['skos:member'])
-                    || isset($this->item->values()['skos:memberList']);
-            }
-        }
-        return $this->isCollection;
-    }
-
-    /**
-     * This item is an ordered collection if it has the class OrderedCollection,
-     * or a property skos:memberList.
-     */
-    public function isOrderedCollection(): bool
-    {
-        if ($this->isOrderedCollection === null) {
-            $this->isScheme = $this->resourceClassName($this->item) === 'skos:OrderedCollection'
-                || isset($this->item->values()['skos:memberList']);
-        }
-        return $this->isOrderedCollection;
     }
 
     /**
@@ -1495,8 +1494,6 @@ class Thesaurus
             $this->isSkos = false;
             $this->isScheme = false;
             $this->isConcept = false;
-            $this->isCollection = false;
-            $this->isOrderedCollection = false;
             return $this;
         }
 
@@ -1511,8 +1508,6 @@ class Thesaurus
         $this->itemSetId = null;
         $this->isScheme = null;
         $this->isConcept = null;
-        $this->isCollection = null;
-        $this->isOrderedCollection = null;
 
         // Don't rebuild the thesaurus if the current item is inside it.
         // Keep the related data null, so updated only when needed.
@@ -1561,8 +1556,6 @@ class Thesaurus
             $this->isSkos = false;
             $this->isScheme = false;
             $this->isConcept = false;
-            $this->isCollection = false;
-            $this->isOrderedCollection = false;
             return $this;
         }
 

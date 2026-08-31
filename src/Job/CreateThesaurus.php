@@ -135,7 +135,6 @@ class CreateThesaurus extends AbstractJob
         $conceptTemplate = $conceptTemplateId
             ? $this->api->read('resource_templates', ['id' => $conceptTemplateId])->getContent()
             : $this->api->read('resource_templates', ['label' => 'Thesaurus Concept'])->getContent();
-        $collectionClass = $this->api->read('resource_classes', ['vocabulary' => $skosVocabulary->id(), 'localName' => 'Collection'])->getContent();
 
         $properties = $this->easyMeta->propertyIds();
 
@@ -170,10 +169,11 @@ class CreateThesaurus extends AbstractJob
             ['count' => count($input)]
         );
 
-        // First create the item set.
+        // First create the item set. It is a standard collection, without any
+        // skos class: the thesaurus is the scheme, not the item set, that is
+        // only a container for the deprecated custom vocab.
         $data = [
             'o:owner' => ['o:id' => $ownerId],
-            'o:resource_class' => ['o:id' => $collectionClass->id()],
             'dcterms:title' => [
                 [
                     'type' => 'literal',
