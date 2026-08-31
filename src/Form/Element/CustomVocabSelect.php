@@ -9,6 +9,14 @@ use Thesaurus\Stdlib\Thesaurus;
  * This select should extend CustomVocabSelect to be compliant with CustomVocab
  * representation.
  *
+ * The module CustomVocab is not required: this element is used only when it is
+ * installed and when a custom vocab is based on the item set of a thesaurus.
+ *
+ * @deprecated Since version 3.4.26, use the data type "thesaurus:{schemeId}",
+ * that does not require the module CustomVocab neither an item set. This
+ * element is kept only for the thesaurus that are not migrated yet.
+ * @see \Thesaurus\Job\MigrateDataTypes
+ *
  * @todo Use Common vocab select ?
  */
 class CustomVocabSelect extends \CustomVocab\Form\Element\CustomVocabSelect

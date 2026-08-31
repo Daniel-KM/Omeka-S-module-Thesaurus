@@ -73,10 +73,15 @@ return [
             Form\UpdateConceptsForm::class => Form\UpdateConceptsForm::class,
         ],
         'factories' => [
+            // The custom vocab select is deprecated: it is used only when the
+            // optional module CustomVocab is installed and when a thesaurus is
+            // not migrated to the data type "thesaurus:{schemeId}".
             Form\Element\CustomVocabSelect::class => Service\Form\Element\CustomVocabSelectFactory::class,
             Form\Element\ThesaurusSelect::class => Service\Form\Element\ThesaurusSelectFactory::class,
         ],
         'aliases' => [
+            // Deprecated: the alias is used only when the module CustomVocab is
+            // installed, so the missing parent class is never an issue.
             \CustomVocab\Form\Element\CustomVocabSelect::class => Form\Element\CustomVocabSelect::class,
         ],
     ],

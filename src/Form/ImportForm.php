@@ -171,7 +171,7 @@ class ImportForm extends Form
                     'label' => 'Destination', // @translate
                     'value_options' => [
                         'preview' => 'Preview the flat list (to check or copy-paste)', // @translate
-                        'customvocab' => 'Custom vocabulary (list of terms)', // @translate
+                        'customvocab' => 'Custom vocabulary (list of terms) [deprecated: use a thesaurus]', // @translate
                         'thesaurus' => 'Thesaurus (items with relations)', // @translate
                     ],
                 ],
@@ -214,8 +214,8 @@ class ImportForm extends Form
                 'name' => 'create_customvocab',
                 'type' => CommonElement\OptionalCheckbox::class,
                 'options' => [
-                    'label' => 'Create the linked custom vocabulary (item set)', // @translate
-                    'info' => 'Optional: the thesaurus data type does not require it. It is kept as a complement for compatibility with the custom vocab.', // @translate
+                    'label' => 'Create the linked custom vocabulary (item set) [deprecated]', // @translate
+                    'info' => 'Deprecated: the thesaurus data type does not require it and the module CustomVocab is optional. It is kept only for the thesaurus that are not migrated yet.', // @translate
                 ],
                 'attributes' => [
                     'id' => 'create_customvocab',
