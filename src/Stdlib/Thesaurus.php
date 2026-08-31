@@ -477,9 +477,25 @@ class Thesaurus
     public function scheme(): ?ItemRepresentation
     {
         if ($this->scheme === null) {
-            $this->scheme = $this->isScheme()
-                ? $this->item
-                : $this->resourceFromValue($this->item, 'skos:inScheme');
+            if ($this->isScheme()) {
+                $this->scheme = $this->item;
+            } else {
+                // The scheme is read even when it is private: the concepts and
+                // the thesaurus are usable whatever the visibility of the
+                // scheme item, that is only a structural container.
+                $filters = $this->entityManager->getFilters();
+                $enabled = $filters->isEnabled('resource_visibility');
+                if ($enabled) {
+                    $filters->disable('resource_visibility');
+                }
+                $this->scheme = $this->resourceFromValue($this->item, 'skos:inScheme');
+                if ($enabled) {
+                    // Re-enabling recreates the filter, so the service locator
+                    // must be set again.
+                    $filters->enable('resource_visibility')
+                        ->setServiceLocator($this->itemAdapter->getServiceLocator());
+                }
+            }
         }
         return $this->scheme;
     }
