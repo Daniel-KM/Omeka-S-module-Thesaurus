@@ -49,8 +49,9 @@ class Concept extends Resource
     protected $scheme;
 
     /**
-     * Root is not nullable, but doctrine use two queries internally to create
-     * the entity with a self-referencing for the root items.
+     * The top concept of the branch (skos:topConceptOf side). It is not
+     * nullable in practice, but doctrine uses two queries internally to create
+     * the entity with a self-referencing for the top concepts.
      *
      * @var Concept
      *
@@ -62,7 +63,7 @@ class Concept extends Resource
      *     onDelete="CASCADE"
      * )
      */
-    protected $root;
+    protected $top;
 
     /**
      * @var Concept
@@ -130,15 +131,15 @@ class Concept extends Resource
         return $this->scheme;
     }
 
-    public function setRoot(?Concept $root = null): self
+    public function setTop(?Concept $top = null): self
     {
-        $this->root = $root;
+        $this->top = $top;
         return $this;
     }
 
-    public function getRoot(): ?Concept
+    public function getTop(): ?Concept
     {
-        return $this->root;
+        return $this->top;
     }
 
     public function setBroader(?Concept $broader = null): self

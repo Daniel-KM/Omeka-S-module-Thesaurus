@@ -121,9 +121,9 @@ class IndexThesaurus extends AbstractJob
 
         // Update the tree of all concepts in the right order.
         // The concepts are resources that already exist: only their structure
-        // is set here (the root, the broader concept and the position).
+        // is set here (the top concept, the broader concept and the position).
         $schemeResource = $this->entityManager->find(\Omeka\Entity\Item::class, $scheme->id());
-        $root = null;
+        $top = null;
         $broader = null;
         $position = 0;
         $ancestors = [];
@@ -142,14 +142,14 @@ class IndexThesaurus extends AbstractJob
                     ->setScheme($schemeResource)
                     ->setPosition(++$position);
 
-                $isRoot = $concept['level'] === 0;
-                if ($isRoot) {
-                    $root = $conceptEntity;
+                $isTop = $concept['level'] === 0;
+                if ($isTop) {
+                    $top = $conceptEntity;
                     $broader = null;
                     $ancestors = [];
-                } elseif (!$root) {
+                } elseif (!$top) {
                     $this->logger->err(
-                        'Thesaurus #{item_id} has a missing root for item #{item_id_2}.', // @translate
+                        'Thesaurus #{item_id} has a missing top concept for item #{item_id_2}.', // @translate
                         ['item_id' => $scheme->id(), 'item_id_2' => $concept['self']->id()]
                     );
                     $this->resetThesaurus($scheme);
@@ -162,7 +162,7 @@ class IndexThesaurus extends AbstractJob
                 }
 
                 $conceptEntity
-                    ->setRoot($root)
+                    ->setTop($top)
                     ->setBroader($broader);
                 $this->entityManager->persist($conceptEntity);
                 $ancestors[$level] = $conceptEntity;
@@ -175,11 +175,11 @@ class IndexThesaurus extends AbstractJob
         $this->entityManager->clear();
 
         /*
-        // Fill root terms. Not needed if there is no clear during chunk.
-        $terms = $this->termRepository->findBy(['scheme' => $scheme->id(), 'root' => null, 'broader' => null]);
-        foreach ($terms as $term) {
-            $term->setRoot($term);
-            $this->entityManager->persist($term);
+        // Fill top concepts. Not needed if there is no clear during chunk.
+        $concepts = $this->conceptRepository->findBy(['scheme' => $scheme->id(), 'top' => null, 'broader' => null]);
+        foreach ($concepts as $concept) {
+            $concept->setTop($concept);
+            $this->entityManager->persist($concept);
         }
         $this->entityManager->flush();
         $this->entityManager->clear();
@@ -201,10 +201,10 @@ class IndexThesaurus extends AbstractJob
     protected function resetThesaurus(ItemRepresentation $scheme): void
     {
         // The concepts are resources, so they are not deleted: only their tree
-        // structure (root, broader, position) is reset before the reindexation.
+        // structure (top, broader, position) is reset before the reindexation.
         $this->entityManager->createQuery(
             'UPDATE Thesaurus\Entity\Concept concept'
-            . ' SET concept.root = NULL, concept.broader = NULL, concept.position = NULL'
+            . ' SET concept.top = NULL, concept.broader = NULL, concept.position = NULL'
             . ' WHERE concept.scheme = ' . $scheme->id()
         )->execute();
     }

@@ -30,7 +30,7 @@ class ThesaurusFieldset extends Fieldset
                     'label' => 'Type of display', // @translate
                     'empty_option' => '',
                     'value_options' => [
-                        'root' => 'Root', // @translate
+                        'top' => 'Top concept', // @translate
                         'broader' => 'Broader', // @translate
                         'tops' => 'Top concepts', // @translate
                         'narrowers' => 'Narrower concepts', // @translate

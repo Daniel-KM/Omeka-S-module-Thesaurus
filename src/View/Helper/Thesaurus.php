@@ -550,7 +550,7 @@ class Thesaurus extends AbstractHelper
      *
      * @param string|array|ItemRepresentation $typeOrData Type may be:
      * - For output as single item or data:
-     *   - root
+     *   - top
      *   - broader
      * - For output as list of items or data:
      *   - tops
@@ -591,7 +591,7 @@ class Thesaurus extends AbstractHelper
         $type = $data = $typeOrData;
         if (is_string($typeOrData)) {
             $partialTypes = [
-                'root' => 'single',
+                'top' => 'single',
                 'broader' => 'single',
                 'tops' => 'list',
                 'narrowers' => 'list',

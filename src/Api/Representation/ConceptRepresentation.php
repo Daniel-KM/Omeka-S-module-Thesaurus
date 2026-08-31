@@ -19,10 +19,13 @@ class ConceptRepresentation extends AbstractResourceEntityRepresentation
 
     public function getResourceJsonLd()
     {
+        $scheme = $this->scheme();
+        $broader = $this->broader();
+        $top = $this->top();
         return [
-            'o:scheme' => $this->scheme()->getReference(),
-            'o:broader' => ($broader = $this->broader()) ? $broader->getReference() : null,
-            'o:root' => ($root = $this->root()) ? $root->getReference() : null,
+            'o:scheme' => $scheme->getReference(),
+            'o:broader' => $broader ? $broader->getReference() : null,
+            'o:top' => $top ? $top->getReference() : null,
             'o:position' => $this->position(),
         ];
     }
@@ -36,12 +39,6 @@ class ConceptRepresentation extends AbstractResourceEntityRepresentation
     {
         $broader = $this->resource->getBroader();
         return $broader ? $this->getAdapter('concepts')->getRepresentation($broader) : null;
-    }
-
-    public function root(): ?ConceptRepresentation
-    {
-        $root = $this->resource->getRoot();
-        return $root ? $this->getAdapter('concepts')->getRepresentation($root) : null;
     }
 
     public function position(): ?int
@@ -84,17 +81,22 @@ class ConceptRepresentation extends AbstractResourceEntityRepresentation
         return $this->thesaurus()->isConcept();
     }
 
-    public function isRoot(): bool
+    public function isTop(): bool
     {
-        $root = $this->resource->getRoot();
-        return $root
-            ? $root->getId() === $this->id()
+        $top = $this->resource->getTop();
+        return $top
+            ? $top->getId() === $this->id()
             : $this->resource->getBroader() === null;
     }
 
-    public function top()
+    /**
+     * Get the top concept of the branch, using the denormalized column for a
+     * fast access without rebuilding the whole thesaurus structure.
+     */
+    public function top(): ?ConceptRepresentation
     {
-        return $this->thesaurus()->top();
+        $top = $this->resource->getTop();
+        return $top ? $this->getAdapter('concepts')->getRepresentation($top) : null;
     }
 
     public function tops(): array

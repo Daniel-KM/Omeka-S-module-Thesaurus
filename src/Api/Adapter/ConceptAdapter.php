@@ -16,7 +16,7 @@ class ConceptAdapter extends AbstractResourceEntityAdapter
         'id' => 'id',
         'title' => 'title',
         'scheme_id' => 'scheme_id',
-        'root_id' => 'root_id',
+        'top_id' => 'top_id',
         'broader_id' => 'broader_id',
         'position' => 'position',
         'created' => 'created',
@@ -27,7 +27,7 @@ class ConceptAdapter extends AbstractResourceEntityAdapter
         'id' => 'id',
         'title' => 'title',
         'scheme_id' => 'scheme_id',
-        'root_id' => 'root_id',
+        'top_id' => 'top_id',
         'broader_id' => 'broader_id',
         'position' => 'position',
         'is_public' => 'isPublic',
@@ -63,10 +63,10 @@ class ConceptAdapter extends AbstractResourceEntityAdapter
             ));
         }
 
-        if (isset($query['root_id']) && is_numeric($query['root_id'])) {
+        if (isset($query['top_id']) && is_numeric($query['top_id'])) {
             $qb->andWhere($expr->eq(
-                'omeka_root.root',
-                $this->createNamedParameter($qb, (int) $query['root_id'])
+                'omeka_root.top',
+                $this->createNamedParameter($qb, (int) $query['top_id'])
             ));
         }
 
@@ -88,10 +88,10 @@ class ConceptAdapter extends AbstractResourceEntityAdapter
             $entity->setScheme($scheme);
         }
 
-        if ($this->shouldHydrate($request, 'o:root')) {
-            $rootId = $request->getValue('o:root')['o:id'] ?? $request->getValue('o:root');
-            $root = $rootId ? $this->findEntity(['id' => $rootId]) : null;
-            $entity->setRoot($root);
+        if ($this->shouldHydrate($request, 'o:top')) {
+            $topId = $request->getValue('o:top')['o:id'] ?? $request->getValue('o:top');
+            $top = $topId ? $this->findEntity(['id' => $topId]) : null;
+            $entity->setTop($top);
         }
 
         if ($this->shouldHydrate($request, 'o:broader')) {
@@ -110,8 +110,39 @@ class ConceptAdapter extends AbstractResourceEntityAdapter
     {
         parent::validateEntity($entity, $errorStore);
 
-        if (!$entity->getScheme()) {
+        /** @var \Thesaurus\Entity\Concept $entity */
+        $scheme = $entity->getScheme();
+        if (!$scheme) {
             $errorStore->addError('o:scheme', 'A concept must belong to a thesaurus scheme.'); // @translate
+            return;
         }
+
+        // The broader concept is already guaranteed to be a concept by the FK
+        // and by findEntity() during hydration. Only the semantic consistency
+        // is checked here: same scheme and no cycle.
+        $broader = $entity->getBroader();
+        if (!$broader) {
+            return;
+        }
+        if ($broader->getScheme()->getId() !== $scheme->getId()) {
+            $errorStore->addError('o:broader', 'The broader concept must belong to the same scheme.'); // @translate
+        } elseif ($this->isSelfAncestor($entity, $broader)) {
+            $errorStore->addError('o:broader', 'A concept cannot be an ancestor of itself.'); // @translate
+        }
+    }
+
+    /**
+     * Check that the concept is not one of the ancestors of its broader chain.
+     */
+    private function isSelfAncestor(EntityInterface $entity, ?Concept $broader): bool
+    {
+        $id = $entity->getId();
+        for ($level = 0; $broader && $level < 100; ++$level) {
+            if ($broader->getId() === $id) {
+                return true;
+            }
+            $broader = $broader->getBroader();
+        }
+        return false;
     }
 }
