@@ -120,13 +120,17 @@ class Concept extends Resource
         return 'concepts';
     }
 
-    public function setScheme(Item $scheme): self
+    public function setScheme(?Item $scheme = null): self
     {
         $this->scheme = $scheme;
         return $this;
     }
 
-    public function getScheme(): Item
+    /**
+     * The scheme is required, but it is null until the concept is hydrated, so
+     * the validation can return a clear error instead of a type error.
+     */
+    public function getScheme(): ?Item
     {
         return $this->scheme;
     }
