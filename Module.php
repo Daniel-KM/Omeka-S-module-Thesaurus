@@ -37,6 +37,13 @@ class Module extends AbstractModule
 
     const SEPARATOR = ' :: ';
 
+    /**
+     * Warn only once by request that a thesaurus should be reindexed.
+     *
+     * @var bool
+     */
+    protected $isStructureWarned = false;
+
     protected function preInstall(): void
     {
         $services = $this->getServiceLocator();
@@ -228,6 +235,23 @@ class Module extends AbstractModule
             [$this, 'updateAscendance']
         );
 
+        // Warn when the structure of a thesaurus may be outdated.
+        $sharedEventManager->attach(
+            \Thesaurus\Api\Adapter\ConceptAdapter::class,
+            'api.create.post',
+            [$this, 'warnOutdatedStructure']
+        );
+        $sharedEventManager->attach(
+            \Thesaurus\Api\Adapter\ConceptAdapter::class,
+            'api.update.post',
+            [$this, 'warnOutdatedStructure']
+        );
+        $sharedEventManager->attach(
+            \Thesaurus\Api\Adapter\ConceptAdapter::class,
+            'api.delete.post',
+            [$this, 'warnOutdatedStructure']
+        );
+
         // Register a data type "thesaurus:{schemeId}" by thesaurus scheme.
         $sharedEventManager->attach(
             'Omeka\DataType\Manager',
@@ -334,6 +358,134 @@ class Module extends AbstractModule
             ];
         }
         $event->setParam('config', $config);
+    }
+
+    /**
+     * Warn that the structure of a thesaurus may be outdated after a save.
+     *
+     * The tree is rebuilt only by the job IndexThesaurus, because the positions
+     * and the top concepts are global to the thesaurus. The scheme, the broader
+     * and the top concepts of a single concept are updated on save, but not the
+     * positions, neither the removal of a relation.
+     *
+     * @see \Thesaurus\Api\Adapter\ConceptAdapter::hydrate()
+     */
+    public function warnOutdatedStructure(Event $event): void
+    {
+        if ($this->isStructureWarned) {
+            return;
+        }
+
+        $services = $this->getServiceLocator();
+        $isAdminRequest = $services->get('Omeka\Status')->isAdminRequest();
+
+        /** @var \Omeka\Api\Request $request */
+        $request = $event->getParam('request');
+
+        // A creation via a job or an import is always followed by a full
+        // indexation, so warn only in the admin interface in that case.
+        if (!$isAdminRequest && $request->getOperation() === \Omeka\Api\Request::CREATE) {
+            return;
+        }
+
+        $content = $event->getParam('response')->getContent();
+
+        $scheme = null;
+        foreach (is_array($content) ? $content : [$content] as $concept) {
+            if ($concept instanceof \Thesaurus\Entity\Concept
+                && $this->isOutdatedStructure($concept, $request)
+            ) {
+                $scheme = $concept->getScheme();
+                break;
+            }
+        }
+        if (!$scheme) {
+            return;
+        }
+
+        // Only one message by request, even for a batch edit.
+        $this->isStructureWarned = true;
+
+        if (!$isAdminRequest) {
+            $message = new PsrMessage(
+                'The structure of the thesaurus "{title}" (#{item_id}) may be outdated: reindex it to rebuild the tree.', // @translate
+                ['title' => $scheme->getTitle(), 'item_id' => $scheme->getId()]
+            );
+            $services->get('Omeka\Logger')->warn($message->getMessage(), $message->getContext());
+            return;
+        }
+
+        $url = $services->get('ViewHelperManager')->get('url');
+        $message = new PsrMessage(
+            'The structure of the thesaurus "{title}" (#{item_id}) may be outdated: {link}reindex it{link_end} to rebuild the tree.', // @translate
+            [
+                'title' => $scheme->getTitle(),
+                'item_id' => $scheme->getId(),
+                'link' => sprintf('<a href="%s">', htmlspecialchars($url('admin/thesaurus/id', ['action' => 'reindex', 'id' => $scheme->getId()]))),
+                'link_end' => '</a>',
+            ]
+        );
+        $message->setEscapeHtml(false);
+        $services->get('ControllerPluginManager')->get('messenger')->addWarning($message);
+    }
+
+    /**
+     * Check if the tree of the thesaurus does not match the skos values.
+     */
+    protected function isOutdatedStructure(Entity\Concept $concept, \Omeka\Api\Request $request): bool
+    {
+        // A deletion shifts the positions of all the following concepts and may
+        // orphan the narrower ones.
+        if ($request->getOperation() === \Omeka\Api\Request::DELETE) {
+            return true;
+        }
+
+        // A concept that was never indexed has no position.
+        if ($concept->getPosition() === null) {
+            return true;
+        }
+
+        $easyMeta = $this->getServiceLocator()->get('Common\EasyMeta');
+        $broader = $this->valueResource($concept, $easyMeta->propertyIds(['skos:broader']));
+        $currentBroader = $concept->getBroader();
+
+        if ($broader) {
+            return !$currentBroader || $broader->getId() !== $currentBroader->getId();
+        }
+        if (!$currentBroader) {
+            return false;
+        }
+
+        // The hierarchy may be stored only as "skos:narrower" in the broader
+        // concept, so the missing value "skos:broader" is not an issue when the
+        // reciprocal value exists.
+        $narrowerIds = $easyMeta->propertyIds(['skos:narrower']);
+        foreach ($currentBroader->getValues() as $value) {
+            $valueResource = $value->getValueResource();
+            if ($valueResource
+                && $valueResource->getId() === $concept->getId()
+                && in_array($value->getProperty()->getId(), $narrowerIds)
+            ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Get the first resource used as value for one of the properties.
+     */
+    protected function valueResource(Entity\Concept $concept, array $propertyIds): ?\Omeka\Entity\Resource
+    {
+        $propertyIds = array_flip($propertyIds);
+        foreach ($concept->getValues() as $value) {
+            $valueResource = $value->getValueResource();
+            if ($valueResource && isset($propertyIds[$value->getProperty()->getId()])) {
+                return $valueResource;
+            }
+        }
+        return null;
     }
 
     /**
