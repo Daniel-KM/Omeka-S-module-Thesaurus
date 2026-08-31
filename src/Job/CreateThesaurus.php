@@ -228,13 +228,14 @@ class CreateThesaurus extends AbstractJob
             ['count' => count($input)]
         );
 
+        // A concept is a dedicated resource type: it belongs to a scheme (an
+        // item) via the column "o:scheme", not to an item set. The value
+        // skos:inScheme is kept for the rdf output and existing queries.
         $baseConcept = [
             'o:owner' => ['o:id' => $ownerId],
             'o:resource_class' => ['o:id' => $conceptClass->id()],
             'o:resource_template' => ['o:id' => $conceptTemplate->id()],
-            'o:item_set' => [
-                ['o:id' => $itemSet->id()],
-            ],
+            'o:scheme' => ['o:id' => $schemeId],
             'skos:inScheme' => [
                 [
                     'type' => 'resource:item',
@@ -277,17 +278,17 @@ class CreateThesaurus extends AbstractJob
                 $this->entityManager->getRepository(\Omeka\Entity\User::class)->find($ownerId);
             }
 
-            $concept = $this->api->read('items', ['id' => $parentId])->getContent();
+            $concept = $this->api->read('concepts', ['id' => $parentId])->getContent();
             // TODO Don't use json_decode(json_encode()).
             $conceptJson = json_decode(json_encode($concept), true);
             foreach ($narrowerIds as $narrowerId) {
                 $conceptJson['skos:narrower'][] = [
-                    'type' => 'resource:item',
+                    'type' => 'resource',
                     'property_id' => $properties['skos:narrower'],
                     'value_resource_id' => $narrowerId,
                 ];
             }
-            $this->api->update('items', $parentId, $conceptJson, [], ['isPartial' => true]);
+            $this->api->update('concepts', $parentId, $conceptJson, [], ['isPartial' => true]);
 
             ++$totalProcessed;
         }
@@ -297,7 +298,7 @@ class CreateThesaurus extends AbstractJob
             $schemeJson = json_decode(json_encode($scheme), true);
             foreach ($topIds as $topId) {
                 $schemeJson['skos:hasTopConcept'][] = [
-                    'type' => 'resource:item',
+                    'type' => 'resource',
                     'property_id' => $properties['skos:hasTopConcept'],
                     'value_resource_id' => $topId,
                 ];
@@ -522,7 +523,7 @@ class CreateThesaurus extends AbstractJob
             if ($level) {
                 $data['skos:broader'] = [
                     [
-                        'type' => 'resource:item',
+                        'type' => 'resource',
                         'property_id' => $this->easyMeta->propertyId('skos:broader'),
                         'value_resource_id' => $levels[$parentLevel],
                     ],
@@ -539,7 +540,7 @@ class CreateThesaurus extends AbstractJob
                 ];
             }
 
-            $concept = $this->api->create('items', $data)->getContent();
+            $concept = $this->api->create('concepts', $data)->getContent();
             $conceptId = $concept->id();
 
             $levels[$level] = $conceptId;
@@ -722,7 +723,7 @@ class CreateThesaurus extends AbstractJob
             $parentLevel = $level ? $level - 1 : false;
             if ($level && isset($levels[$parentLevel])) {
                 $data['skos:broader'] = [[
-                    'type' => 'resource:item',
+                    'type' => 'resource',
                     'property_id' => $this->easyMeta->propertyId('skos:broader'),
                     'value_resource_id' => $levels[$parentLevel],
                 ]];
@@ -736,7 +737,7 @@ class CreateThesaurus extends AbstractJob
                 ]];
             }
 
-            $concept = $this->api->create('items', $data)->getContent();
+            $concept = $this->api->create('concepts', $data)->getContent();
             $conceptId = $concept->id();
             if (!empty($element['uri'])) {
                 $uriToId[$element['uri']] = $conceptId;
@@ -766,11 +767,11 @@ class CreateThesaurus extends AbstractJob
                 $append = [];
                 foreach ($uris as $uri) {
                     if (isset($uriToId[$uri])) {
-                        $append[] = ['type' => 'resource:item', 'property_id' => $relatedPid, 'value_resource_id' => $uriToId[$uri]];
+                        $append[] = ['type' => 'resource', 'property_id' => $relatedPid, 'value_resource_id' => $uriToId[$uri]];
                     }
                 }
                 if ($append) {
-                    $this->api->update('items', $conceptId, ['skos:related' => $append], [], ['isPartial' => true, 'collectionAction' => 'append']);
+                    $this->api->update('concepts', $conceptId, ['skos:related' => $append], [], ['isPartial' => true, 'collectionAction' => 'append']);
                 }
             }
         }
@@ -920,7 +921,7 @@ class CreateThesaurus extends AbstractJob
             if ($level) {
                 $data['skos:broader'] = [
                     [
-                        'type' => 'resource:item',
+                        'type' => 'resource',
                         'property_id' => $this->easyMeta->propertyId('skos:broader'),
                         'value_resource_id' => $levels[$parentLevel],
                     ],
@@ -937,7 +938,7 @@ class CreateThesaurus extends AbstractJob
                 ];
             }
 
-            $concept = $this->api->create('items', $data)->getContent();
+            $concept = $this->api->create('concepts', $data)->getContent();
             $conceptId = $concept->id();
 
             $levels[$level] = $conceptId;

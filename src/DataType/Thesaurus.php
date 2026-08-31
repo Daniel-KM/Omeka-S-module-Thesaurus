@@ -15,8 +15,8 @@ use Thesaurus\Stdlib\Thesaurus as ThesaurusStdlib;
  * Data type to fill a value with a concept of a thesaurus, without the need of
  * a custom vocab or an item set.
  *
- * The value is stored as a linked resource (the concept item), so it is
- * delegated to the data type "resource:item".
+ * The value is stored as a linked resource (the concept, a dedicated resource
+ * type), so it is delegated to the generic data type "resource".
  */
 class Thesaurus implements DataTypeInterface, ValueAnnotatingInterface
 {
@@ -89,7 +89,7 @@ class Thesaurus implements DataTypeInterface, ValueAnnotatingInterface
     {
         $adapter->getServiceLocator()
             ->get('Omeka\DataTypeManager')
-            ->get('resource:item')
+            ->get('resource')
             ->hydrate($valueObject, $value, $adapter);
     }
 

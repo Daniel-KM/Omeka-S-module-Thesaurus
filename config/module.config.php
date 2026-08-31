@@ -5,7 +5,7 @@ namespace Thesaurus;
 return [
     'api_adapters' => [
         'invokables' => [
-            'terms' => Api\Adapter\TermAdapter::class,
+            'concepts' => Api\Adapter\ConceptAdapter::class,
         ],
     ],
     'data_types' => [
@@ -19,6 +19,9 @@ return [
         ],
         'proxy_paths' => [
             dirname(__DIR__) . '/data/doctrine-proxies',
+        ],
+        'resource_discriminator_map' => [
+            'Thesaurus\Entity\Concept' => Entity\Concept::class,
         ],
     ],
     'service_manager' => [

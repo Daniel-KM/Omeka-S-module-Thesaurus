@@ -86,10 +86,26 @@ class Module extends AbstractModule
         $services = $this->getServiceLocator();
         $acl = $services->get('Omeka\Acl');
 
-        // Access rights like items.
-        // Rights for controllers only, since schemes and concepts are items.
-
         $roles = $acl->getRoles();
+
+        // Concepts are a resource type with the same access rights as items:
+        // public visibility is enforced by the resource visibility filter, and
+        // the write rights follow the same role and ownership rules than items.
+        $conceptAdapter = \Thesaurus\Api\Adapter\ConceptAdapter::class;
+        $conceptEntity = \Thesaurus\Entity\Concept::class;
+        $writeOperations = ['create', 'update', 'delete', 'batch_update', 'batch_delete'];
+        $ownsAssertion = new \Omeka\Permissions\Assertion\OwnsEntityAssertion();
+        $acl
+            ->allow(null, [$conceptAdapter], ['search', 'read'])
+            ->allow(null, [$conceptEntity], ['read'])
+            ->allow('author', [$conceptAdapter], $writeOperations)
+            ->allow('author', [$conceptEntity], ['create'])
+            ->allow('author', [$conceptEntity], ['update', 'delete'], $ownsAssertion)
+            ->allow('reviewer', [$conceptAdapter], $writeOperations)
+            ->allow('reviewer', [$conceptEntity], ['create', 'update'])
+            ->allow('reviewer', [$conceptEntity], ['delete'], $ownsAssertion)
+            ->allow('editor', [$conceptAdapter], $writeOperations)
+            ->allow('editor', [$conceptEntity], ['create', 'update', 'delete']);
 
         $acl
             ->allow(
@@ -97,26 +113,53 @@ class Module extends AbstractModule
                 $roles,
                 [Controller\Admin\ThesaurusController::class],
                 [
-                    'index', 'browse', 'show', 'show-details', 'sidebar-select', 'search',
-                    'structure', 'jstree',
+                    'index',
+                    'browse',
+                    'show',
+                    'show-details',
+                    'sidebar-select',
+                    'search',
+                    'structure',
+                    'jstree',
                 ]
             )
             ->allow(
                 ['author', 'reviewer'],
                 [Controller\Admin\ThesaurusController::class],
                 [
-                    'index', 'browse', 'show', 'show-details', 'sidebar-select', 'search',
-                    'add', 'edit', 'delete', 'delete-confirm',
-                    'structure', 'jstree',
+                    'index',
+                    'browse',
+                    'show',
+                    'show-details',
+                    'sidebar-select',
+                    'search',
+                    'add',
+                    'edit',
+                    'delete',
+                    'delete-confirm',
+                    'structure',
+                    'jstree',
                 ]
             )
             ->allow(
                 ['editor'],
                 [Controller\Admin\ThesaurusController::class],
                 [
-                    'index', 'browse', 'show', 'show-details', 'sidebar-select', 'search',
-                    'add', 'edit', 'delete', 'delete-confirm', 'batch-edit', 'batch-delete',
-                    'structure', 'jstree', 'reindex',
+                    'index',
+                    'browse',
+                    'show',
+                    'show-details',
+                    'sidebar-select',
+                    'search',
+                    'add',
+                    'edit',
+                    'delete',
+                    'delete-confirm',
+                    'batch-edit',
+                    'batch-delete',
+                    'structure',
+                    'jstree',
+                    'reindex',
                 ]
             );
     }
@@ -308,40 +351,9 @@ class Module extends AbstractModule
      */
     public function handleApiSearchQueryItem(Event $event): void
     {
-        $query = $event->getParam('request')->getContent();
-        if (!empty($query['sort_thesaurus'])
-            && is_numeric($query['sort_thesaurus'])
-            && (int) $query['sort_thesaurus']
-            && isset($query['sort_by']) && $query['sort_by'] === 'thesaurus'
-        ) {
-            /**
-             * @var \Omeka\Api\Adapter\ItemAdapter $adapter
-             * @var \Doctrine\ORM\QueryBuilder $qb
-             */
-            $adapter = $event->getTarget();
-            $qb = $event->getParam('queryBuilder');
-
-            $expr = $qb->expr();
-
-            $termAlias = $adapter->createAlias();
-            $qb
-                ->addSelect($termAlias . '.position HIDDEN')
-                ->leftJoin(
-                    \Thesaurus\Entity\Term::class,
-                    $termAlias,
-                    \Doctrine\ORM\Query\Expr\Join::WITH,
-                    $expr->andX(
-                        $expr->eq($termAlias . '.item', 'omeka_root'),
-                        $expr->eq($termAlias . '.scheme', (int) $query['sort_thesaurus'])
-                    )
-                )
-                ->addOrderBy(
-                    $termAlias . '.position',
-                    isset($query['sort_order']) && strtolower((string) $query['sort_order'] === 'DESC') ? 'DESC' : 'ASC'
-                )
-            ;
-        }
-
+        // The sort by thesaurus position is now done on the concepts, that are
+        // a dedicated resource type with a "position" field, via their own
+        // adapter, so there is no more item hack here.
         $this->handleApiSearchQuery($event);
     }
 
@@ -598,7 +610,7 @@ SQL;
         $subQb
             ->select('DISTINCT item_item_set.item_set_id')
             ->from('resource', 'resource')
-            ->innerJoin('resource', 'thesaurus_term', 'term', 'term.scheme_id = resource.id')
+            ->innerJoin('resource', 'concept', 'term', 'term.scheme_id = resource.id')
             ->innerJoin('term', 'item_item_set', 'item_item_set', 'item_item_set.item_id = term.scheme_id')
             ->innerJoin('resource', 'resource_class', 'resource_class', 'resource_class.id = resource.resource_class_id')
             ->innerJoin('resource_class', 'vocabulary', 'vocabulary', 'vocabulary.id = resource_class.vocabulary_id')

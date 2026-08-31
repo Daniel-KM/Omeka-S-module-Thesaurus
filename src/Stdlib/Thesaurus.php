@@ -1555,7 +1555,7 @@ class Thesaurus
         // The validity of top concepts is not checked.
         $titles = $this->api
             ->search(
-                'items',
+                'concepts',
                 [
                     'resource_class_id' => [
                         $this->terms['class']['skos:Concept'],
@@ -1605,7 +1605,7 @@ class Thesaurus
                 // There is only zero or one parent, but this is a grouped query.
                 'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource)) AS ids'
             )
-            ->from(\Omeka\Entity\Item::class, 'item')
+            ->from(\Thesaurus\Entity\Concept::class, 'item')
 
             // This join is useless now, since the list is filtered below by the
             // list of concept ids.
@@ -1669,7 +1669,7 @@ class Thesaurus
                 'item.id',
                 'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource) ORDER BY value_list.id ASC) AS ids'
             )
-            ->from(\Omeka\Entity\Item::class, 'item')
+            ->from(\Thesaurus\Entity\Concept::class, 'item')
             ->innerJoin(
                 \Omeka\Entity\Value::class,
                 'value_list',
@@ -1770,7 +1770,7 @@ class Thesaurus
         $qb = $this->createQueryBuilder();
         $qb
             ->select('item')
-            ->from(\Omeka\Entity\Item::class, 'item')
+            ->from(\Thesaurus\Entity\Concept::class, 'item')
             ->where($qb->expr()->in('item', ':ids'))
             ->setParameter('ids', array_keys($data), \Doctrine\DBAL\Connection::PARAM_INT_ARRAY)
         ;

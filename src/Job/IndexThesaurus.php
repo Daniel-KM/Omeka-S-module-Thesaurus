@@ -118,7 +118,9 @@ class IndexThesaurus extends AbstractJob
             return false;
         }
 
-        // Save all terms in the right order (so position is useless currently).
+        // Update the tree of all concepts in the right order.
+        // The concepts are resources that already exist: only their structure
+        // is set here (the root, the broader concept and the position).
         $schemeResource = $this->entityManager->find(\Omeka\Entity\Item::class, $scheme->id());
         $root = null;
         $broader = null;
@@ -128,18 +130,20 @@ class IndexThesaurus extends AbstractJob
         $previousLevel = 0;
         foreach (array_chunk($flatTree, self::BATCH_SIZE) as $chunk) {
             foreach ($chunk as $concept) {
-                $item = $this->entityManager->find(\Omeka\Entity\Item::class, $concept['self']->id());
+                /** @var \Thesaurus\Entity\Concept $conceptEntity */
+                $conceptEntity = $this->entityManager->find(\Thesaurus\Entity\Concept::class, $concept['self']->id());
+                if (!$conceptEntity) {
+                    continue;
+                }
                 $level = $concept['level'];
 
-                $term = new \Thesaurus\Entity\Term;
-                $term
-                    ->setItem($item)
+                $conceptEntity
                     ->setScheme($schemeResource)
                     ->setPosition(++$position);
 
                 $isRoot = $concept['level'] === 0;
                 if ($isRoot) {
-                    $root = $term;
+                    $root = $conceptEntity;
                     $broader = null;
                     $ancestors = [];
                 } elseif (!$root) {
@@ -156,17 +160,16 @@ class IndexThesaurus extends AbstractJob
                     $broader = $ancestors[$level - 1];
                 }
 
-                $term
+                $conceptEntity
                     ->setRoot($root)
                     ->setBroader($broader);
-                $this->entityManager->persist($term);
-                $ancestors[$level] = $term;
+                $this->entityManager->persist($conceptEntity);
+                $ancestors[$level] = $conceptEntity;
                 $previousLevel = $level;
             }
             $this->entityManager->flush();
         }
-        // It's a recursive, so a clear can be done only when all terms are
-        // created.
+        // It's recursive, so clear can be done only when all terms are created.
         // TODO Clear entity manager and reload ancestors at each chunk.
         $this->entityManager->clear();
 
@@ -196,11 +199,13 @@ class IndexThesaurus extends AbstractJob
      */
     protected function resetThesaurus(ItemRepresentation $scheme): void
     {
-        // @see \Omeka\Job\BatchDelete
-        $dql = $this->entityManager->createQuery(
-            'DELETE FROM Thesaurus\Entity\Term term WHERE term.scheme = ' . $scheme->id()
-        );
-        $dql->execute();
+        // The concepts are resources, so they are not deleted: only their tree
+        // structure (root, broader, position) is reset before the reindexation.
+        $this->entityManager->createQuery(
+            'UPDATE Thesaurus\Entity\Concept concept'
+            . ' SET concept.root = NULL, concept.broader = NULL, concept.position = NULL'
+            . ' WHERE concept.scheme = ' . $scheme->id()
+        )->execute();
     }
 
     /**
