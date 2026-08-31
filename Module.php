@@ -44,6 +44,209 @@ class Module extends AbstractModule
      */
     protected $isStructureWarned = false;
 
+    /**
+     * Warn that the concepts are converted back into items on uninstall.
+     *
+     * The checkbox is checked by default, because the concepts cannot be kept:
+     * the table is removed with the module.
+     *
+     * @see \DigitalObject\Module::warnUninstall()
+     */
+    public function warnUninstall(Event $event): void
+    {
+        $view = $event->getTarget();
+        $module = $view->vars()->module;
+        if ($module->getId() !== __NAMESPACE__) {
+            return;
+        }
+
+        $totalConcepts = $this->totalConcepts();
+        if (!$totalConcepts) {
+            return;
+        }
+
+        $escape = $view->plugin('escapeHtml');
+        $translator = $this->getServiceLocator()->get('MvcTranslator');
+
+        $html = '<p style="color:#c00"><strong>' . $escape($translator->translate('WARNING')) . '</strong>: '; // @translate
+        $html .= $escape(sprintf(
+            $translator->translate('%d concepts still exist. They are a specific resource, so they cannot be kept once the module is removed: choose to convert them into items or to delete them.'), // @translate
+            $totalConcepts
+        ));
+        $html .= '</p>';
+        $html .= '<label><input name="thesaurus-uninstall-mode" type="radio" form="confirmform" value="convert" checked="checked"> ';
+        $html .= $escape($translator->translate('Convert the concepts back into items. The values that point to them are kept, but the thesaurus structure is lost.')); // @translate
+        $html .= '</label><br/>';
+        $html .= '<label><input name="thesaurus-uninstall-mode" type="radio" form="confirmform" value="delete"> ';
+        $html .= $escape($translator->translate('Delete all the concepts, with their values and the values that point to them.')); // @translate
+        $html .= '</label>';
+
+        echo $html;
+    }
+
+    /**
+     * Get the total of concepts, or zero when the table does not exist.
+     */
+    protected function totalConcepts(): int
+    {
+        /** @var \Doctrine\DBAL\Connection $connection */
+        $connection = $this->getServiceLocator()->get('Omeka\Connection');
+
+        $hasConcept = (int) $connection
+            ->executeQuery(<<<'SQL'
+                SELECT COUNT(*)
+                FROM information_schema.TABLES
+                WHERE TABLE_SCHEMA = DATABASE()
+                    AND TABLE_NAME = 'concept'
+                SQL)
+            ->fetchOne();
+
+        return $hasConcept
+            ? (int) $connection->executeQuery('SELECT COUNT(*) FROM `concept`')->fetchOne()
+            : 0;
+    }
+
+    /**
+     * Delete the concepts of a scheme before the scheme is deleted.
+     *
+     * The foreign key of the column "scheme_id" removes the rows of the table
+     * "concept" by cascade, but not the rows of the table "resource", that
+     * would remain without their subtype row. So the concepts are deleted
+     * first, with the orm.
+     */
+    public function deleteSchemeConcepts(Event $event): void
+    {
+        $id = (int) $event->getParam('request')->getId();
+        if (!$id) {
+            return;
+        }
+
+        $total = $this->deleteConcepts($id);
+        if (!$total) {
+            return;
+        }
+
+        $message = new PsrMessage(
+            'The {count} concepts of the thesaurus were deleted with it.', // @translate
+            ['count' => $total]
+        );
+        $this->getServiceLocator()->get('ControllerPluginManager')->get('messenger')->addWarning($message);
+    }
+
+    /**
+     * Delete concepts through the orm, so the values are removed too.
+     *
+     * The rows of the table "resource" are removed, not only the rows of the
+     * table "concept": a resource without its subtype row would break any query
+     * on resources. The database removes the values of the concepts and the
+     * values that point to them by cascade.
+     *
+     * @param int|null $schemeId Limit the deletion to the concepts of a scheme.
+     * @return int The number of deleted concepts.
+     */
+    protected function deleteConcepts(?int $schemeId = null): int
+    {
+        $services = $this->getServiceLocator();
+
+        /** @var \Doctrine\DBAL\Connection $connection */
+        $connection = $services->get('Omeka\Connection');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $services->get('Omeka\EntityManager');
+
+        $ids = $schemeId
+            ? $connection->executeQuery('SELECT `id` FROM `concept` WHERE `scheme_id` = ?', [$schemeId])->fetchFirstColumn()
+            : $connection->executeQuery('SELECT `id` FROM `concept`')->fetchFirstColumn();
+        if (!$ids) {
+            return 0;
+        }
+
+        // The resource is removed, not the concept: the deletion of a concept
+        // removes the rows of its descendants in the table "concept" by
+        // cascade, so they may be already gone here, but their resource is
+        // still to remove.
+        $total = 0;
+        foreach (array_chunk(array_map('intval', $ids), 100) as $chunk) {
+            foreach ($chunk as $id) {
+                $resource = $entityManager->find(\Omeka\Entity\Resource::class, $id);
+                if ($resource) {
+                    $entityManager->remove($resource);
+                    ++$total;
+                }
+            }
+            // The entity manager is not cleared: the deletion may occur inside
+            // a batch delete of the core, that keeps track of the entities it
+            // manages.
+            $entityManager->flush();
+        }
+
+        return $total;
+    }
+
+    /**
+     * Convert the concepts back into items before the table is removed.
+     *
+     * The concepts are a subtype of resource, so the rows of the table
+     * "resource" would keep a discriminator without table and without mapping,
+     * breaking any query on resources. The ids are kept, so all values that
+     * point to a concept remain valid.
+     */
+    protected function preUninstall(): void
+    {
+        $services = $this->getServiceLocator();
+
+        $totalConcepts = $this->totalConcepts();
+        if (!$totalConcepts) {
+            return;
+        }
+
+        // The conversion is the default, so a command line uninstall keeps the
+        // resources. The deletion is done only when it is explicitly asked.
+        $request = $services->get('Request');
+        if ($request->getPost('thesaurus-uninstall-mode') === 'delete') {
+            $totalDeleted = $this->deleteConcepts();
+            $message = new PsrMessage(
+                'The {count} concepts were deleted, with their values and the values that pointed to them.', // @translate
+                ['count' => $totalDeleted]
+            );
+            $services->get('ControllerPluginManager')->get('messenger')->addWarning($message);
+            return;
+        }
+
+        /** @var \Doctrine\DBAL\Connection $connection */
+        $connection = $services->get('Omeka\Connection');
+
+        $sqls = [
+            <<<'SQL'
+                INSERT INTO `item` (`id`)
+                SELECT `id` FROM `concept`
+                ON DUPLICATE KEY UPDATE `id` = `item`.`id`
+                SQL,
+            <<<'SQL'
+                UPDATE `resource` SET `resource_type` = 'Omeka\\Entity\\Item'
+                WHERE `id` IN (SELECT `id` FROM (SELECT `id` FROM `concept`) x)
+                SQL,
+            <<<'SQL'
+                UPDATE `value` SET `type` = 'resource:item'
+                WHERE `type` = 'resource:concept'
+                SQL,
+        ];
+
+        $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
+        try {
+            foreach ($sqls as $sql) {
+                $connection->executeStatement($sql);
+            }
+        } finally {
+            $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
+        }
+
+        $message = new PsrMessage(
+            'The {count} concepts were converted back into items, so they are no longer structured as a thesaurus.', // @translate
+            ['count' => $totalConcepts]
+        );
+        $services->get('ControllerPluginManager')->get('messenger')->addWarning($message);
+    }
+
     protected function preInstall(): void
     {
         $services = $this->getServiceLocator();
@@ -235,6 +438,13 @@ class Module extends AbstractModule
             [$this, 'updateAscendance']
         );
 
+        // Delete the concepts of a scheme when the scheme itself is deleted.
+        $sharedEventManager->attach(
+            \Omeka\Api\Adapter\ItemAdapter::class,
+            'api.delete.pre',
+            [$this, 'deleteSchemeConcepts']
+        );
+
         // Warn when the structure of a thesaurus may be outdated.
         $sharedEventManager->attach(
             \Thesaurus\Api\Adapter\ConceptAdapter::class,
@@ -275,6 +485,13 @@ class Module extends AbstractModule
             \Omeka\Form\SettingForm::class,
             'form.add_elements',
             [$this, 'handleMainSettings']
+        );
+
+        // Warn that the concepts are converted back into items on uninstall.
+        $sharedEventManager->attach(
+            'Omeka\Controller\Admin\Module',
+            'view.details',
+            [$this, 'warnUninstall']
         );
 
         // Add a job for EasyAdmin.
