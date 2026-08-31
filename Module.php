@@ -497,6 +497,13 @@ class Module extends AbstractModule
 
     public function attachListeners(SharedEventManagerInterface $sharedEventManager): void
     {
+        // Add the thesaurus term definition to the json-ld context.
+        $sharedEventManager->attach(
+            '*',
+            'api.context',
+            [$this, 'filterApiContext']
+        );
+
         // Add the search query filters for resources.
         $sharedEventManager->attach(
             \Omeka\Api\Adapter\ItemAdapter::class,
@@ -854,6 +861,17 @@ class Module extends AbstractModule
      *
      * @param Event $event
      */
+    /**
+     * Declare the prefix used by the json-ld type of the concepts, else it is
+     * silently skipped by the json-ld processors.
+     */
+    public function filterApiContext(Event $event): void
+    {
+        $context = $event->getParam('context');
+        $context['o-module-thesaurus'] = 'http://omeka.org/s/vocabs/module/thesaurus#';
+        $event->setParam('context', $context);
+    }
+
     public function handleApiSearchQueryItem(Event $event): void
     {
         // The sort by thesaurus position is now done on the concepts, that are

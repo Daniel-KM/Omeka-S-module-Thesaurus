@@ -27,13 +27,23 @@ class ConceptRepresentation extends AbstractResourceEntityRepresentation
         return 'o-module-thesaurus:Concept';
     }
 
+    /**
+     * Only the structural keys are output: the skos relations are values.
+     *
+     * The core appends the values after these keys, so a skos relation set here
+     * would be overridden when the value exists, and output as a single
+     * reference when it does not, that is an inconsistent representation for
+     * the same property. Furthermore, the values are the source of truth: the
+     * structure is built from them by the job IndexThesaurus.
+     *
+     * @see \Omeka\Api\Representation\AbstractResourceEntityRepresentation::getJsonLd()
+     */
     public function getResourceJsonLd()
     {
-        $scheme = $this->scheme();
         $broader = $this->broader();
         $top = $this->top();
         return [
-            'o:scheme' => $scheme->getReference(),
+            'o:scheme' => $this->scheme()->getReference(),
             'o:broader' => $broader ? $broader->getReference() : null,
             'o:top' => $top ? $top->getReference() : null,
             'o:position' => $this->position(),
