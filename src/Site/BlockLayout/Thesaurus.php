@@ -50,7 +50,8 @@ class Thesaurus extends AbstractBlockLayout implements TemplateableBlockLayoutIn
     {
         $itemId = (int) $block->dataValue('item');
         try {
-            $item = $itemId ? $view->api()->read('items', ['id' => $itemId])->getContent() : null;
+            // A block may be based on the scheme (an item) or on a concept.
+            $item = $itemId ? $view->api()->read('resources', ['id' => $itemId])->getContent() : null;
         } catch (\Throwable $e) {
             if ($block->dataValue('hideIfEmpty')) {
                 return '';

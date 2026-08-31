@@ -4,6 +4,7 @@ namespace Thesaurus\View\Helper;
 
 use Laminas\View\Helper\AbstractHelper;
 use Omeka\Api\Representation\ItemRepresentation;
+use Thesaurus\Api\Representation\ConceptRepresentation;
 
 class LinkTerm extends AbstractHelper
 {
@@ -148,13 +149,13 @@ class LinkTerm extends AbstractHelper
      *
      * @see \Thesaurus\Stdlib\Thesaurus::itemFromData()
      */
-    public function itemFromData(?array $itemData = null): ?ItemRepresentation
+    public function itemFromData(?array $itemData = null): ItemRepresentation|ConceptRepresentation|null
     {
         if (!$itemData) {
             return null;
         }
         try {
-            return $this->api->read('items', ['id' => $itemData['id']])->getContent();
+            return $this->api->read('resources', ['id' => $itemData['id']])->getContent();
         } catch (\Throwable $e) {
             return null;
         }

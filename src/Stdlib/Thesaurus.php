@@ -318,11 +318,11 @@ class Thesaurus
         }
         if ($id) {
             try {
-                return $this->api->read('items', ['id' => $id])->getContent();
+                return $this->api->read('resources', ['id' => $id])->getContent();
             } catch (\Throwable $e) {
                 $this->logger->err(
-                    'Thesaurus based on item #{item_id} does not exist or is not available to current user.', // @translate
-                    ['item_id' => $id]
+                    'Thesaurus based on resource #{resource_id} does not exist or is not available to current user.', // @translate
+                    ['resource_id' => $id]
                 );
             }
         }

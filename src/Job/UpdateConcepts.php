@@ -260,7 +260,7 @@ class UpdateConcepts extends AbstractJob
                 // To avoid issues with doctrine, remove owner, class and
                 // template. They are kept anyway because update is partial.
                 unset($data['o:owner'], $data['o:resource_template'], $data['o:resource_class']);
-                $this->api->update('items', ['id' => $conceptId], $data, [], ['isPartial' => true]);
+                $this->api->update('concepts', ['id' => $conceptId], $data, [], ['isPartial' => true]);
 
                 ++$totalProcessed;
             }
