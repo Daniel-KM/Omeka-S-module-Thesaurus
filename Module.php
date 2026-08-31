@@ -1123,21 +1123,21 @@ class Module extends AbstractModule
         $connection = $this->getServiceLocator()->get('Omeka\Connection');
         /*
         $sql = <<<'SQL'
-SELECT DISTINCT `custom_vocab`.`id`, `custom_vocab`.`item_set_id`
-FROM `custom_vocab`
-INNER JOIN `item_set` ON `item_set`.`id` = `custom_vocab`.`item_set_id`
-WHERE `custom_vocab`.`item_set_id` IS NOT NULL
-AND `custom_vocab`.`item_set_id` IN (
-    SELECT DISTINCT `item_item_set`.`item_set_id`
-    FROM `resource`
-    INNER JOIN `thesaurus_term` AS `term` ON `term`.`scheme_id` = `resource`.`id`
-    INNER JOIN `item_item_set` ON `item_item_set`.`item_id` = `term`.`scheme_id`
-    INNER JOIN `resource_class` ON `resource_class`.`id` = `resource`.`resource_class_id`
-    INNER JOIN `vocabulary` ON `vocabulary`.`id` = `resource_class`.`vocabulary_id`
-    WHERE `vocabulary`.`prefix` = "skos"
-)
-;
-SQL;
+            SELECT DISTINCT `custom_vocab`.`id`, `custom_vocab`.`item_set_id`
+            FROM `custom_vocab`
+            INNER JOIN `item_set` ON `item_set`.`id` = `custom_vocab`.`item_set_id`
+            WHERE `custom_vocab`.`item_set_id` IS NOT NULL
+            AND `custom_vocab`.`item_set_id` IN (
+                SELECT DISTINCT `item_item_set`.`item_set_id`
+                FROM `resource`
+                INNER JOIN `thesaurus_term` AS `term` ON `term`.`scheme_id` = `resource`.`id`
+                INNER JOIN `item_item_set` ON `item_item_set`.`item_id` = `term`.`scheme_id`
+                INNER JOIN `resource_class` ON `resource_class`.`id` = `resource`.`resource_class_id`
+                INNER JOIN `vocabulary` ON `vocabulary`.`id` = `resource_class`.`vocabulary_id`
+                WHERE `vocabulary`.`prefix` = "skos"
+            )
+            ;
+            SQL;
         */
 
         $subQb = $connection->createQueryBuilder();
@@ -1283,21 +1283,21 @@ SQL;
         $fieldset = $form->get('module_tasks');
         $process = $fieldset->get('process');
         $valueOptions = $process->getValueOptions();
-        $valueOptions['db_thesaurus_index'] = 'Thesaurus: Index thesaurus'; // @translate
+        $valueOptions['db_thesaurus_index'] = 'Thesaurus: Reindex thesaurus'; // @translate
         $valueOptions['db_thesaurus_migrate_datatypes'] = 'Thesaurus: Add thesaurus data type to custom vocab templates'; // @translate
         $process->setValueOptions($valueOptions);
 
         if (method_exists($form, 'addTaskSubjects')) {
             $form->addTaskSubjects([
                 'db_thesaurus_index' => [
-                    'name' => 'Thesaurus index', // @translate
+                    'name' => 'Thesaurus: Reindex', // @translate
                     'description' => 'Index the thesaurus terms and their relations.', // @translate
                     'actions' => [
                         'db_thesaurus_index' => 'Index', // @translate
                     ],
                 ],
                 'db_thesaurus_migrate_datatypes' => [
-                    'name' => 'Thesaurus data type migration', // @translate
+                    'name' => 'Thesaurus: Data type migration', // @translate
                     'description' => 'Add the thesaurus data type to the resource templates (and advanced resource template) that use the custom vocab of a thesaurus, without removing the custom vocab.', // @translate
                     'actions' => [
                         'db_thesaurus_migrate_datatypes' => 'Migrate', // @translate

@@ -2,6 +2,7 @@
 
 namespace Thesaurus\Api\Adapter;
 
+use Common\Api\Adapter\CommonAdapterTrait;
 use Doctrine\ORM\QueryBuilder;
 use Omeka\Api\Adapter\AbstractResourceEntityAdapter;
 use Omeka\Api\Request;
@@ -14,27 +15,50 @@ use Thesaurus\Entity\Concept;
 
 class ConceptAdapter extends AbstractResourceEntityAdapter
 {
+    use CommonAdapterTrait;
+
     protected $sortFields = [
         'id' => 'id',
         'title' => 'title',
-        'scheme_id' => 'scheme_id',
-        'top_id' => 'top_id',
-        'broader_id' => 'broader_id',
+        'scheme_id' => 'scheme',
+        'top_id' => 'top',
+        'broader_id' => 'broader',
         'position' => 'position',
         'created' => 'created',
         'modified' => 'modified',
     ];
 
+    /**
+     * Unlike the sort fields, the core uses the key as the entity field name to
+     * return a scalar, so the associations are named like in the entity.
+     *
+     * @see \Omeka\Api\Adapter\AbstractEntityAdapter::search()
+     */
     protected $scalarFields = [
         'id' => 'id',
         'title' => 'title',
-        'scheme_id' => 'scheme_id',
-        'top_id' => 'top_id',
-        'broader_id' => 'broader_id',
+        'scheme' => 'scheme',
+        'top' => 'top',
+        'broader' => 'broader',
         'position' => 'position',
         'is_public' => 'isPublic',
         'created' => 'created',
         'modified' => 'modified',
+    ];
+
+    /**
+     * The id "0" means a null value, for example the concepts without broader,
+     * that are the top concepts.
+     */
+    protected $queryFields = [
+        'id' => [
+            'scheme_id' => 'scheme',
+            'top_id' => 'top',
+            'broader_id' => 'broader',
+        ],
+        'int' => [
+            'position' => 'position',
+        ],
     ];
 
     public function getResourceName()
@@ -55,28 +79,7 @@ class ConceptAdapter extends AbstractResourceEntityAdapter
     public function buildQuery(QueryBuilder $qb, array $query): void
     {
         parent::buildQuery($qb, $query);
-
-        $expr = $qb->expr();
-
-        if (isset($query['scheme_id']) && is_numeric($query['scheme_id'])) {
-            $qb->andWhere($expr->eq(
-                'omeka_root.scheme',
-                $this->createNamedParameter($qb, (int) $query['scheme_id'])
-            ));
-        }
-
-        if (isset($query['top_id']) && is_numeric($query['top_id'])) {
-            $qb->andWhere($expr->eq(
-                'omeka_root.top',
-                $this->createNamedParameter($qb, (int) $query['top_id'])
-            ));
-        }
-
-        if (array_key_exists('broader_id', $query)) {
-            $qb->andWhere($query['broader_id'] === null || $query['broader_id'] === ''
-                ? $expr->isNull('omeka_root.broader')
-                : $expr->eq('omeka_root.broader', $this->createNamedParameter($qb, (int) $query['broader_id'])));
-        }
+        $this->buildQueryFields($qb, $query);
     }
 
     public function hydrate(Request $request, EntityInterface $entity, ErrorStore $errorStore): void

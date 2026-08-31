@@ -240,6 +240,10 @@ return [
             ],
         ],
     ],
+    'js_translate_strings' => [
+        'Close', // @translate
+        'Search', // @translate
+    ],
     'translator' => [
         'translation_file_patterns' => [
             [
