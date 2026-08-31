@@ -39,6 +39,25 @@ class IndexThesaurus extends AbstractJob
      */
     protected $entityManager;
 
+    /**
+     * Allow another job to index specific thesaurus without using job args.
+     *
+     * @var int[]|null
+     */
+    protected $schemeIdsToIndex;
+
+    /**
+     * Set the thesaurus to index, bypassing the job args and the detection via
+     * the resource template or class of the schemes.
+     *
+     * @param int[] $schemeIds
+     */
+    public function setSchemeIds(array $schemeIds): self
+    {
+        $this->schemeIdsToIndex = array_map('intval', $schemeIds);
+        return $this;
+    }
+
     public function perform(): void
     {
         $services = $this->getServiceLocator();
@@ -62,22 +81,27 @@ class IndexThesaurus extends AbstractJob
         /** @var \Omeka\Settings\Settings $settings */
         $settings = $services->get('Omeka\Settings');
 
-        $schemeIds = $this->getArg('schemes') ?: [];
-        $schemeId = (int) $this->getArg('scheme');
-        if ($schemeId) {
-            $schemeIds[] = $schemeId;
+        if ($this->schemeIdsToIndex !== null) {
+            $schemeIds = $this->schemeIdsToIndex;
         } else {
-            $schemeClassId = (int) $settings->get('thesaurus_skos_concept_class_id');
-            $schemeTemplateId = (int) $settings->get('thesaurus_skos_scheme_template_id');
-            $schemeIds = $schemeTemplateId
-                ? $this->api->search('items', ['resource_template_id' => $schemeTemplateId], ['returnScalar' => 'id'])->getContent()
-                : ($schemeClassId ? $this->api->search('items', ['resource_class_id' => $schemeClassId], ['returnScalar' => 'id'])->getContent() : []);
-            if (!count($schemeIds)) {
-                $this->logger->err(
-                    'No thesaurus in the database.' // @translate
-                );
-                return;
+            $schemeIds = $this->getArg('schemes') ?: [];
+            $schemeId = (int) $this->getArg('scheme');
+            if ($schemeId) {
+                $schemeIds[] = $schemeId;
+            } else {
+                $schemeClassId = (int) $settings->get('thesaurus_skos_concept_class_id');
+                $schemeTemplateId = (int) $settings->get('thesaurus_skos_scheme_template_id');
+                $schemeIds = $schemeTemplateId
+                    ? $this->api->search('items', ['resource_template_id' => $schemeTemplateId], ['returnScalar' => 'id'])->getContent()
+                    : ($schemeClassId ? $this->api->search('items', ['resource_class_id' => $schemeClassId], ['returnScalar' => 'id'])->getContent() : []);
             }
+        }
+
+        if (!count($schemeIds)) {
+            $this->logger->err(
+                'No thesaurus in the database.' // @translate
+            );
+            return;
         }
 
         foreach ($schemeIds as $schemeId) {

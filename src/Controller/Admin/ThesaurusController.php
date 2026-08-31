@@ -323,6 +323,34 @@ class ThesaurusController extends ItemController
         return $this->redirect()->toRoute('admin/thesaurus/default');
     }
 
+    /**
+     * Convert the items of a thesaurus into the resource type "concept".
+     *
+     * Without id, all the thesaurus that are still stored as items are
+     * converted.
+     */
+    public function convertItemsToConceptsAction()
+    {
+        $id = (int) $this->params('id');
+
+        $dispatcher = $this->jobDispatcher();
+        $job = $dispatcher->dispatch(\Thesaurus\Job\ConvertItemsToConcepts::class, $id ? ['scheme' => $id] : []);
+        $message = new PsrMessage(
+            'Converting items into concepts in background ({link}job #{job_id}{link_end}, {link_log}logs{link_end}).', // @translate
+            [
+                'link' => sprintf('<a href="%s">', htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))),
+                'job_id' => $job->getId(),
+                'link_end' => '</a>',
+                'link_log' => class_exists('Log\Module', false)
+                    ? sprintf('<a href="%1$s">', htmlspecialchars($this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]])))
+                    : sprintf('<a href="%1$s" target="_blank" rel="noopener noreferrer">', htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()]))),
+            ]
+        );
+        $message->setEscapeHtml(false);
+        $this->messenger()->addSuccess($message);
+        return $this->redirect()->toRoute('admin/thesaurus/default');
+    }
+
     public function migrateDataTypesAction()
     {
         $dispatcher = $this->jobDispatcher();
