@@ -557,6 +557,7 @@ class Module extends AbstractModule
             ->allow('editor', [$conceptAdapter], $writeOperations)
             ->allow('editor', [$conceptEntity], ['create', 'update', 'delete'])
             ->allow(null, [Controller\Admin\ConceptController::class], ['show', 'show-details', 'sidebar-select'])
+            ->allow(null, [Controller\Site\ConceptController::class], ['show'])
             // Same roles than the items.
             ->allow(['author', 'reviewer', 'editor'], [Controller\Admin\ConceptController::class], ['add', 'edit', 'delete', 'delete-confirm']);
 

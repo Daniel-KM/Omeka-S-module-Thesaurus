@@ -1,0 +1,62 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\SiteRepresentation $site
+ * @var \Thesaurus\Api\Representation\ConceptRepresentation $concept
+ * @var \Thesaurus\Api\Representation\ConceptRepresentation $item
+ * @var \Thesaurus\Api\Representation\ConceptRepresentation $resource
+ */
+
+// A concept is presented like an item when the theme has its own template for
+// items. The template of the core is not used, because its resource page blocks
+// are limited to items, media and item sets.
+$itemTemplate = $this->resolver('omeka/site/item/show');
+if ($itemTemplate && strpos((string) $itemTemplate, OMEKA_PATH . '/application/') !== 0) {
+    echo $this->partial('omeka/site/item/show', [
+        'site' => $site,
+        'item' => $concept,
+        'resource' => $concept,
+    ]);
+    return;
+}
+
+$plugins = $this->getHelperPluginManager();
+$translate = $plugins->get('translate');
+
+$this->htmlElement('body')->appendAttribute('class', 'item concept resource show');
+
+$filterLocale = (bool) $this->siteSetting('filter_locale_values');
+$langValue = $filterLocale ? [$this->lang(), ''] : null;
+
+$broader = $concept->broader();
+$narrowers = $concept->narrowers();
+?>
+
+<?= $this->pageTitle($concept->displayTitle(null, $langValue), 2) ?>
+<h3><?= $translate('Concept') ?></h3>
+<?php $this->trigger('view.show.before'); ?>
+
+<?= $concept->displayValues() ?>
+
+<?php if ($broader || $narrowers): ?>
+<dl class="concept-hierarchy">
+    <?php if ($broader): ?>
+    <div class="property">
+        <dt><?= $translate('Broader concept') ?></dt>
+        <dd class="value"><?= $broader->link($broader->displayTitle(null, $langValue)) ?></dd>
+    </div>
+    <?php endif; ?>
+    <?php if ($narrowers): ?>
+    <div class="property">
+        <dt><?= $translate('Narrower concepts') ?></dt>
+        <?php foreach ($narrowers as $narrower): ?>
+        <dd class="value"><?= $narrower->link($narrower->displayTitle(null, $langValue)) ?></dd>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+</dl>
+<?php endif; ?>
+
+<?= $this->linkedResources($concept) ?>
+
+<?php $this->trigger('view.show.after'); ?>

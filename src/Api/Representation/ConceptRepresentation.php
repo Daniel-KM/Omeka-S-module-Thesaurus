@@ -22,23 +22,50 @@ class ConceptRepresentation extends AbstractResourceEntityRepresentation
         return $url('admin/concept/id', $params, ['force_canonical' => $canonical]);
     }
 
-    /**
-     * Get a html link, or only its content when there is no url.
-     *
-     * A concept has no public page, so it is not linked on the public side.
-     */
-    public function linkRaw($html, $action = null, $attributes = [])
+    public function siteUrl($siteSlug = null, $canonical = false)
     {
-        $url = $this->url($action);
-        if ($url) {
-            return $this->getViewHelper('hyperlink')->raw($html, $url, $attributes);
+        if ($siteSlug === null) {
+            $siteSlug = $this->getServiceLocator()->get('Application')
+                ->getMvcEvent()->getRouteMatch()->getParam('site-slug');
         }
-        $escapeAttr = $this->getViewHelper('escapeHtmlAttr');
-        $attrs = '';
-        foreach ($attributes ?? [] as $key => $value) {
-            $attrs .= sprintf(' %s="%s"', $escapeAttr($key), $escapeAttr($value));
-        }
-        return '<span' . $attrs . '>' . $html . '</span>';
+        $url = $this->getViewHelper('Url');
+        return $url(
+            'site/concept',
+            ['site-slug' => $siteSlug, 'id' => $this->id()],
+            ['force_canonical' => $canonical]
+        );
+    }
+
+    /**
+     * A concept has no media.
+     *
+     * This method and the next ones allow to display a concept with the
+     * templates of the items.
+     */
+    public function media(): array
+    {
+        return [];
+    }
+
+    public function primaryMedia()
+    {
+        return null;
+    }
+
+    /**
+     * A concept belongs to its thesaurus, not to item sets.
+     */
+    public function itemSets(): array
+    {
+        return [];
+    }
+
+    /**
+     * A concept is not assigned to sites.
+     */
+    public function sites(): array
+    {
+        return [];
     }
 
     public function getResourceJsonLdType()

@@ -22,6 +22,55 @@ class MvcListeners extends AbstractListenerAggregate
             [$this, 'handleThesaurus'],
             -100
         );
+        $this->listeners[] = $events->attach(
+            MvcEvent::EVENT_ROUTE,
+            [$this, 'redirectItemToConcept'],
+            -100
+        );
+    }
+
+    /**
+     * Redirect the page of an item converted into a concept to the concept.
+     *
+     * The id is kept by the conversion, so the old links remain valid.
+     */
+    public function redirectItemToConcept(MvcEvent $event)
+    {
+        $routeMatch = $event->getRouteMatch();
+        if (!$routeMatch) {
+            return null;
+        }
+
+        $routes = [
+            'site/resource-id' => 'site/concept',
+            'admin/id' => 'admin/concept/id',
+        ];
+        $matchedRouteName = $routeMatch->getMatchedRouteName();
+        if (!isset($routes[$matchedRouteName])
+            || $routeMatch->getParam('action', 'show') !== 'show'
+            || strtolower((string) $routeMatch->getParam('__CONTROLLER__', $routeMatch->getParam('controller'))) !== 'item'
+        ) {
+            return null;
+        }
+
+        $id = (int) $routeMatch->getParam('id');
+        $resourceType = $event->getApplication()->getServiceManager()->get('Omeka\Connection')
+            ->executeQuery('SELECT `resource_type` FROM `resource` WHERE `id` = ?', [$id])
+            ->fetchOne();
+        if ($resourceType !== \Thesaurus\Entity\Concept::class) {
+            return null;
+        }
+
+        $url = $event->getRouter()->assemble(
+            ['site-slug' => $routeMatch->getParam('site-slug'), 'id' => $id],
+            ['name' => $routes[$matchedRouteName]]
+        );
+
+        /** @var \Laminas\Http\PhpEnvironment\Response $response */
+        $response = $event->getResponse();
+        $response->getHeaders()->addHeaderLine('Location', $url);
+        $response->setStatusCode(301);
+        return $response;
     }
 
     public function handleThesaurus(MvcEvent $event): void

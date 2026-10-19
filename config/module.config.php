@@ -91,6 +91,7 @@ return [
         ],
         'invokables' => [
             Controller\Admin\ConceptController::class => Controller\Admin\ConceptController::class,
+            Controller\Site\ConceptController::class => Controller\Site\ConceptController::class,
         ],
         'aliases' => [
             'concept' => Controller\Admin\ConceptController::class,
@@ -103,6 +104,24 @@ return [
     ],
     'router' => [
         'routes' => [
+            'site' => [
+                'child_routes' => [
+                    'concept' => [
+                        'type' => \Laminas\Router\Http\Segment::class,
+                        'options' => [
+                            'route' => '/concept/:id',
+                            'constraints' => [
+                                'id' => '\d+',
+                            ],
+                            'defaults' => [
+                                '__NAMESPACE__' => 'Thesaurus\Controller\Site',
+                                'controller' => Controller\Site\ConceptController::class,
+                                'action' => 'show',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
             'admin' => [
                 'child_routes' => [
                     'thesaurus' => [
