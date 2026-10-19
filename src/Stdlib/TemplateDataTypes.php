@@ -33,8 +33,42 @@ class TemplateDataTypes
      * @return int The number of updated template properties and advanced
      * template property configs.
      */
-    public function allowUsedThesaurusTypes(): int
+    public function allowUsedThesaurusTypes(?array $schemeIds = null): int
     {
+        return $this->process($schemeIds, false);
+    }
+
+    /**
+     * @param int[]|null $schemeIds Limit to the data types of these thesaurus.
+     * @return int The number of template properties and configs to update.
+     */
+    public function countMissingThesaurusTypes(?array $schemeIds = null): int
+    {
+        return $this->process($schemeIds, true);
+    }
+
+    /**
+     * Get the thesaurus whose data type is missing in a template property.
+     *
+     * @return int[]
+     */
+    public function schemeIdsWithMissingTypes(?array $schemeIds = null): array
+    {
+        $missing = [];
+        $this->process($schemeIds, true, $missing);
+        return $missing;
+    }
+
+    /**
+     * Append the missing data types, or only count the rows to update.
+     *
+     * @param int[]|null $missingSchemeIds Filled with the thesaurus to fix.
+     */
+    protected function process(?array $schemeIds, bool $countOnly, ?array &$missingSchemeIds = null): int
+    {
+        $types = $schemeIds
+            ? array_map(fn ($schemeId) => 'thesaurus:' . (int) $schemeId, $schemeIds)
+            : [];
         $sql = <<<'SQL'
             SELECT DISTINCT `rtp`.`id`, `value`.`type`
             FROM `value`
@@ -44,8 +78,16 @@ class TemplateDataTypes
                 AND `rtp`.`property_id` = `value`.`property_id`
             WHERE `value`.`type` LIKE 'thesaurus:%'
             SQL;
+        $params = [];
+        $paramTypes = [];
+        if ($types) {
+            $sql .= "\n    AND `value`.`type` IN (:types)";
+            $params = ['types' => $types];
+            $paramTypes = ['types' => Connection::PARAM_STR_ARRAY];
+        }
+
         $usedTypes = [];
-        foreach ($this->connection->executeQuery($sql)->iterateNumeric() as [$rtpId, $type]) {
+        foreach ($this->connection->executeQuery($sql, $params, $paramTypes)->iterateNumeric() as [$rtpId, $type]) {
             $usedTypes[(int) $rtpId][] = $type;
         }
         if (!$usedTypes) {
@@ -65,10 +107,13 @@ class TemplateDataTypes
             $list = json_decode((string) $dataType, true);
             $new = $this->appendTypes($list, $usedTypes[(int) $id]);
             if ($new) {
-                $this->connection->executeStatement(
-                    'UPDATE `resource_template_property` SET `data_type` = :data_type WHERE `id` = :id',
-                    ['data_type' => json_encode($new), 'id' => (int) $id]
-                );
+                $this->collectSchemeIds($missingSchemeIds, $usedTypes[(int) $id]);
+                if (!$countOnly) {
+                    $this->connection->executeStatement(
+                        'UPDATE `resource_template_property` SET `data_type` = :data_type WHERE `id` = :id',
+                        ['data_type' => json_encode($new), 'id' => (int) $id]
+                    );
+                }
                 ++$count;
             }
         }
@@ -92,16 +137,37 @@ class TemplateDataTypes
             }
             $new = $this->appendTypes($data['o:data_type'] ?? null, $usedTypes[(int) $row['resource_template_property_id']]);
             if ($new) {
-                $data['o:data_type'] = $new;
-                $this->connection->executeStatement(
-                    'UPDATE `resource_template_property_data` SET `data` = :data WHERE `id` = :id',
-                    ['data' => json_encode($data), 'id' => (int) $row['id']]
-                );
+                $this->collectSchemeIds($missingSchemeIds, $usedTypes[(int) $row['resource_template_property_id']]);
+                if (!$countOnly) {
+                    $data['o:data_type'] = $new;
+                    $this->connection->executeStatement(
+                        'UPDATE `resource_template_property_data` SET `data` = :data WHERE `id` = :id',
+                        ['data' => json_encode($data), 'id' => (int) $row['id']]
+                    );
+                }
                 ++$count;
             }
         }
 
         return $count;
+    }
+
+    /**
+     * Append the ids of the thesaurus of a list of data types to a list.
+     *
+     * @param string[] $types
+     */
+    protected function collectSchemeIds(?array &$schemeIds, array $types): void
+    {
+        if ($schemeIds === null) {
+            return;
+        }
+        foreach ($types as $type) {
+            $schemeId = (int) mb_substr($type, mb_strlen('thesaurus:'));
+            if ($schemeId && !in_array($schemeId, $schemeIds)) {
+                $schemeIds[] = $schemeId;
+            }
+        }
     }
 
     /**
