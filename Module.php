@@ -413,7 +413,87 @@ class Module extends AbstractModule
 
     protected function postInstall(): void
     {
-        $this->storeSchemeAndConceptIds();
+        $this
+            ->storeSchemeAndConceptIds()
+            ->updateThesaurusTemplates();
+    }
+
+    /**
+     * Set the data types and the queries of the resource templates.
+     *
+     * The data type "resource:concept" is not registered yet when the templates
+     * are imported during the installation, so the import skips it.
+     */
+    protected function updateThesaurusTemplates(): self
+    {
+        /**
+         * @var \Doctrine\DBAL\Connection $connection
+         * @var \Common\Stdlib\EasyMeta $easyMeta
+         */
+        $services = $this->getServiceLocator();
+        $connection = $services->get('Omeka\Connection');
+        $easyMeta = $services->get('Common\EasyMeta');
+
+        $conceptTerms = [
+            'Thesaurus Concept' => ['skos:broader', 'skos:narrower', 'skos:related', 'skos:semanticRelation', 'skos:closeMatch', 'skos:exactMatch'],
+            'Thesaurus Scheme' => ['skos:hasTopConcept'],
+        ];
+        foreach ($conceptTerms as $label => $terms) {
+            $templateId = (int) $connection
+                ->executeQuery('SELECT `id` FROM `resource_template` WHERE `label` = ?', [$label])
+                ->fetchOne();
+            $propertyIds = array_values($easyMeta->propertyIds($terms));
+            if (!$templateId || !$propertyIds) {
+                continue;
+            }
+            $connection->executeStatement(
+                'UPDATE `resource_template_property` SET `data_type` = :data_type WHERE `resource_template_id` = :template_id AND `property_id` IN (:property_ids)',
+                ['data_type' => json_encode(['resource:concept']), 'template_id' => $templateId, 'property_ids' => $propertyIds],
+                ['property_ids' => Connection::PARAM_INT_ARRAY]
+            );
+        }
+
+        // The query to select a scheme is a setting of the module Advanced
+        // Resource Template, so it is set only when its table exists.
+        $hasTemplateData = (int) $connection
+            ->executeQuery("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'resource_template_property_data'")
+            ->fetchOne();
+        $templateId = (int) $connection
+            ->executeQuery('SELECT `id` FROM `resource_template` WHERE `label` = ?', ['Thesaurus Concept'])
+            ->fetchOne();
+        $propertyIds = array_values($easyMeta->propertyIds(['skos:inScheme', 'skos:topConceptOf']));
+        if (!$hasTemplateData || !$templateId || !$propertyIds) {
+            return $this;
+        }
+
+        $templatePropertyIds = $connection
+            ->executeQuery(
+                'SELECT `id` FROM `resource_template_property` WHERE `resource_template_id` = :template_id AND `property_id` IN (:property_ids)',
+                ['template_id' => $templateId, 'property_ids' => $propertyIds],
+                ['property_ids' => Connection::PARAM_INT_ARRAY]
+            )
+            ->fetchFirstColumn();
+        foreach ($templatePropertyIds as $templatePropertyId) {
+            $row = $connection
+                ->executeQuery('SELECT `id`, `data` FROM `resource_template_property_data` WHERE `resource_template_property_id` = ? ORDER BY `id` LIMIT 1', [$templatePropertyId])
+                ->fetchAssociative();
+            if (!$row) {
+                $connection->insert('resource_template_property_data', [
+                    'resource_template_id' => $templateId,
+                    'resource_template_property_id' => $templatePropertyId,
+                    'data' => json_encode(['resource_query' => 'thesaurus_scheme=1']),
+                ]);
+                continue;
+            }
+            $data = json_decode((string) $row['data'], true) ?: [];
+            if (!empty($data['resource_query'])) {
+                continue;
+            }
+            $data['resource_query'] = 'thesaurus_scheme=1';
+            $connection->update('resource_template_property_data', ['data' => json_encode($data)], ['id' => $row['id']]);
+        }
+
+        return $this;
     }
 
     public function onBootstrap(MvcEvent $event): void

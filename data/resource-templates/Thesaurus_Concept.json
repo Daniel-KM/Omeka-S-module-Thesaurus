@@ -95,7 +95,12 @@
             "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
             "vocabulary_label": "Simple Knowledge Organization System",
             "local_name": "inScheme",
-            "label": "is in scheme"
+            "label": "is in scheme",
+            "o:data": [
+                {
+                    "resource_query": "thesaurus_scheme=1"
+                }
+            ]
         },
         {
             "o:alternate_label": null,
@@ -107,15 +112,20 @@
             "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
             "vocabulary_label": "Simple Knowledge Organization System",
             "local_name": "topConceptOf",
-            "label": "is top concept in scheme"
+            "label": "is top concept in scheme",
+            "o:data": [
+                {
+                    "resource_query": "thesaurus_scheme=1"
+                }
+            ]
         },
         {
             "o:alternate_label": null,
             "o:alternate_comment": null,
             "o:is_required": false,
             "o:is_private": false,
-            "data_type_name": "resource:item",
-            "data_type_label": "Item",
+            "data_type_name": "resource:concept",
+            "data_type_label": "Concept",
             "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
             "vocabulary_label": "Simple Knowledge Organization System",
             "local_name": "broader",
@@ -126,8 +136,8 @@
             "o:alternate_comment": null,
             "o:is_required": false,
             "o:is_private": false,
-            "data_type_name": "resource:item",
-            "data_type_label": "Item",
+            "data_type_name": "resource:concept",
+            "data_type_label": "Concept",
             "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
             "vocabulary_label": "Simple Knowledge Organization System",
             "local_name": "narrower",
@@ -138,8 +148,8 @@
             "o:alternate_comment": null,
             "o:is_required": false,
             "o:is_private": false,
-            "data_type_name": "resource:item",
-            "data_type_label": "Item",
+            "data_type_name": "resource:concept",
+            "data_type_label": "Concept",
             "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
             "vocabulary_label": "Simple Knowledge Organization System",
             "local_name": "semanticRelation",
@@ -150,8 +160,8 @@
             "o:alternate_comment": null,
             "o:is_required": false,
             "o:is_private": false,
-            "data_type_name": "resource:item",
-            "data_type_label": "Item",
+            "data_type_name": "resource:concept",
+            "data_type_label": "Concept",
             "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
             "vocabulary_label": "Simple Knowledge Organization System",
             "local_name": "related",
@@ -162,8 +172,8 @@
             "o:alternate_comment": null,
             "o:is_required": false,
             "o:is_private": false,
-            "data_type_name": "resource:item",
-            "data_type_label": "Item",
+            "data_type_name": "resource:concept",
+            "data_type_label": "Concept",
             "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
             "vocabulary_label": "Simple Knowledge Organization System",
             "local_name": "closeMatch",
@@ -174,8 +184,8 @@
             "o:alternate_comment": null,
             "o:is_required": false,
             "o:is_private": false,
-            "data_type_name": "resource:item",
-            "data_type_label": "Item",
+            "data_type_name": "resource:concept",
+            "data_type_label": "Concept",
             "vocabulary_namespace_uri": "http:\/\/www.w3.org\/2004\/02\/skos\/core#",
             "vocabulary_label": "Simple Knowledge Organization System",
             "local_name": "exactMatch",
