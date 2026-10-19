@@ -1608,19 +1608,11 @@ class Thesaurus
         // Get all ids and titles via api.
         // This allows to check visibility and to get the full list of concepts.
         // The validity of top concepts is not checked.
+        // The scheme of a concept is stored in the table "concept", so neither
+        // the class nor the value "skos:inScheme" is required.
         $query = $this->resourceName === 'concepts'
             ? [
-                'resource_class_id' => [
-                    $this->terms['class']['skos:Concept'],
-                ],
-                'property' => [
-                    [
-                        'joiner' => 'and',
-                        'property' => $this->terms['property']['skos:inScheme'],
-                        'type' => 'res',
-                        'text' => $this->scheme->id(),
-                    ],
-                ],
+                'scheme_id' => $this->scheme->id(),
                 // Is public is automatically managed via the api.
             ]
             // A thesaurus that is not converted yet has no concept and the
@@ -1774,6 +1766,21 @@ class Thesaurus
             $child = $v;
         }
         unset($child);
+
+        // A relation may be set in one direction only, for example after a
+        // partial import, so each one completes the other.
+        foreach ($children as $parentId => $childIds) {
+            foreach ($childIds as $childId) {
+                if (!isset($parents[$childId])) {
+                    $parents[$childId] = $parentId;
+                }
+            }
+        }
+        foreach ($parents as $childId => $parentId) {
+            if ($parentId && !in_array($childId, $children[$parentId] ?? [], true)) {
+                $children[$parentId][] = $childId;
+            }
+        }
 
         // Fill the full structure.
         // The check for public parent/children is done above.

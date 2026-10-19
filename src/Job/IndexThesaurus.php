@@ -2,10 +2,8 @@
 
 namespace Thesaurus\Job;
 
-use Common\Stdlib\PsrMessage;
 use Doctrine\ORM\EntityManager;
 use Omeka\Api\Representation\ItemRepresentation;
-use Thesaurus\Api\Representation\ConceptRepresentation;
 use Omeka\Job\AbstractJob;
 
 class IndexThesaurus extends AbstractJob
@@ -16,13 +14,6 @@ class IndexThesaurus extends AbstractJob
      * @var int
      */
     const BATCH_SIZE = 100;
-
-    /**
-     * Maximum ancestor to avoid infinite loops.
-     *
-     * @var int
-     */
-    protected $maxAncestors = 100;
 
     /**
      * @var \Laminas\Log\Logger
@@ -150,16 +141,18 @@ class IndexThesaurus extends AbstractJob
         $top = null;
         $broader = null;
         $position = 0;
+        $totalIndexed = 0;
         $ancestors = [];
         $level = 0;
         $previousLevel = 0;
         foreach (array_chunk($flatTree, self::BATCH_SIZE) as $chunk) {
             foreach ($chunk as $concept) {
                 /** @var \Thesaurus\Entity\Concept $conceptEntity */
-                $conceptEntity = $this->entityManager->find(\Thesaurus\Entity\Concept::class, $concept['self']->id());
+                $conceptEntity = $this->entityManager->find(\Thesaurus\Entity\Concept::class, $concept['id']);
                 if (!$conceptEntity) {
                     continue;
                 }
+                ++$totalIndexed;
                 $level = $concept['level'];
 
                 $conceptEntity
@@ -174,7 +167,7 @@ class IndexThesaurus extends AbstractJob
                 } elseif (!$top) {
                     $this->logger->err(
                         'Thesaurus #{item_id} has a missing top concept for item #{item_id_2}.', // @translate
-                        ['item_id' => $scheme->id(), 'item_id_2' => $concept['self']->id()]
+                        ['item_id' => $scheme->id(), 'item_id_2' => $concept['id']]
                     );
                     $this->resetThesaurus($scheme);
                     return false;
@@ -209,9 +202,19 @@ class IndexThesaurus extends AbstractJob
         $this->entityManager->clear();
         */
 
+        // A thesaurus that is not converted yet is made of items, that have no
+        // structure to index: the structure is read from the skos values.
+        if (!$totalIndexed) {
+            $this->logger->notice(
+                'Thesaurus "{title}" (#{item_id}) is made of items: there is no structure to index. Run the task "Convert items into concepts" to index it.', // @translate
+                ['title' => $scheme->displayTitle(), 'item_id' => $schemeId]
+            );
+            return true;
+        }
+
         $this->logger->notice(
-            'Thesaurus "{title}" (#{item_id}) indexed (full thesaurus: #{thesaurus_id}).', // @translate
-            ['title' => $scheme->displayTitle(), 'item_id' => $schemeId, 'thesaurus_id' => $schemeId]
+            'Thesaurus "{title}" (#{item_id}) indexed: {count} concepts.', // @translate
+            ['title' => $scheme->displayTitle(), 'item_id' => $schemeId, 'count' => $totalIndexed]
         );
 
         return true;
@@ -234,82 +237,22 @@ class IndexThesaurus extends AbstractJob
     }
 
     /**
-     * Get all linked resources of this item for a term.
-     */
-    protected function resourcesFromValue(ItemRepresentation|ConceptRepresentation $item, string $term): array
-    {
-        $result = [];
-        $values = $item->values();
-        if (isset($values[$term])) {
-            /** @var \Omeka\Api\Representation\ValueRepresentation $value */
-            foreach ($values[$term]['values'] as $value) {
-                if (in_array($value->type(), ['resource', 'resource:item', 'resource:concept'])) {
-                    // Manage private resources.
-                    if ($resource = $value->valueResource()) {
-                        // Manage duplicates.
-                        $result[$resource->id()] = $resource;
-                    }
-                }
-            }
-        }
-        return array_values($result);
-    }
-
-    /**
      * Create an ordered flat thesaurus for a scheme.
+     *
+     * The tree is built from the skos values, in both directions, with a few
+     * grouped queries, so a relation set in one direction only is indexed too.
+     *
+     * @return array List of ["id" => concept id, "level" => level].
      */
     protected function flatTree(ItemRepresentation $scheme): array
     {
-        $tops = $this->resourcesFromValue($scheme, 'skos:hasTopConcept');
-        if (empty($tops)) {
-            $this->logger->err(
-                'Thesaurus #{item_id} has no top concepts.', // @translate
-                ['item_id' => $scheme->id()]
-            );
-            return [];
-        }
-
+        /** @var \Thesaurus\Stdlib\Thesaurus $thesaurus */
+        $thesaurus = $this->getServiceLocator()->build('Thesaurus\Thesaurus');
         $result = [];
-        foreach ($tops as $item) {
-            $result[$item->id()] = [
-                'self' => $item,
-                'level' => 0,
-            ];
-            $result = $this->recursiveFlatBranch($item, $result, 1);
+        foreach ($thesaurus($scheme)->flatTree() as $id => $data) {
+            $result[] = ['id' => (int) $id, 'level' => (int) $data['level']];
         }
-
         return $result;
-    }
-
-    /**
-     * Recursive method to get the flat descendant tree of an item.
-     *
-     * @param ItemRepresentation|ConceptRepresentation $item
-     * @param array $branch Internal param for recursive process.
-     * @param int $level Internal level.
-     */
-    protected function recursiveFlatBranch(ItemRepresentation|ConceptRepresentation $item, array $branch = [], int $level = 0): array
-    {
-        if ($level > $this->maxAncestors) {
-            throw new \Omeka\Api\Exception\BadResponseException(new PsrMessage(
-                'The term #{item_id} has more than {count} levels.', // @translate
-                ['item_id' => $item->id(), 'count' => $this->maxAncestors]
-            ));
-        }
-
-        $children = $this->resourcesFromValue($item, 'skos:narrower');
-        foreach ($children as $child) {
-            $id = $child->id();
-            if (!isset($branch[$id])) {
-                $branch[$id] = [
-                    'self' => $child,
-                    'level' => $level,
-                ];
-                $branch = $this->recursiveFlatBranch($child, $branch, $level + 1);
-            }
-        }
-
-        return $branch;
     }
 
     /**
