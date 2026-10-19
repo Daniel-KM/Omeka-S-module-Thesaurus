@@ -22,6 +22,25 @@ class ConceptRepresentation extends AbstractResourceEntityRepresentation
         return $url('admin/concept/id', $params, ['force_canonical' => $canonical]);
     }
 
+    /**
+     * Get a html link, or only its content when there is no url.
+     *
+     * A concept has no public page, so it is not linked on the public side.
+     */
+    public function linkRaw($html, $action = null, $attributes = [])
+    {
+        $url = $this->url($action);
+        if ($url) {
+            return $this->getViewHelper('hyperlink')->raw($html, $url, $attributes);
+        }
+        $escapeAttr = $this->getViewHelper('escapeHtmlAttr');
+        $attrs = '';
+        foreach ($attributes ?? [] as $key => $value) {
+            $attrs .= sprintf(' %s="%s"', $escapeAttr($key), $escapeAttr($value));
+        }
+        return '<span' . $attrs . '>' . $html . '</span>';
+    }
+
     public function getResourceJsonLdType()
     {
         return 'o-module-thesaurus:Concept';
