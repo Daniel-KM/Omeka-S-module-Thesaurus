@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-31 00:00+0000\n"
+"POT-Creation-Date: 2026-10-23 11:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,17 +17,17 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: data/scripts/upgrade.php:31 Module.php:399
+#: data/scripts/upgrade.php:32 Module.php:399
 #, php-format
 msgid "The module %1$s requires PHP %2$s or later."
 msgstr ""
 
-#: data/scripts/upgrade.php:40 Module.php:407
+#: data/scripts/upgrade.php:41 Module.php:407
 #, php-format
 msgid "The module %1$s should be upgraded to version %2$s or later."
 msgstr ""
 
-#: data/scripts/upgrade.php:44
+#: data/scripts/upgrade.php:45
 msgid "Missing requirement. Unable to upgrade."
 msgstr ""
 
@@ -72,11 +72,25 @@ msgid ""
 "the thesaurus structure is lost."
 msgstr ""
 
-#: Module.php:1091
+#: Module.php:1202
 msgid "is"
 msgstr ""
 
-#: src/DataType/Resource/Concept.php:40
+#: src/Controller/Admin/ThesaurusController.php:577
+msgid ""
+"The current data are kept and completed by the last backup of each "
+"thesaurus: only the missing rows and the data types unchanged since the "
+"conversion are restored. Backups: {list}."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:580
+msgid ""
+"There is no backup: the assignments to item sets and sites and the data "
+"types of the values will not be restored."
+msgstr ""
+
+#: src/DataType/Resource/Concept.php:53
+#: view/common/data-type/resource-concept.phtml:20
 #: view/thesaurus/admin/thesaurus/browse-concepts.phtml:21
 msgid "Concepts"
 msgstr ""
@@ -94,23 +108,29 @@ msgid "Browse the thesaurus"
 msgstr ""
 
 #: view/common/data-type/thesaurus.phtml:24
-#: view/thesaurus/admin/thesaurus/structure.phtml:66
+#: view/thesaurus/admin/thesaurus/structure.phtml:69
 msgid "Open all"
 msgstr ""
 
 #: view/common/data-type/thesaurus.phtml:25
-#: view/thesaurus/admin/thesaurus/structure.phtml:66
+#: view/thesaurus/admin/thesaurus/structure.phtml:69
 msgid "Close all"
 msgstr ""
 
 #: view/common/thesaurus-flat.phtml:40 view/common/thesaurus-list.phtml:47
-#: view/common/thesaurus-single.phtml:36 view/common/thesaurus-tree.phtml:41
+#: view/common/thesaurus-single.phtml:37 view/common/thesaurus-tree.phtml:41
 msgid "No concept."
 msgstr ""
 
+#: view/thesaurus/admin/concept/add.phtml:30
+msgid "New concept"
+msgstr ""
+
+#: view/thesaurus/admin/concept/add.phtml:30
 #: view/thesaurus/admin/concept/edit.phtml:35
 #: view/thesaurus/admin/concept/show.phtml:27
-#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:47
+#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:50
+#: view/thesaurus/site/concept/show.phtml:36
 msgid "Concept"
 msgstr ""
 
@@ -119,9 +139,9 @@ msgstr ""
 #: view/thesaurus/admin/concept/edit.phtml:60
 #: view/thesaurus/admin/concept/show-details.phtml:49
 #: view/thesaurus/admin/concept/show.phtml:22
-#: view/thesaurus/admin/concept/show.phtml:61
+#: view/thesaurus/admin/concept/show.phtml:64
 #: view/thesaurus/admin/thesaurus/add.phtml:14
-#: view/thesaurus/admin/thesaurus/browse.phtml:49
+#: view/thesaurus/admin/thesaurus/browse.phtml:48
 #: view/thesaurus/admin/thesaurus/convert.phtml:27
 #: view/thesaurus/admin/thesaurus/edit.phtml:23
 #: view/thesaurus/admin/thesaurus/flat.phtml:22
@@ -138,72 +158,107 @@ msgstr ""
 
 #: view/thesaurus/admin/concept/edit.phtml:62
 #: view/thesaurus/admin/concept/show-details.phtml:54
-#: view/thesaurus/admin/concept/show.phtml:65
-#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:48
+#: view/thesaurus/admin/concept/show.phtml:68
+#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:51
+#: view/thesaurus/site/concept/show.phtml:45
 msgid "Broader concept"
 msgstr ""
 
 #: view/thesaurus/admin/concept/edit.phtml:64
-#: view/thesaurus/admin/concept/show.phtml:69
+#: view/thesaurus/admin/concept/show.phtml:72
+#: view/thesaurus/site/concept/show.phtml:51
 msgid "Narrower concepts"
 msgstr ""
 
 #: view/thesaurus/admin/concept/show-details.phtml:62
-#: view/thesaurus/admin/thesaurus/browse.phtml:116
+#: view/thesaurus/admin/thesaurus/browse.phtml:125
 msgid "[no owner]"
 msgstr ""
 
 #: view/thesaurus/admin/concept/show.phtml:32
+msgid "Add narrower concept"
+msgstr ""
+
+#: view/thesaurus/admin/concept/show.phtml:35
 msgid "Edit concept"
+msgstr ""
+
+#: view/thesaurus/admin/concept/sidebar-select.phtml:30
+msgid "Select concept"
+msgstr ""
+
+#: view/thesaurus/admin/concept/sidebar-select.phtml:44
+msgid "Filter by thesaurus"
+msgstr ""
+
+#: view/thesaurus/admin/concept/sidebar-select.phtml:50
+msgid "Filter by concept ID"
+msgstr ""
+
+#: view/thesaurus/admin/concept/sidebar-select.phtml:87
+msgid "Omeka could not find any concepts."
 msgstr ""
 
 #: view/thesaurus/admin/thesaurus/add.phtml:14
 msgid "New thesaurus"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:28
+#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:29
+#: view/thesaurus/admin/thesaurus/structure.phtml:53
+msgid "Add concept"
+msgstr ""
+
+#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:31
 msgid "Tree"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:30
-#: view/thesaurus/admin/thesaurus/structure.phtml:54
-#: view/thesaurus/admin/thesaurus/structure.phtml:60
+#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:33
+#: view/thesaurus/admin/thesaurus/structure.phtml:57
+#: view/thesaurus/admin/thesaurus/structure.phtml:63
 msgid "Edit thesaurus"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:39
+#: view/thesaurus/admin/thesaurus/browse-concepts.phtml:42
 msgid "This thesaurus has no concept."
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:65
+#: view/thesaurus/admin/thesaurus/browse.phtml:64
 msgid "Maintenance"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:69
+#: view/thesaurus/admin/thesaurus/browse.phtml:68
 msgid "One time tasks"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:71
+#: view/thesaurus/admin/thesaurus/browse.phtml:70
 msgid "Migrate data types…"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:76
+#: view/thesaurus/admin/thesaurus/browse.phtml:75
 msgid "Convert items into concepts…"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:86
+#: view/thesaurus/admin/thesaurus/browse.phtml:80
+msgid "Convert concepts into items…"
+msgstr ""
+
+#: view/thesaurus/admin/thesaurus/browse.phtml:85
+msgid "Fix the data of the concepts…"
+msgstr ""
+
+#: view/thesaurus/admin/thesaurus/browse.phtml:95
 msgid "Add new thesaurus"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:137
+#: view/thesaurus/admin/thesaurus/browse.phtml:146
 msgid "Tree of the concepts"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:141
+#: view/thesaurus/admin/thesaurus/browse.phtml:150
 msgid "Flat list of the concepts"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/browse.phtml:145
+#: view/thesaurus/admin/thesaurus/browse.phtml:154
 msgid "Update path/ascendance and reindex"
 msgstr ""
 
@@ -250,15 +305,33 @@ msgstr ""
 msgid "Leaf label only (may create duplicates)"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/flat.phtml:65
+#: view/thesaurus/admin/thesaurus/flat.phtml:67
+msgid "Type of resources of the concepts"
+msgstr ""
+
+#: view/thesaurus/admin/thesaurus/flat.phtml:68
+msgid ""
+"The concepts are managed in the thesaurus only. Create them as items to "
+"expose them with the items in browse, search and facets."
+msgstr ""
+
+#: view/thesaurus/admin/thesaurus/flat.phtml:72
+msgid "Concepts (managed in the thesaurus only)"
+msgstr ""
+
+#: view/thesaurus/admin/thesaurus/flat.phtml:73
+msgid "Items (exposed with the items in browse, search and facets)"
+msgstr ""
+
+#: view/thesaurus/admin/thesaurus/flat.phtml:78
 msgid "Download the list"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/flat.phtml:67
+#: view/thesaurus/admin/thesaurus/flat.phtml:80
 msgid "Create the custom vocabulary"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/flat.phtml:69
+#: view/thesaurus/admin/thesaurus/flat.phtml:82
 msgid "Create the thesaurus"
 msgstr ""
 
@@ -272,11 +345,11 @@ msgid ""
 "the logs of the job."
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/structure.phtml:52
+#: view/thesaurus/admin/thesaurus/structure.phtml:55
 msgid "Update and reindex"
 msgstr ""
 
-#: view/thesaurus/admin/thesaurus/structure.phtml:53
+#: view/thesaurus/admin/thesaurus/structure.phtml:56
 msgid "Edit structure"
 msgstr ""
 
@@ -288,71 +361,71 @@ msgstr ""
 msgid "Update ascendances and paths according to main settings."
 msgstr ""
 
-#: data/scripts/upgrade.php:79
+#: data/scripts/upgrade.php:80
 msgid ""
 "It is now possible to get thesaurus data for another item without rebuilding "
 "it."
 msgstr ""
 
-#: data/scripts/upgrade.php:92
+#: data/scripts/upgrade.php:93
 msgid ""
 "Many performance improvements have been implemented. Big thesaurus can be "
 "managed instantly."
 msgstr ""
 
-#: data/scripts/upgrade.php:97
+#: data/scripts/upgrade.php:98
 msgid ""
 "It is now possible to import a file and to create a standard thesaurus with "
 "all linked resources."
 msgstr ""
 
-#: data/scripts/upgrade.php:103
+#: data/scripts/upgrade.php:104
 msgid ""
 "{link}New settings{link_end} allow to store the path or the ascendance of "
 "each concept automatically or via the update button of the thesaurus."
 msgstr ""
 
-#: data/scripts/upgrade.php:140
+#: data/scripts/upgrade.php:141
 msgid ""
 "The template layout of some blocks Thesaurus was renamed. Check matching "
 "pages: {json}."
 msgstr ""
 
-#: data/scripts/upgrade.php:225
+#: data/scripts/upgrade.php:226
 msgid ""
 "The setting \"heading\" was removed from block Thessaurus. New blocks "
 "\"Heading\" or \"Html\" were prepended to all blocks that had a filled "
 "heading. You may check pages for styles: {json}"
 msgstr ""
 
-#: data/scripts/upgrade.php:235
+#: data/scripts/upgrade.php:236
 msgid ""
 "The setting \"template\" was moved to the new block layout settings "
 "available since Omeka S v4.1. You may check pages for styles: {json}"
 msgstr ""
 
-#: data/scripts/upgrade.php:242
+#: data/scripts/upgrade.php:243
 msgid ""
 "The template files for the block Thesaurus should be moved from \"view/"
 "common/block-layout\" to \"view/common/block-template\" in your themes. You "
 "may check your themes for pages: {json}"
 msgstr ""
 
-#: data/scripts/upgrade.php:280
+#: data/scripts/upgrade.php:281
 msgid "{count} thesaurus labels were normalized to Unicode NFC."
 msgstr ""
 
-#: data/scripts/upgrade.php:326
+#: data/scripts/upgrade.php:327
 msgid "The table \"term\" was renamed to \"thesaurus_term\"."
 msgstr ""
 
-#: data/scripts/upgrade.php:334
+#: data/scripts/upgrade.php:335
 msgid ""
 "A new data type \"thesaurus\" can fill values with a thesaurus concept, "
 "without a custom vocab or an item set."
 msgstr ""
 
-#: data/scripts/upgrade.php:339
+#: data/scripts/upgrade.php:340
 msgid ""
 "To add it to the resource templates (and advanced resource template) that "
 "currently use the custom vocab of a thesaurus, run the task \"Thesaurus: Add "
@@ -361,19 +434,37 @@ msgid ""
 "values remain valid."
 msgstr ""
 
-#: data/scripts/upgrade.php:444
+#: data/scripts/upgrade.php:398
 msgid ""
 "The concepts are now a dedicated resource type, no longer mixed with items "
-"in browse, search, facets and references."
+"in browse, search, facets and references. It is recommended to run the task "
+"\"Convert items into concepts\" on each of the thesaurus to convert: the "
+"{count} concepts stored as items still work, but they are not converted "
+"automatically."
 msgstr ""
 
-#: data/scripts/upgrade.php:464
+#: data/scripts/upgrade.php:420
 msgid ""
 "The item set of a thesaurus is a standard one now, identified via the scheme "
 "it contains, not via a class. It is recommended to remove the classes "
 "\"skos:Collection\" and \"skos:OrderedCollection\" from the {count} item "
 "sets that use them, because they will be removed automatically in a future "
 "version."
+msgstr ""
+
+#: data/scripts/upgrade.php:480
+msgid ""
+"Some data of the concepts should be fixed: {count_values} values filled via "
+"a custom vocab, {count_templates} template properties and {count_references} "
+"rows referencing a concept as an item. Run the task \"Fix the data of the "
+"concepts\" on each thesaurus to process: {thesaurus}."
+msgstr ""
+
+#: data/scripts/upgrade.php:523
+msgid ""
+"The data type of the items was restored in {count} template properties: the "
+"concepts of this site are still items. Run the task \"Convert items into "
+"concepts\" to use the dedicated resource type."
 msgstr ""
 
 #: Module.php:157
@@ -398,70 +489,70 @@ msgid ""
 "structured as a thesaurus."
 msgstr ""
 
-#: Module.php:800
+#: Module.php:906
 msgid ""
 "The structure of the thesaurus \"{title}\" (#{item_id}) may be outdated: "
 "reindex it to rebuild the tree."
 msgstr ""
 
-#: Module.php:809
+#: Module.php:915
 msgid ""
 "The structure of the thesaurus \"{title}\" (#{item_id}) may be outdated: "
 "{link}reindex it{link_end} to rebuild the tree."
 msgstr ""
 
-#: Module.php:1294
+#: Module.php:1405
 msgid "Thesaurus: Reindex thesaurus"
 msgstr ""
 
-#: Module.php:1295
+#: Module.php:1406
 msgid "Thesaurus: Add thesaurus data type to custom vocab templates"
 msgstr ""
 
-#: Module.php:1301
+#: Module.php:1412
 msgid "Thesaurus: Reindex"
 msgstr ""
 
-#: Module.php:1302
+#: Module.php:1413
 msgid "Index the thesaurus terms and their relations."
 msgstr ""
 
-#: Module.php:1304
+#: Module.php:1415
 msgid "Index"
 msgstr ""
 
-#: Module.php:1308
+#: Module.php:1419
 msgid "Thesaurus: Data type migration"
 msgstr ""
 
-#: Module.php:1309
+#: Module.php:1420
 msgid ""
 "Add the thesaurus data type to the resource templates (and advanced resource "
 "template) that use the custom vocab of a thesaurus, without removing the "
 "custom vocab."
 msgstr ""
 
-#: Module.php:1311
+#: Module.php:1422
 msgid "Migrate"
 msgstr ""
 
-#: Module.php:1367
+#: Module.php:1478
 msgid "Unable to find resource template \"Thesaurus Concept\"."
 msgstr ""
 
-#: Module.php:1375
+#: Module.php:1486
 msgid "Unable to find vocabulary Skos."
 msgstr ""
 
-#: Module.php:1386
+#: Module.php:1497
 msgid "Unable to find property {term} for descriptor."
 msgstr ""
 
-#: Module.php:1399
+#: Module.php:1510
 msgid "Unable to find property {term} for path."
 msgstr ""
 
-#: Module.php:1413
+#: Module.php:1524
 msgid "Unable to find property {term} for ascendance."
 msgstr ""
 
@@ -509,11 +600,11 @@ msgstr ""
 msgid "Descendants of current concept"
 msgstr ""
 
-#: view/common/thesaurus-single.phtml:22 src/Form/ThesaurusFieldset.php:33
+#: view/common/thesaurus-single.phtml:23 src/Form/ThesaurusFieldset.php:33
 msgid "Top concept"
 msgstr ""
 
-#: view/common/thesaurus-single.phtml:24
+#: view/common/thesaurus-single.phtml:25
 msgid "Specific concept"
 msgstr ""
 
@@ -523,104 +614,104 @@ msgid ""
 "{link}Edit settings{link_end}."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:61
+#: src/Job/CreateThesaurus.php:93
 msgid "A name is required to create a thesaurus."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:81
+#: src/Job/CreateThesaurus.php:113
 msgid "The format of the file is undetermined."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:90
+#: src/Job/CreateThesaurus.php:122
 msgid "A list of concepts is required to create a thesaurus."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:99 src/Job/UpdateConcepts.php:65
+#: src/Job/CreateThesaurus.php:131 src/Job/UpdateConcepts.php:65
 msgid ""
 "A preferred label with the descriptor or the full path is required to fill "
 "concepts."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:108
-#: src/Controller/Admin/ThesaurusController.php:598
+#: src/Job/CreateThesaurus.php:140
+#: src/Controller/Admin/ThesaurusController.php:768
 msgid ""
 "The input format is defined as containing codes, but no codes are defined."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:144
+#: src/Job/CreateThesaurus.php:176
 msgid "The property {property} for descriptor is not managed."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:152 src/Job/UpdateConcepts.php:140
+#: src/Job/CreateThesaurus.php:184 src/Job/UpdateConcepts.php:140
 msgid "The property \"{property}\" for path is not managed."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:160 src/Job/UpdateConcepts.php:147
+#: src/Job/CreateThesaurus.php:192 src/Job/UpdateConcepts.php:147
 msgid "The property \"{property}\" for ascendance is not managed."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:168
+#: src/Job/CreateThesaurus.php:200
 msgid "Processing {count} descriptors in three steps."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:227
+#: src/Job/CreateThesaurus.php:259
 msgid "Step 1/3: creation of {count} descriptors."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:265
+#: src/Job/CreateThesaurus.php:298
 msgid "Step 2/3: creation of relations between descriptors."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:273
+#: src/Job/CreateThesaurus.php:306
 msgid "{count}/{total} descriptors completed."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:310
+#: src/Job/CreateThesaurus.php:343
 msgid "Step 3/3: indexation of new thesaurus."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:330
+#: src/Job/CreateThesaurus.php:363
 msgid "The linked custom vocabulary \"{label}\" was created."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:335
+#: src/Job/CreateThesaurus.php:368
 msgid "Unable to create the linked custom vocabulary \"{label}\": {message}"
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:342
+#: src/Job/CreateThesaurus.php:375
 msgid "The thesaurus \"{name}\" is ready, with {count} descriptors."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:423
+#: src/Job/CreateThesaurus.php:456
 msgid ""
 "The line \"{string} has the code \"{code}\", but there is no previous "
 "descriptor to apply to it. It is skipped."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:498
+#: src/Job/CreateThesaurus.php:531
 msgid "The job was stopped. {count}/{total} lines processed."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:509 src/Job/CreateThesaurus.php:875
+#: src/Job/CreateThesaurus.php:542 src/Job/CreateThesaurus.php:908
 #: src/Job/UpdateConcepts.php:200
 msgid "{count}/{total} descriptors processed."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:651 src/Job/CreateThesaurus.php:655
+#: src/Job/CreateThesaurus.php:684 src/Job/CreateThesaurus.php:688
 msgid "total"
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:781
+#: src/Job/CreateThesaurus.php:814
 msgid ""
 "Some properties of other vocabularies are not present in Omeka and were "
 "skipped: {list}."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:852
+#: src/Job/CreateThesaurus.php:885
 msgid "After first step, {count} descriptors can be processed."
 msgstr ""
 
-#: src/Job/CreateThesaurus.php:864 src/Job/UpdateConcepts.php:192
+#: src/Job/CreateThesaurus.php:897 src/Job/UpdateConcepts.php:192
 msgid "The job  was stopped. {count}/{total} descriptors processed."
 msgstr ""
 
@@ -629,7 +720,7 @@ msgid "No thesaurus specified."
 msgstr ""
 
 #: src/Job/UpdateStructure.php:94 src/Job/UpdateConcepts.php:82
-#: src/Job/IndexThesaurus.php:121
+#: src/Job/IndexThesaurus.php:112
 msgid "Thesaurus #{item_id} not found."
 msgstr ""
 
@@ -705,90 +796,208 @@ msgid ""
 "Concepts were updated and reindexed for thesaurus \"{title}\" (#{item_id})."
 msgstr ""
 
-#: src/Job/ConvertItemsToConcepts.php:70
+#: src/Job/FixConceptReferences.php:41
+msgid "No thesaurus to process: select the thesaurus to fix."
+msgstr ""
+
+#: src/Job/FixConceptReferences.php:70
+msgid ""
+"Unable to save the rows referencing the concepts as items and the data types "
+"of the values, so the data are not fixed."
+msgstr ""
+
+#: src/Job/FixConceptReferences.php:75
+msgid ""
+"The rows referencing the concepts as items and the data types of the values "
+"were saved in the backup #{backup_id}."
+msgstr ""
+
+#: src/Job/FixConceptReferences.php:83
+msgid ""
+"{count} values pointing to a concept via a custom vocab now use the data "
+"type of the thesaurus."
+msgstr ""
+
+#: src/Job/FixConceptReferences.php:91 src/Job/ConvertItemsToConcepts.php:131
+msgid ""
+"The data type of the thesaurus was added to {count} template properties used "
+"by values of concepts."
+msgstr ""
+
+#: src/Job/FixConceptReferences.php:99
+msgid "{count} rows referencing a concept as an item were removed or reset."
+msgstr ""
+
+#: src/Job/FixConceptReferences.php:105
+msgid "The {count} thesaurus were processed (#{scheme_ids})."
+msgstr ""
+
+#: src/Job/ConvertItemsToConcepts.php:83
 msgid "The property {term} is not available: the vocabulary skos is required."
 msgstr ""
 
-#: src/Job/ConvertItemsToConcepts.php:81
-msgid "No thesaurus to convert."
+#: src/Job/ConvertItemsToConcepts.php:94 src/Job/ConvertConceptsToItems.php:62
+msgid "No thesaurus to convert: select the thesaurus to process."
 msgstr ""
 
-#: src/Job/ConvertItemsToConcepts.php:91
+#: src/Job/ConvertItemsToConcepts.php:108
 msgid "The job was stopped: {total} concepts were converted."
 msgstr ""
 
-#: src/Job/ConvertItemsToConcepts.php:105
+#: src/Job/ConvertItemsToConcepts.php:122
 msgid "No item to convert into concept: the thesaurus are up to date."
 msgstr ""
 
-#: src/Job/ConvertItemsToConcepts.php:120
+#: src/Job/ConvertItemsToConcepts.php:154
 msgid ""
 "{total} items were converted into concepts and the thesaurus were reindexed."
 msgstr ""
 
-#: src/Job/ConvertItemsToConcepts.php:142
+#: src/Job/ConvertItemsToConcepts.php:196
 msgid "The thesaurus #{item_id} does not exist or is not an item."
 msgstr ""
 
-#: src/Job/ConvertItemsToConcepts.php:199
+#: src/Job/ConvertItemsToConcepts.php:226
 msgid ""
 "The conversion of the thesaurus #{item_id} is not possible: {count} items "
 "have media (#{item_ids}). Remove the media or exclude these items from the "
 "thesaurus first."
 msgstr ""
 
-#: src/Job/ConvertItemsToConcepts.php:248
+#: src/Job/ConvertItemsToConcepts.php:307
 msgid "Thesaurus #{item_id}: {count} items were converted into concepts."
 msgstr ""
 
-#: src/Job/IndexThesaurus.php:102
+#: src/Job/ConvertItemsToConcepts.php:339
+msgid "Thesaurus #{item_id}: {message}"
+msgstr ""
+
+#: src/Job/ConvertItemsToConcepts.php:346
+msgid ""
+"Thesaurus #{item_id}: unable to save the {count} rows referencing the items "
+"and the data types of {count_values} values, so the thesaurus is not "
+"converted."
+msgstr ""
+
+#: src/Job/ConvertItemsToConcepts.php:353
+msgid ""
+"Thesaurus #{item_id}: {count} rows referencing the items and the data types "
+"of {count_values} values were saved in the backup #{backup_id}, so the "
+"conversion can be reverted."
+msgstr ""
+
+#: src/Job/ConvertItemsToConcepts.php:392
+msgid "All the concepts are converted: the old index table was removed."
+msgstr ""
+
+#: src/Job/IndexThesaurus.php:93
 msgid "No thesaurus in the database."
 msgstr ""
 
-#: src/Job/IndexThesaurus.php:128
+#: src/Job/IndexThesaurus.php:119
 msgid "Starting indexing of thesaurus \"{title}\" (#{item_id})."
 msgstr ""
 
-#: src/Job/IndexThesaurus.php:140
+#: src/Job/IndexThesaurus.php:131
 msgid "Thesaurus \"{title}\" (#{item_id}) not indexed."
 msgstr ""
 
-#: src/Job/IndexThesaurus.php:176
+#: src/Job/IndexThesaurus.php:169
 msgid "Thesaurus #{item_id} has a missing top concept for item #{item_id_2}."
 msgstr ""
 
-#: src/Job/IndexThesaurus.php:213
+#: src/Job/IndexThesaurus.php:209
 msgid ""
-"Thesaurus \"{title}\" (#{item_id}) indexed (full thesaurus: #{thesaurus_id})."
+"Thesaurus \"{title}\" (#{item_id}) is made of items: there is no structure "
+"to index. Run the task \"Convert items into concepts\" to index it."
 msgstr ""
 
-#: src/Job/IndexThesaurus.php:266
-msgid "Thesaurus #{item_id} has no top concepts."
+#: src/Job/IndexThesaurus.php:216
+msgid "Thesaurus \"{title}\" (#{item_id}) indexed: {count} concepts."
 msgstr ""
 
-#: src/Job/IndexThesaurus.php:295
-msgid "The term #{item_id} has more than {count} levels."
-msgstr ""
-
-#: src/Job/MigrateDataTypes.php:26
+#: src/Job/MigrateDataTypes.php:47
 msgid ""
 "The thesaurus scheme class is not set; the module may not be fully installed."
 msgstr ""
 
-#: src/Job/MigrateDataTypes.php:32
+#: src/Job/MigrateDataTypes.php:57
 msgid "No thesaurus custom vocab found; nothing to migrate."
 msgstr ""
 
-#: src/Job/MigrateDataTypes.php:41
+#: src/Job/MigrateDataTypes.php:66
 msgid ""
 "Migration done: the thesaurus data type was added to {rtp} resource template "
 "properties and {art} advanced resource template configs."
 msgstr ""
 
-#: src/Job/MigrateDataTypes.php:160
+#: src/Job/MigrateDataTypes.php:185
 msgid ""
 "The setting \"{id}\" (table {table}) references the thesaurus custom vocab "
 "\"{cv}\". Review it manually to use the thesaurus data type if wanted."
+msgstr ""
+
+#: src/Job/ConvertConceptsToItems.php:72
+msgid "The job was stopped: {total} concepts were converted into items."
+msgstr ""
+
+#: src/Job/ConvertConceptsToItems.php:86
+msgid "No concept to convert into item."
+msgstr ""
+
+#: src/Job/ConvertConceptsToItems.php:104
+msgid "The data type of the items was added to {count} template properties."
+msgstr ""
+
+#: src/Job/ConvertConceptsToItems.php:110
+msgid "{total} concepts were converted into items."
+msgstr ""
+
+#: src/Job/ConvertConceptsToItems.php:116
+msgid ""
+"The rollback may be incomplete: the rows whose target was removed since the "
+"conversion and the rows of the tables without a single primary key are not "
+"restored, and the data type of the thesaurus added manually to a template "
+"since the conversion is removed too. Check the thesaurus, the templates and "
+"the related resources."
+msgstr ""
+
+#: src/Job/ConvertConceptsToItems.php:119
+msgid ""
+"The rollback may be incomplete: the data of the conversion were not saved, "
+"so the assignments to item sets and sites, the data types of the values and "
+"the configurations of the templates are not restored. Check the thesaurus "
+"and the related resources."
+msgstr ""
+
+#: src/Job/ConvertConceptsToItems.php:133
+msgid "The rows and the data types saved by the conversion were not restored."
+msgstr ""
+
+#: src/Job/ConvertConceptsToItems.php:147
+msgid ""
+"No saved data were found for these thesaurus: the assignments to item sets "
+"and sites are not restored and the values keep the data type "
+"\"resource:item\"."
+msgstr ""
+
+#: src/Job/ConvertConceptsToItems.php:153
+msgid ""
+"The current data are kept and completed by the backup #{backup_id} of "
+"{date}: only the missing rows and the data types unchanged since the "
+"conversion are restored."
+msgstr ""
+
+#: src/Job/ConvertConceptsToItems.php:162
+msgid ""
+"{count} rows referencing the items and the data types of {count_values} "
+"values were restored and the data type of the thesaurus was removed from "
+"{count_templates} configurations of templates, from the backup #{backup_id} "
+"of {date}."
+msgstr ""
+
+#: src/Job/ConvertConceptsToItems.php:259
+msgid "Thesaurus #{item_id}: {count} concepts were converted into items."
 msgstr ""
 
 #: src/Form/SettingsFieldset.php:27
@@ -1112,14 +1321,23 @@ msgid "Thesaurus (items with relations)"
 msgstr ""
 
 #: src/Form/ImportForm.php:189
+msgid ""
+"The concepts are a dedicated resource type since version 3.4.26: they are "
+"managed in the thesaurus and they are not mixed with the items in browse, "
+"search, facets and references. Create them as items to expose them with the "
+"items, for example to display them in the public pages or to index them in "
+"the search engines."
+msgstr ""
+
+#: src/Form/ImportForm.php:206
 msgid "Leave empty to use the file name."
 msgstr ""
 
-#: src/Form/ImportForm.php:217
+#: src/Form/ImportForm.php:234
 msgid "Create the linked custom vocabulary (item set) [deprecated]"
 msgstr ""
 
-#: src/Form/ImportForm.php:218
+#: src/Form/ImportForm.php:235
 msgid ""
 "Deprecated: the thesaurus data type does not require it and the module "
 "CustomVocab is optional. It is kept only for the thesaurus that are not "
@@ -1142,15 +1360,15 @@ msgstr ""
 msgid "Scheme, all concepts and item set"
 msgstr ""
 
-#: src/Api/Adapter/ConceptAdapter.php:174
+#: src/Api/Adapter/ConceptAdapter.php:208
 msgid "A concept must belong to a thesaurus scheme."
 msgstr ""
 
-#: src/Api/Adapter/ConceptAdapter.php:186
+#: src/Api/Adapter/ConceptAdapter.php:220
 msgid "The broader concept must belong to the same scheme."
 msgstr ""
 
-#: src/Api/Adapter/ConceptAdapter.php:188
+#: src/Api/Adapter/ConceptAdapter.php:222
 msgid "A concept cannot be an ancestor of itself."
 msgstr ""
 
@@ -1197,18 +1415,39 @@ msgid ""
 "logs{link_end})."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:387
+#: src/Controller/Admin/ThesaurusController.php:385
+#: src/Controller/Admin/ThesaurusController.php:421
+msgid "Select the thesaurus to convert."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:393
 msgid ""
 "Converting items into concepts in background ({link}job #{job_id}{link_end}, "
 "{link_log}logs{link_end})."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:409
-#: src/Controller/Admin/ThesaurusController.php:411
+#: src/Controller/Admin/ThesaurusController.php:432
+msgid ""
+"Converting concepts into items in background ({link}job #{job_id}{link_end}, "
+"{link_log}logs{link_end})."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:460
+msgid "Select the thesaurus to fix."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:468
+msgid ""
+"Fixing the data of the concepts in background ({link}job #{job_id}"
+"{link_end}, {link_log}logs{link_end})."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:508
+#: src/Controller/Admin/ThesaurusController.php:510
 msgid "Migrate data types"
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:410
+#: src/Controller/Admin/ThesaurusController.php:509
 msgid ""
 "The data type \"thesaurus\" is added to the resource templates and to the "
 "configs that use the custom vocab of a thesaurus, so the concepts can be "
@@ -1216,140 +1455,197 @@ msgid ""
 "values are not modified."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:414
-#: src/Controller/Admin/ThesaurusController.php:416
+#: src/Controller/Admin/ThesaurusController.php:513
+#: src/Controller/Admin/ThesaurusController.php:515
 msgid "Convert items into concepts"
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:415
+#: src/Controller/Admin/ThesaurusController.php:514
 msgid ""
 "The items that belong to a thesaurus are converted into concepts, that are a "
 "dedicated resource type since version 3.4.26. The ids and the values are "
 "kept, so the links to the concepts remain valid, but the items are removed "
-"from the browse of the items. The items with a media cannot be converted."
+"from the browse of the items. The items with a media cannot be converted. "
+"The assignments to item sets and sites, the data of the other modules and "
+"the data types of the values are saved in the database before any change, so "
+"the conversion can be reverted with the task \"Convert concepts into "
+"items\". Without backup, the thesaurus is not converted."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:448
+#: src/Controller/Admin/ThesaurusController.php:519
+#: src/Controller/Admin/ThesaurusController.php:521
+msgid "Convert concepts into items"
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:520
+msgid ""
+"The concepts of a thesaurus are converted back into items, in order to "
+"rollback a conversion. The ids and the values are kept, so the links remain "
+"valid, and the structure remains available via the skos values, so the "
+"thesaurus can be converted again. The assignments to item sets and sites, "
+"the data of the other modules and the data types of the values are restored "
+"from the backup saved by the conversion. Warning: the rollback may be "
+"incomplete when this backup is missing, when the resources changed since the "
+"conversion, or when the data were saved by an older version, and the data "
+"type of the thesaurus added manually to a template since the conversion is "
+"removed too, so a backup of the database remains recommended."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:526
+#: src/Controller/Admin/ThesaurusController.php:528
+msgid "Fix the data of the concepts"
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:527
+msgid ""
+"The values filled with a concept via a custom vocab use the data type of the "
+"thesaurus, the template properties allow it, and the rows that reference a "
+"concept as an item (item sets, sites, data of other modules) are removed, "
+"like when an item is deleted."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:551
+msgid "Thesaurus to process"
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:552
+msgid ""
+"The task updates and removes data, so the thesaurus are selected explicitly."
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:560
+msgid "Select thesaurus…"
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:585
+msgid "Restore the assignments to item sets and sites"
+msgstr ""
+
+#: src/Controller/Admin/ThesaurusController.php:618
 msgid ""
 "Migrating data types in background: the thesaurus data type is added to the "
 "templates using a thesaurus custom vocab ({link}job #{job_id}{link_end}, "
 "{link_log}logs{link_end})."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:479
+#: src/Controller/Admin/ThesaurusController.php:649
 msgid ""
 "You may need to reload {link}this page{link_end} a second time to clean "
 "indexation of top concepts."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:520
+#: src/Controller/Admin/ThesaurusController.php:690
 msgid "Unallowed request."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:541
+#: src/Controller/Admin/ThesaurusController.php:711
 msgid ""
 "The file exceeds the maximum upload size allowed by the server ({size})."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:552
+#: src/Controller/Admin/ThesaurusController.php:722
 msgid "Wrong request for file."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:572
+#: src/Controller/Admin/ThesaurusController.php:742
 msgid "A file or a URL is required."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:617
+#: src/Controller/Admin/ThesaurusController.php:787
 msgid "Wrong media type (\"{type}\") for file."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:623
-#: src/Controller/Admin/ThesaurusController.php:1253
+#: src/Controller/Admin/ThesaurusController.php:793
+#: src/Controller/Admin/ThesaurusController.php:1429
 msgid "The file is empty."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:632
+#: src/Controller/Admin/ThesaurusController.php:802
 msgid "Unable to convert the file."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:696
+#: src/Controller/Admin/ThesaurusController.php:867
 msgid "Convert first a file to get the flat list."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:739
+#: src/Controller/Admin/ThesaurusController.php:910
 msgid "The module Custom Vocab is required to create a custom vocabulary."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:747
+#: src/Controller/Admin/ThesaurusController.php:918
 msgid "There is no term to create the custom vocabulary."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:759
+#: src/Controller/Admin/ThesaurusController.php:930
 msgid "Unable to create the custom vocabulary \"{label}\": {message}"
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:766
+#: src/Controller/Admin/ThesaurusController.php:937
 msgid "The custom vocabulary \"{label}\" was created with {count} terms."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:791
+#: src/Controller/Admin/ThesaurusController.php:966
 msgid "The list is empty."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:837
+#: src/Controller/Admin/ThesaurusController.php:1013
 msgid ""
 "Structure saved and reindexed ({link}job #{job_id}{link_end}, {link_log}"
 "logs{link_end})."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:841
+#: src/Controller/Admin/ThesaurusController.php:1017
 msgid ""
 "Indexing structure in background. Do not display structure while indexing, "
 "else errors may occur ({link}job #{job_id}{link_end}, {link_log}"
 "logs{link_end})."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:1284
+#: src/Controller/Admin/ThesaurusController.php:1460
 msgid "The thesaurus \"{title}\" is created."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:1291
+#: src/Controller/Admin/ThesaurusController.php:1467
 msgid ""
 "Creation of thesaurus \"{title}\" with {total} lines started ({link}job "
 "#{job_id}{link_end}, {link_log}logs{link_end})"
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:1327
+#: src/Controller/Admin/ThesaurusController.php:1503
 msgid ""
 "Updating concepts in background ({link}job #{job_id}{link_end}, {link_log}"
 "logs{link_end})."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:1438
+#: src/Controller/Admin/ThesaurusController.php:1614
 msgid "Unable to fetch the URL: {message}"
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:1446
+#: src/Controller/Admin/ThesaurusController.php:1622
 msgid "Unable to fetch the URL (status {status})."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:1455
+#: src/Controller/Admin/ThesaurusController.php:1631
 msgid "The fetched URL is empty."
 msgstr ""
 
-#: src/Controller/Admin/ThesaurusController.php:1503
+#: src/Controller/Admin/ThesaurusController.php:1679
 msgid "The php extension \"zlib\" is required to import a gzipped file."
 msgstr ""
 
-#: src/Controller/Admin/ConceptController.php:56
+#: src/Controller/Admin/ConceptController.php:66
+msgid "Concept successfully created. {link}Add another concept?{link_end}"
+msgstr ""
+
+#: src/Controller/Admin/ConceptController.php:168
 msgid "Concept successfully updated"
 msgstr ""
 
-#: src/Controller/Admin/ConceptController.php:78
+#: src/Controller/Admin/ConceptController.php:190
 msgid "concept"
 msgstr ""
 
-#: src/Controller/Admin/ConceptController.php:96
+#: src/Controller/Admin/ConceptController.php:228
 msgid "Concept successfully deleted"
 msgstr ""
 
@@ -1358,25 +1654,25 @@ msgid ""
 "The module CustomVocab is required to use the deprecated custom vocab select."
 msgstr ""
 
-#: src/Stdlib/Thesaurus.php:359
+#: src/Stdlib/Thesaurus.php:381
 msgid ""
 "Thesaurus based on resource #{resource_id} does not exist or is not "
 "available to current user."
 msgstr ""
 
-#: src/Stdlib/Thesaurus.php:998 src/Stdlib/Thesaurus.php:1357
-#: src/Stdlib/Thesaurus.php:1385 src/Stdlib/Thesaurus.php:1412
-#: src/Stdlib/Thesaurus.php:1444
+#: src/Stdlib/Thesaurus.php:1047 src/Stdlib/Thesaurus.php:1406
+#: src/Stdlib/Thesaurus.php:1434 src/Stdlib/Thesaurus.php:1461
+#: src/Stdlib/Thesaurus.php:1493
 msgid "There cannot be more than {total} levels of descendants."
 msgstr ""
 
-#: src/Stdlib/Thesaurus.php:1125
+#: src/Stdlib/Thesaurus.php:1174
 msgid ""
 "At least one descriptor (\"{title}\") contains the separator \"{value}\". "
 "You must change it."
 msgstr ""
 
-#: src/Stdlib/Thesaurus.php:1306 src/Stdlib/Thesaurus.php:1330
+#: src/Stdlib/Thesaurus.php:1355 src/Stdlib/Thesaurus.php:1379
 msgid "There cannot be more than {total} ancestors."
 msgstr ""
 
