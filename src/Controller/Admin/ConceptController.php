@@ -12,12 +12,121 @@ use Omeka\Form\ResourceForm;
  * neither file nor collection, and it is mainly managed inside its thesaurus
  * (import and structure editor).
  *
- * A concept is created by the thesaurus (import or structure editor), because
- * it requires a scheme, so there is no "add" action here: only the values and
- * the visibility can be edited.
+ * A concept requires a scheme, so it is added from its thesaurus or from its
+ * broader concept.
  */
 class ConceptController extends AbstractActionController
 {
+    /**
+     * Add a concept to a thesaurus, as top concept or under a broader one.
+     */
+    public function addAction()
+    {
+        $schemeId = (int) $this->params()->fromQuery('scheme_id');
+        $broaderId = (int) $this->params()->fromQuery('broader_id');
+
+        /** @var \Omeka\Api\Representation\ItemRepresentation $scheme */
+        $scheme = $this->api()->read('items', ['id' => $schemeId])->getContent();
+        /** @var \Thesaurus\Api\Representation\ConceptRepresentation|null $broader */
+        $broader = $broaderId
+            ? $this->api()->read('concepts', ['id' => $broaderId])->getContent()
+            : null;
+        if ($broader && $broader->scheme()->id() !== $scheme->id()) {
+            $broader = null;
+        }
+
+        $form = $this->getForm(ResourceForm::class);
+        $form->setAttribute('action', $this->url()->fromRoute(null, [], ['query' => array_filter([
+            'scheme_id' => $scheme->id(),
+            'broader_id' => $broader ? $broader->id() : null,
+        ])], true));
+        $form->setAttribute('id', 'add-concept');
+
+        $settings = $this->settings();
+        $form->get('o:resource_template[o:id]')->setValue((int) $settings->get('thesaurus_skos_concept_template_id'));
+        $form->get('o:resource_class[o:id]')->setValue((int) $settings->get('thesaurus_skos_concept_class_id'));
+
+        $postedValues = $this->prefilledValues($scheme, $broader);
+
+        if ($this->getRequest()->isPost()) {
+            $data = $this->params()->fromPost();
+            $postedValuesJson = $data['values_json'] ?? null;
+            $data = $this->mergeValuesJson($data);
+            $form->setData($data);
+            if ($form->isValid()) {
+                // The concept is appended to its siblings, so the tree does not
+                // need to be reindexed.
+                $data['o:position'] ??= $this->nextPosition(
+                    $scheme->id(),
+                    (int) ($data['skos:broader'][0]['value_resource_id'] ?? 0)
+                );
+                $response = $this->api($form)->create('concepts', $data);
+                if ($response) {
+                    $message = new \Common\Stdlib\PsrMessage(
+                        'Concept successfully created. {link}Add another concept?{link_end}', // @translate
+                        [
+                            'link' => sprintf('<a href="%s">', htmlspecialchars($this->url()->fromRoute(null, [], ['query' => $this->params()->fromQuery()], true))),
+                            'link_end' => '</a>',
+                        ]
+                    );
+                    $message->setEscapeHtml(false);
+                    $this->messenger()->addSuccess($message);
+                    return $this->redirect()->toUrl($response->getContent()->url());
+                }
+            } else {
+                $this->messenger()->addFormErrors($form);
+            }
+            $decoded = $postedValuesJson ? json_decode($postedValuesJson, true) : null;
+            if (is_array($decoded)) {
+                $postedValues = array_map(fn ($values) => ['values' => $values], array_filter($decoded, 'is_array'));
+            }
+        }
+
+        return new ViewModel([
+            'form' => $form,
+            'scheme' => $scheme,
+            'broader' => $broader,
+            'postedValues' => $postedValues,
+        ]);
+    }
+
+    /**
+     * Prepare the values of a new concept: its scheme and its broader concept.
+     */
+    protected function prefilledValues($scheme, $broader): array
+    {
+        $easyMeta = $this->easyMeta();
+        $link = fn ($term, $dataType, $resource) => [
+            $term => ['values' => [[
+                'type' => $dataType,
+                'property_id' => $easyMeta->propertyId($term),
+                'is_public' => true,
+                'value_resource_id' => $resource->id(),
+                'value_resource_name' => $resource->resourceName(),
+                'display_title' => $resource->displayTitle(),
+                'url' => $resource->adminUrl(),
+            ]]],
+        ];
+
+        return $link('skos:inScheme', 'resource:item', $scheme)
+            + ($broader
+                ? $link('skos:broader', 'resource:concept', $broader)
+                : $link('skos:topConceptOf', 'resource:item', $scheme));
+    }
+
+    /**
+     * Get the position after the last sibling of a concept.
+     */
+    protected function nextPosition(int $schemeId, int $broaderId): int
+    {
+        $positions = $this->api()->search('concepts', [
+            'scheme_id' => $schemeId,
+            // The id "0" means the top concepts.
+            'broader_id' => $broaderId,
+        ], ['returnScalar' => 'position'])->getContent();
+        return $positions ? (int) max($positions) + 1 : 1;
+    }
+
     public function showAction()
     {
         $concept = $this->api()->read('concepts', $this->params('id'))->getContent();

@@ -28,6 +28,9 @@ $sectionNavs = [
 
 <div id="page-actions">
     <?php $this->trigger('view.show.page_actions', ['resource' => $concept]); ?>
+    <?php if ($this->userIsAllowed(\Thesaurus\Api\Adapter\ConceptAdapter::class, 'create')): ?>
+    <?= $hyperlink($translate('Add narrower concept'), $this->url('admin/concept/default', ['action' => 'add'], ['query' => ['scheme_id' => $concept->scheme()->id(), 'broader_id' => $concept->id()]]), ['class' => 'button']) ?>
+    <?php endif; ?>
     <?php if ($concept->userIsAllowed('update')): ?>
     <?= $hyperlink($translate('Edit concept'), $concept->adminUrl('edit'), ['class' => 'button']) ?>
     <?php endif; ?>

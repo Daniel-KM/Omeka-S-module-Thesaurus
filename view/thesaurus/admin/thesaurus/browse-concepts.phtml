@@ -25,6 +25,9 @@ $this->htmlElement('body')->appendAttribute('class', 'concepts browse');
 </div>
 
 <div id="page-actions">
+    <?php if ($this->userIsAllowed(\Thesaurus\Api\Adapter\ConceptAdapter::class, 'create')): ?>
+    <?= $hyperlink($translate('Add concept'), $url('admin/concept/default', ['action' => 'add'], ['query' => ['scheme_id' => $scheme->id()]]), ['class' => 'button']) ?>
+    <?php endif; ?>
     <?= $hyperlink($translate('Tree'), $url('admin/thesaurus/id', ['id' => $scheme->id()]), ['class' => 'button']) ?>
     <?php if ($scheme->userIsAllowed('update')): ?>
     <?= $hyperlink($translate('Edit thesaurus'), $scheme->adminUrl('edit'), ['class' => 'button']) ?>

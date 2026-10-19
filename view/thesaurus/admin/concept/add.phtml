@@ -1,0 +1,62 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Form\ResourceForm $form
+ * @var \Omeka\Api\Representation\ItemRepresentation $scheme
+ * @var \Thesaurus\Api\Representation\ConceptRepresentation|null $broader
+ * @var array|null $postedValues
+ */
+
+$plugins = $this->getHelperPluginManager();
+$url = $plugins->get('url');
+$translate = $plugins->get('translate');
+$hyperlink = $plugins->get('hyperlink');
+$formElement = $plugins->get('formElement');
+
+$this->htmlElement('body')->appendAttribute('class', 'concepts add');
+$this->headScript()->appendFile($this->assetUrl('vendor/sortablejs/Sortable.min.js', 'Omeka'));
+$this->headScript()->appendFile($this->assetUrl('js/resource-form.js', 'Omeka'));
+
+$form->prepare();
+
+// Also use the item controller identifier, so the modules that enhance the
+// resource form of an item (data types, value suggest, etc.) apply here too.
+$triggerIdentifiers = [
+    'Thesaurus\Controller\Admin\ConceptController',
+    'Omeka\Controller\Admin\Item',
+];
+?>
+
+<?= $this->pageTitle($translate('New concept'), 1, $translate('Concept')) ?>
+
+<?php $this->trigger('view.add.before', [], false, $triggerIdentifiers); ?>
+
+<?= $this->form()->openTag($form) ?>
+
+<?= $this->sectionNav([
+    'resource-values' => $translate('Values'),
+    'advanced-settings' => $translate('Advanced'),
+], 'view.add.section_nav') ?>
+
+<?= $this->partial('common/resource-fields.phtml', [
+    'form' => $form,
+    'resource' => null,
+    'action' => 'add',
+    'postedValues' => $postedValues ?? null,
+]) ?>
+
+<div id="page-actions">
+    <input type="hidden" name="o:is_public" value="1">
+    <?= $hyperlink($translate('Cancel'), $url('admin/thesaurus/id', ['action' => 'structure', 'id' => $scheme->id()]), ['class' => 'button']) ?>
+    <button type="submit"><?= $translate('Add') ?></button>
+</div>
+
+<?php $this->trigger('view.add.form.after', ['form' => $form], false, $triggerIdentifiers); ?>
+
+<?= $formElement($form->get('csrf')) ?>
+
+<?= $this->form()->closeTag() ?>
+
+<?= $this->partial('common/resource-form-templates.phtml') ?>
+
+<?php $this->trigger('view.add.after', [], false, $triggerIdentifiers); ?>
