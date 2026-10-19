@@ -87,9 +87,16 @@ items first.
 The skos values are the source of truth: the columns of the table are an index
 built from them by the job of reindexation. So a concept can be created with the
 values only (`skos:inScheme`, `skos:topConceptOf`, `skos:broader`), like any
-resource, and the structure is filled automatically. The keys `o:scheme`,
-`o:broader`, `o:top` and `o:position` may be used to set the structure
-explicitly and they take precedence when they are present.
+resource, and the structure is filled automatically. The keys
+`o-module-thesaurus:scheme`, `o-module-thesaurus:broader`,
+`o-module-thesaurus:top` and `o-module-thesaurus:position` may be used to set
+the structure explicitly and they take precedence when they are present.
+
+Since version 3.4.27, these keys use the prefix of the module, declared in the
+json-ld context, like the type `o-module-thesaurus:Concept`. Until version
+3.4.26, they used the prefix of the core (`o:scheme`, `o:broader`, `o:top` and
+`o:position`), that does not define them. The api outputs the new keys only, but
+the old ones are still accepted on input.
 
 #### Reindexation
 
@@ -177,13 +184,17 @@ values.
 
 ### Manual creation of a thesaurus
 
-Create first an item set with class "skos:Collection" or "skos:orderedCollection".
-This is required to get the display the tree structure in resource form via Custom Vocab.
-This item set must contains only the scheme and all concepts.
+Create the scheme as an item with the template "Thesaurus Scheme". The concepts
+are a resource of their own, so they are not created as items: import them, or
+convert existing items, or create them via the api with the values "skos:inScheme"
+or "skos:topConceptOf" and "skos:broader".
 
-Then create the scheme with the template "Thesaurus Scheme", then each concept
-with the template "Thesaurus Concept". Each concept should have the required property
-"skos:inScheme" filled with the scheme.
+In the template "Thesaurus Concept", the relations between concepts (broader,
+narrower, related, etc.) use the data type "Concept", so the concepts are
+selected in a dedicated sidebar, that can be filtered by thesaurus. The scheme
+("skos:inScheme" and "skos:topConceptOf") is an item: when the module [Advanced Resource Template]
+is installed, its selection is limited to the thesaurus with the query `thesaurus_scheme=1`,
+that can be used in any search of items.
 
 To make the structure, you can link each concept via the resource form interface,
 or via the menu "Thesaurus".
