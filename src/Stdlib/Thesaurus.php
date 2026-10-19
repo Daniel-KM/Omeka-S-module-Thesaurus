@@ -77,6 +77,23 @@ class Thesaurus
     protected $terms = [];
 
     /**
+     * Name of the api resource of the concepts of the current thesaurus.
+     *
+     * Until version 3.4.25, the concepts were items, so a thesaurus that is not
+     * converted yet is still read as items.
+     *
+     * @var string
+     */
+    protected $resourceName = 'concepts';
+
+    /**
+     * Entity class of the concepts of the current thesaurus.
+     *
+     * @var string
+     */
+    protected $entityClass = \Thesaurus\Entity\Concept::class;
+
+    /**
      * Cache all parents, children and titles of all terms, by id.
      *
      * @todo Check internationalized title.
@@ -1550,6 +1567,30 @@ class Thesaurus
         return $this;
     }
 
+    /**
+     * Determine if the thesaurus is made of concepts or of items.
+     *
+     * A thesaurus that was not converted yet is still made of items, so it is
+     * read as items, else it would appear empty.
+     */
+    protected function cacheResourceKind(): self
+    {
+        $hasConcepts = (bool) (int) $this->entityManager->getConnection()
+            ->executeQuery(
+                'SELECT COUNT(*) FROM `concept` WHERE `scheme_id` = :scheme_id',
+                ['scheme_id' => $this->scheme->id()],
+                ['scheme_id' => \PDO::PARAM_INT]
+            )
+            ->fetchOne();
+
+        $this->resourceName = $hasConcepts ? 'concepts' : 'items';
+        $this->entityClass = $hasConcepts
+            ? \Thesaurus\Entity\Concept::class
+            : \Omeka\Entity\Item::class;
+
+        return $this;
+    }
+
     protected function cacheStructure(): self
     {
         $this->structure = [];
@@ -1562,26 +1603,49 @@ class Thesaurus
             return $this;
         }
 
+        $this->cacheResourceKind();
+
         // Get all ids and titles via api.
         // This allows to check visibility and to get the full list of concepts.
         // The validity of top concepts is not checked.
+        $query = $this->resourceName === 'concepts'
+            ? [
+                'resource_class_id' => [
+                    $this->terms['class']['skos:Concept'],
+                ],
+                'property' => [
+                    [
+                        'joiner' => 'and',
+                        'property' => $this->terms['property']['skos:inScheme'],
+                        'type' => 'res',
+                        'text' => $this->scheme->id(),
+                    ],
+                ],
+                // Is public is automatically managed via the api.
+            ]
+            // A thesaurus that is not converted yet has no concept and the
+            // items may have no skos class, so they are determined with the
+            // relation to the scheme only.
+            : [
+                'property' => [
+                    [
+                        'joiner' => 'and',
+                        'property' => $this->terms['property']['skos:inScheme'],
+                        'type' => 'res',
+                        'text' => $this->scheme->id(),
+                    ],
+                    [
+                        'joiner' => 'or',
+                        'property' => $this->terms['property']['skos:topConceptOf'],
+                        'type' => 'res',
+                        'text' => $this->scheme->id(),
+                    ],
+                ],
+            ];
         $titles = $this->api
             ->search(
-                'concepts',
-                [
-                    'resource_class_id' => [
-                        $this->terms['class']['skos:Concept'],
-                    ],
-                    'property' => [
-                        [
-                            'joiner' => 'and',
-                            'property' => $this->terms['property']['skos:inScheme'],
-                            'type' => 'res',
-                            'text' => $this->scheme->id(),
-                        ],
-                    ],
-                    // Is public is automatically managed via the api.
-                ],
+                $this->resourceName,
+                $query,
                 [
                     'initialize' => false,
                     'returnScalar' => 'title',
@@ -1617,7 +1681,7 @@ class Thesaurus
                 // There is only zero or one parent, but this is a grouped query.
                 'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource)) AS ids'
             )
-            ->from(\Thesaurus\Entity\Concept::class, 'item')
+            ->from($this->entityClass, 'item')
 
             // This join is useless now, since the list is filtered below by the
             // list of concept ids.
@@ -1681,7 +1745,7 @@ class Thesaurus
                 'item.id',
                 'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource) ORDER BY value_list.id ASC) AS ids'
             )
-            ->from(\Thesaurus\Entity\Concept::class, 'item')
+            ->from($this->entityClass, 'item')
             ->innerJoin(
                 \Omeka\Entity\Value::class,
                 'value_list',
@@ -1782,7 +1846,7 @@ class Thesaurus
         $qb = $this->createQueryBuilder();
         $qb
             ->select('item')
-            ->from(\Thesaurus\Entity\Concept::class, 'item')
+            ->from($this->entityClass, 'item')
             ->where($qb->expr()->in('item', ':ids'))
             ->setParameter('ids', array_keys($data), \Doctrine\DBAL\Connection::PARAM_INT_ARRAY)
         ;
