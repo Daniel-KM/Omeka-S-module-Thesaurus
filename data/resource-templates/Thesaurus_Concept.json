@@ -218,6 +218,9 @@
         "default_language": "",
         "no_language": false,
         "autocomplete": false,
-        "autofillers": []
+        "autofillers": [],
+        "use_for_resources": [
+            "concepts"
+        ]
     }
 }

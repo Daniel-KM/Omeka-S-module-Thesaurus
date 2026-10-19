@@ -466,6 +466,28 @@ class Module extends AbstractModule
             return $this;
         }
 
+        // The template of the concepts is reserved to the concepts. The option
+        // is copied in the main settings by the module, so it is updated too.
+        $row = $connection
+            ->executeQuery('SELECT `id`, `data` FROM `resource_template_data` WHERE `resource_template_id` = ?', [$templateId])
+            ->fetchAssociative();
+        $templateData = $row ? (json_decode((string) $row['data'], true) ?: []) : [];
+        if (($templateData['use_for_resources'] ?? null) !== ['concepts']) {
+            $templateData['use_for_resources'] = ['concepts'];
+            $row
+                ? $connection->update('resource_template_data', ['data' => json_encode($templateData)], ['id' => $row['id']])
+                : $connection->insert('resource_template_data', ['resource_template_id' => $templateId, 'data' => json_encode($templateData)]);
+        }
+        $settings = $services->get('Omeka\Settings');
+        $templatesByResources = $settings->get('advancedresourcetemplate_templates_by_resource');
+        if (is_array($templatesByResources)) {
+            foreach ($templatesByResources as $resourceName => $templateIds) {
+                $templatesByResources[$resourceName] = array_values(array_diff((array) $templateIds, [$templateId]));
+            }
+            $templatesByResources['concepts'][] = $templateId;
+            $settings->set('advancedresourcetemplate_templates_by_resource', $templatesByResources);
+        }
+
         $templatePropertyIds = $connection
             ->executeQuery(
                 'SELECT `id` FROM `resource_template_property` WHERE `resource_template_id` = :template_id AND `property_id` IN (:property_ids)',
