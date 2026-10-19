@@ -4,6 +4,10 @@ namespace Thesaurus\Job;
 
 use Doctrine\DBAL\Connection;
 use Omeka\Job\AbstractJob;
+use Thesaurus\Stdlib\ConceptTemplates;
+use Thesaurus\Stdlib\ConceptValues;
+use Thesaurus\Stdlib\ItemReferences;
+use Thesaurus\Stdlib\ReferencesBackup;
 
 /**
  * Convert the concepts of a thesaurus back into items.
@@ -14,6 +18,13 @@ use Omeka\Job\AbstractJob;
  * "resource:item" again and the thesaurus is no longer a dedicated resource
  * type: the structure remains available via the skos values, so the thesaurus
  * can be converted again.
+ *
+ * The assignments to item sets and sites, the data of the other modules and the
+ * data types of the values, removed or modified by the conversion, are restored
+ * from the file saved by it, unless the argument "restore" is false. Another
+ * file can be used with this argument. Without this file, the values get the
+ * data type "resource:item": the custom vocab they used before the conversion
+ * is unknown.
  */
 class ConvertConceptsToItems extends AbstractJob
 {
@@ -48,6 +59,7 @@ class ConvertConceptsToItems extends AbstractJob
         }
 
         $totalConverted = 0;
+        $convertedSchemeIds = [];
         foreach ($schemeIds as $schemeId) {
             if ($this->shouldStop()) {
                 $this->logger->warn(
@@ -56,7 +68,11 @@ class ConvertConceptsToItems extends AbstractJob
                 );
                 return;
             }
-            $totalConverted += $this->convertScheme($schemeId);
+            $converted = $this->convertScheme($schemeId);
+            if ($converted) {
+                $totalConverted += $converted;
+                $convertedSchemeIds[] = $schemeId;
+            }
         }
 
         if (!$totalConverted) {
@@ -66,10 +82,79 @@ class ConvertConceptsToItems extends AbstractJob
             return;
         }
 
+        $this->restoreReferences($convertedSchemeIds);
+
+        // The templates of the thesaurus may be reserved to the concepts, so
+        // the values of the new items could not be saved any more.
+        $services = $this->getServiceLocator();
+        $totalTemplates = (new ConceptTemplates(
+            $this->connection,
+            $services->get('Common\EasyMeta'),
+            $services->get('Omeka\Settings'),
+            $services->get('Omeka\EntityManager')
+        ))->allowItems();
+        if ($totalTemplates) {
+            $this->logger->notice(
+                'The data type of the items was added to {count} template properties.', // @translate
+                ['count' => $totalTemplates]
+            );
+        }
+
         $this->logger->notice(
             '{total} concepts were converted into items.', // @translate
             ['total' => $totalConverted]
         );
+
+        $this->logger->warn(
+            'The rollback may be incomplete: the rows whose target was removed since the conversion, the rows of the tables without a single primary key and the data that were not saved are not restored. Check the thesaurus and the related resources.' // @translate
+        );
+    }
+
+    /**
+     * Restore the rows removed by the conversion of the items into concepts.
+     *
+     * @param int[] $schemeIds
+     */
+    protected function restoreReferences(array $schemeIds): void
+    {
+        $restore = $this->getArg('restore', true);
+        if ($restore === false || $restore === '0' || $restore === 'no') {
+            $this->logger->notice(
+                'The rows and the data types saved by the conversion were not restored.' // @translate
+            );
+            return;
+        }
+
+        $backup = new ReferencesBackup($this->basePath());
+        $content = is_string($restore) && $restore !== '' && $restore !== '1' && $restore !== 'yes'
+            ? $backup->read($restore)
+            : $backup->readLast($schemeIds);
+        if (!$content) {
+            $this->logger->warn(
+                'No saved data were found for these thesaurus: the assignments to item sets and sites are not restored and the values keep the data type "resource:item".' // @translate
+            );
+            return;
+        }
+
+        $total = (new ItemReferences($this->connection))->restoreForConcepts($content['tables'] ?? []);
+        $totalValues = (new ConceptValues($this->connection))->restoreTypes($content['values'] ?? []);
+        $this->logger->notice(
+            '{count} rows referencing the items and the data types of {count_values} values were restored from {filename}.', // @translate
+            [
+                'count' => $total,
+                'count_values' => $totalValues,
+                'filename' => basename((string) $content['filepath']),
+            ]
+        );
+    }
+
+    /**
+     * Get the base path of the files.
+     */
+    protected function basePath(): string
+    {
+        $config = $this->getServiceLocator()->get('Config');
+        return $config['file_store']['local']['base_path'] ?: (OMEKA_PATH . '/files');
     }
 
     /**

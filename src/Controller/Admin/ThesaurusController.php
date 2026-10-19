@@ -424,7 +424,10 @@ class ThesaurusController extends ItemController
         }
 
         $dispatcher = $this->jobDispatcher();
-        $job = $dispatcher->dispatch(\Thesaurus\Job\ConvertConceptsToItems::class, ['schemes' => $schemeIds]);
+        $job = $dispatcher->dispatch(\Thesaurus\Job\ConvertConceptsToItems::class, [
+            'schemes' => $schemeIds,
+            'restore' => (bool) $this->params()->fromPost('restore'),
+        ]);
         $message = new PsrMessage(
             'Converting concepts into items in background ({link}job #{job_id}{link_end}, {link_log}logs{link_end}).', // @translate
             [
@@ -508,15 +511,16 @@ class ThesaurusController extends ItemController
             ],
             'convert-items-to-concepts' => [
                 'label' => 'Convert items into concepts', // @translate
-                'description' => 'The items that belong to a thesaurus are converted into concepts, that are a dedicated resource type since version 3.4.26. The ids and the values are kept, so the links to the concepts remain valid, but the items are removed from the browse of the items. The items with a media cannot be converted.', // @translate
+                'description' => 'The items that belong to a thesaurus are converted into concepts, that are a dedicated resource type since version 3.4.26. The ids and the values are kept, so the links to the concepts remain valid, but the items are removed from the browse of the items. The items with a media cannot be converted. The assignments to item sets and sites, the data of the other modules and the data types of the values are saved in the directory "files/thesaurus", so the conversion can be reverted with the task "Convert concepts into items".', // @translate
                 'button' => 'Convert items into concepts', // @translate
                 'schemes' => true,
             ],
             'convert-concepts-to-items' => [
                 'label' => 'Convert concepts into items', // @translate
-                'description' => 'The concepts of a thesaurus are converted back into items, in order to rollback a conversion. The ids and the values are kept, so the links remain valid, and the structure remains available via the skos values, so the thesaurus can be converted again.', // @translate
+                'description' => 'The concepts of a thesaurus are converted back into items, in order to rollback a conversion. The ids and the values are kept, so the links remain valid, and the structure remains available via the skos values, so the thesaurus can be converted again. The assignments to item sets and sites, the data of the other modules and the data types of the values are restored from the file saved by the conversion. Warning: the rollback may be incomplete when this file is missing, when the resources changed since the conversion, or when the data were saved by an older version, so a backup of the database remains recommended.', // @translate
                 'button' => 'Convert concepts into items', // @translate
                 'schemes' => true,
+                'restore' => true,
             ],
             'fix-concept-references' => [
                 'label' => 'Fix the data of the concepts', // @translate
@@ -554,6 +558,22 @@ class ThesaurusController extends ItemController
                     'multiple' => true,
                     'required' => true,
                     'data-placeholder' => 'Select thesaurus…', // @translate
+                ],
+            ]);
+        }
+
+        // The reverse task restores the rows removed by the conversion.
+        if (!empty($tasks[$task]['restore'])) {
+            $form->add([
+                'name' => 'restore',
+                'type' => \Laminas\Form\Element\Checkbox::class,
+                'options' => [
+                    'label' => 'Restore the assignments to item sets and sites', // @translate
+                    'info' => 'The rows removed by the conversion are restored from the last file saved in the directory "files/thesaurus".', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'task-restore',
+                    'value' => '1',
                 ],
             ]);
         }

@@ -4,7 +4,9 @@ namespace Thesaurus\Job;
 
 use Doctrine\DBAL\Connection;
 use Omeka\Job\AbstractJob;
+use Thesaurus\Stdlib\ConceptValues;
 use Thesaurus\Stdlib\ItemReferences;
+use Thesaurus\Stdlib\ReferencesBackup;
 use Thesaurus\Stdlib\TemplateDataTypes;
 
 /**
@@ -207,6 +209,10 @@ class ConvertItemsToConcepts extends AbstractJob
             return 0;
         }
 
+        // The data types of the values that point to the concepts are modified
+        // below, so they are read before any change.
+        $valueTypes = (new ConceptValues($this->connection))->exportTypesForResources($itemIds);
+
         // The item rows are removed without cascade, so the rows that reference
         // them are removed separately.
         $this->connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
@@ -244,7 +250,15 @@ class ConvertItemsToConcepts extends AbstractJob
 
             // A concept is not an item, so it is no more assigned to item sets
             // or sites, and the data of the modules about items are removed.
-            (new ItemReferences($this->connection))->removeForConcepts([$schemeId]);
+            // These rows and the data types of the values that point to the
+            // concepts are saved first, so the conversion can be reverted.
+            $itemReferences = new ItemReferences($this->connection);
+            $this->saveReferences(
+                $schemeId,
+                $itemReferences->exportForConcepts([$schemeId]),
+                $valueTypes
+            );
+            $itemReferences->removeForConcepts([$schemeId]);
 
             // The old index table, used until version 3.4.25, references the
             // concepts as items, so its rows are removed with them.
@@ -274,6 +288,47 @@ class ConvertItemsToConcepts extends AbstractJob
         );
 
         return count($itemIds);
+    }
+
+    /**
+     * Save the rows and the data types modified by the conversion.
+     *
+     * @param array $references Result of ItemReferences::exportForConcepts().
+     * @param array $valueTypes Result of ConceptValues::exportTypesForResources().
+     */
+    protected function saveReferences(int $schemeId, array $references, array $valueTypes): void
+    {
+        if (!$references && !$valueTypes) {
+            return;
+        }
+
+        $total = 0;
+        foreach ($references as $tableData) {
+            $total += count($tableData['rows'] ?? []);
+        }
+
+        $filepath = (new ReferencesBackup($this->basePath()))->save([$schemeId], $references, $valueTypes);
+        if ($filepath) {
+            $this->logger->notice(
+                'Thesaurus #{item_id}: {count} rows referencing the concepts as items and the data types of {count_values} values were saved in {filename}, so the conversion can be reverted.', // @translate
+                ['item_id' => $schemeId, 'count' => $total, 'count_values' => count($valueTypes), 'filename' => basename($filepath)]
+            );
+            return;
+        }
+
+        $this->logger->warn(
+            'Thesaurus #{item_id}: unable to save the {count} rows referencing the concepts as items and the data types of {count_values} values. Check the rights of the directory "files/thesaurus".', // @translate
+            ['item_id' => $schemeId, 'count' => $total, 'count_values' => count($valueTypes)]
+        );
+    }
+
+    /**
+     * Get the base path of the files.
+     */
+    protected function basePath(): string
+    {
+        $config = $this->getServiceLocator()->get('Config');
+        return $config['file_store']['local']['base_path'] ?: (OMEKA_PATH . '/files');
     }
 
     /**

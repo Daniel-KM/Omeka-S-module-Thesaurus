@@ -5,6 +5,7 @@ namespace Thesaurus\Job;
 use Omeka\Job\AbstractJob;
 use Thesaurus\Stdlib\ConceptValues;
 use Thesaurus\Stdlib\ItemReferences;
+use Thesaurus\Stdlib\ReferencesBackup;
 use Thesaurus\Stdlib\TemplateDataTypes;
 
 /**
@@ -41,7 +42,35 @@ class FixConceptReferences extends AbstractJob
             return;
         }
 
-        $totalValues = (new ConceptValues($connection))->retypeCustomVocabValues($schemeIds);
+        $conceptValues = new ConceptValues($connection);
+        $itemReferences = new ItemReferences($connection);
+
+        // The data of the concepts are saved before any change, so the fix can
+        // be reverted with the task that converts the concepts into items.
+        $conceptIds = array_map('intval', $connection
+            ->executeQuery(
+                'SELECT `id` FROM `concept` WHERE `scheme_id` IN (:ids)',
+                ['ids' => $schemeIds],
+                ['ids' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY]
+            )
+            ->fetchFirstColumn());
+        $references = $itemReferences->exportForConcepts($schemeIds);
+        $valueTypes = $conceptValues->exportTypesForResources($conceptIds);
+        if ($references || $valueTypes) {
+            $config = $services->get('Config');
+            $basePath = $config['file_store']['local']['base_path'] ?: (OMEKA_PATH . '/files');
+            $filepath = (new ReferencesBackup($basePath))->save($schemeIds, $references, $valueTypes);
+            $filepath
+                ? $logger->notice(
+                    'The rows referencing the concepts as items and the data types of the values were saved in {filename}.', // @translate
+                    ['filename' => basename($filepath)]
+                )
+                : $logger->warn(
+                    'Unable to save the rows referencing the concepts as items and the data types of the values. Check the rights of the directory "files/thesaurus".' // @translate
+                );
+        }
+
+        $totalValues = $conceptValues->retypeCustomVocabValues($schemeIds);
         if ($totalValues) {
             $logger->notice(
                 '{count} values pointing to a concept via a custom vocab now use the data type of the thesaurus.', // @translate
@@ -57,7 +86,7 @@ class FixConceptReferences extends AbstractJob
             );
         }
 
-        $totalReferences = (new ItemReferences($connection))->removeForConcepts($schemeIds);
+        $totalReferences = $itemReferences->removeForConcepts($schemeIds);
         if ($totalReferences) {
             $logger->notice(
                 '{count} rows referencing a concept as an item were removed or reset.', // @translate
