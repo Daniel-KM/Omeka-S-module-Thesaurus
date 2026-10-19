@@ -18,7 +18,8 @@ use Common\Stdlib\PsrMessage;
  * @var \Omeka\Mvc\Controller\Plugin\Messenger $messenger
  */
 $plugins = $services->get('ControllerPluginManager');
-$url = $services->get('ViewHelperManager')->get('url');
+$helpers = $services->get('ViewHelperManager');
+$url = $helpers->get('url');
 $api = $plugins->get('api');
 $translate = $plugins->get('translate');
 $settings = $services->get('Omeka\Settings');
@@ -379,11 +380,10 @@ if (version_compare($oldVersion, '3.4.26', '<')) {
         }
     }
 
-    // Convert the old index table "thesaurus_term" (concepts stored as items)
-    // into the subtype table "concept" (concepts as a dedicated
-    // resource type). The resource id is kept, so all linked values remain
-    // valid. The broader/root of "thesaurus_term" reference term rows, so they
-    // are resolved to their concept id (item_id).
+    // The old index table "thesaurus_term" stored the concepts as items. The
+    // items are not converted automatically: the conversion updates and removes
+    // data, so the administrator selects the thesaurus to process via the task
+    // of maintenance. The table is kept until all the thesaurus are converted.
     $sql = <<<'SQL'
         SELECT COUNT(*)
         FROM information_schema.TABLES
@@ -392,58 +392,14 @@ if (version_compare($oldVersion, '3.4.26', '<')) {
         SQL;
     $hasTerm = (int) $connection->executeQuery($sql)->fetchOne();
     if ($hasTerm) {
-        // The check of the foreign keys is disabled to move the resources from
-        // the table "item" to the table "concept". It is restored in all cases,
-        // else the connection would keep it disabled after a failure.
-        $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
-        $sqls = [
-            // The concepts already converted are updated, so the migration
-            // can be replayed after a partial upgrade, for example when a big
-            // thesaurus exceeds the maximum execution time.
-            <<<'SQL'
-                INSERT INTO `concept` (`id`, `scheme_id`, `top_id`, `broader_id`, `position`)
-                SELECT t.item_id, t.scheme_id, r.item_id, b.item_id, t.position
-                FROM `thesaurus_term` t
-                LEFT JOIN `thesaurus_term` r ON r.id = t.root_id
-                LEFT JOIN `thesaurus_term` b ON b.id = t.broader_id
-                ON DUPLICATE KEY UPDATE
-                    `scheme_id` = VALUES(`scheme_id`),
-                    `top_id` = VALUES(`top_id`),
-                    `broader_id` = VALUES(`broader_id`),
-                    `position` = VALUES(`position`)
-                SQL,
-            <<<'SQL'
-                UPDATE `resource` SET `resource_type` = 'Thesaurus\\Entity\\Concept'
-                WHERE `id` IN (SELECT `item_id` FROM `thesaurus_term`)
-                SQL,
-            <<<'SQL'
-                DELETE FROM `item`
-                WHERE `id` IN (SELECT `item_id` FROM (SELECT `item_id` FROM `thesaurus_term`) x)
-                SQL,
-            // Any value pointing to a concept must use the "resource:concept"
-            // data type, so relations from concepts (broader, narrower,
-            // related, hasTopConcept) and links to concepts from other
-            // resources (dcterms:subject, etc.) are converted from the old item
-            // type.
-            <<<'SQL'
-                UPDATE `value` SET `type` = 'resource:concept'
-                WHERE `value_resource_id` IN (SELECT `id` FROM `concept`)
-                    AND `type` IN ('resource', 'resource:item')
-                SQL,
-            'DROP TABLE `thesaurus_term`',
-        ];
-        try {
-            foreach ($sqls as $sql) {
-                $connection->executeStatement($sql);
-            }
-        } finally {
-            $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
+        $totalTerms = (int) $connection->executeQuery('SELECT COUNT(*) FROM `thesaurus_term`')->fetchOne();
+        if ($totalTerms) {
+            $message = new PsrMessage(
+                'The concepts are now a dedicated resource type, no longer mixed with items in browse, search, facets and references. It is recommended to run the task "Convert items into concepts" on each of the thesaurus to convert: the {count} concepts stored as items still work, but they are not converted automatically.', // @translate
+                ['count' => $totalTerms]
+            );
+            $messenger->addWarning($message);
         }
-
-        $message = new PsrMessage(
-            'The concepts are now a dedicated resource type, no longer mixed with items in browse, search, facets and references.' // @translate
-        );
-        $messenger->addSuccess($message);
     }
 
     // The item set of a thesaurus is a standard one now, so the skos classes
@@ -463,6 +419,109 @@ if (version_compare($oldVersion, '3.4.26', '<')) {
         $message = new PsrMessage(
             'The item set of a thesaurus is a standard one now, identified via the scheme it contains, not via a class. It is recommended to remove the classes "skos:Collection" and "skos:OrderedCollection" from the {count} item sets that use them, because they will be removed automatically in a future version.', // @translate
             ['count' => $totalCollections]
+        );
+        $messenger->addWarning($message);
+    }
+
+    // The relations between concepts use the data type "resource:concept" and
+    // the scheme is selected among the thesaurus only.
+    $this->updateThesaurusTemplates();
+}
+
+if (version_compare($oldVersion, '3.4.27', '<')) {
+    // The data removed or modified by a conversion into concepts are saved in
+    // a table, so the conversion can be reverted.
+    $connection->executeStatement(<<<'SQL'
+        CREATE TABLE IF NOT EXISTS `thesaurus_backup` (
+            `id` INT AUTO_INCREMENT NOT NULL,
+            `created` DATETIME NOT NULL,
+            `schemes` LONGTEXT NOT NULL COMMENT '(DC2Type:json)',
+            `data` LONGTEXT NOT NULL COMMENT '(DC2Type:json)',
+            PRIMARY KEY(`id`)
+        ) DEFAULT CHARACTER SET `utf8mb4` COLLATE `utf8mb4_unicode_ci` ENGINE = `InnoDB`
+        SQL);
+
+    // The conversion of the items into concepts, done by the previous versions,
+    // kept the values filled via a custom vocab and the rows that reference the
+    // concepts as items. These data are not fixed automatically: the fix
+    // updates and removes data, so the administrator selects the thesaurus to
+    // process via the task of maintenance. The classes of the module are not
+    // autoloaded during upgrade.
+    require_once dirname(__DIR__, 2) . '/src/Stdlib/ConceptValues.php';
+    require_once dirname(__DIR__, 2) . '/src/Stdlib/ItemReferences.php';
+    require_once dirname(__DIR__, 2) . '/src/Stdlib/TemplateDataTypes.php';
+
+    $conceptValues = new \Thesaurus\Stdlib\ConceptValues($connection);
+    $templateDataTypes = new \Thesaurus\Stdlib\TemplateDataTypes($connection);
+    $itemReferences = new \Thesaurus\Stdlib\ItemReferences($connection);
+
+    $totalValues = $conceptValues->countCustomVocabValues();
+    $totalTemplates = $templateDataTypes->countMissingThesaurusTypes();
+    $totalReferences = $itemReferences->countForConcepts();
+
+    if ($totalValues || $totalTemplates || $totalReferences) {
+        // The thesaurus to process come from the three issues, so the
+        // administrator can select them in the task.
+        $schemeIds = array_values(array_unique(array_merge(
+            array_keys($conceptValues->schemesWithCustomVocabValues()),
+            $templateDataTypes->schemeIdsWithMissingTypes(),
+            $itemReferences->schemeIdsWithReferences()
+        )));
+        $schemes = $schemeIds
+            ? $connection
+                ->executeQuery(
+                    'SELECT `id`, `title` FROM `resource` WHERE `id` IN (:ids) ORDER BY `title`',
+                    ['ids' => $schemeIds],
+                    ['ids' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY]
+                )
+                ->fetchAllKeyValue()
+            : [];
+        $message = new PsrMessage(
+            'Some data of the concepts should be fixed: {count_values} values filled via a custom vocab, {count_templates} template properties and {count_references} rows referencing a concept as an item. Run the task "Fix the data of the concepts" on each thesaurus to process: {thesaurus}.', // @translate
+            [
+                'count_values' => $totalValues,
+                'count_templates' => $totalTemplates,
+                'count_references' => $totalReferences,
+                'thesaurus' => $schemes
+                    ? implode(', ', array_map(fn ($id, $title) => sprintf('#%d (%s)', $id, $title), array_keys($schemes), $schemes))
+                    : '-',
+            ]
+        );
+        $messenger->addWarning($message);
+    }
+
+    // The version 3.4.26 was never released, but it is installed on some sites,
+    // that skip its block above. The templates of the module are updated here
+    // too: they are a config of the module, not data of the user.
+    $this->updateThesaurusTemplates();
+
+    // The previous versions restricted the templates of the thesaurus to the
+    // concepts, even when the concepts of the site are still items: the values
+    // of these items could not be saved any more. So the data type of the items
+    // is restored and the templates are available for the items again. The
+    // templates are restricted again by the task that converts the items into
+    // concepts. The classes of the module are not autoloaded during upgrade.
+    require_once dirname(__DIR__, 2) . '/src/Stdlib/ConceptTemplates.php';
+
+    $conceptTemplates = new \Thesaurus\Stdlib\ConceptTemplates(
+        $connection,
+        $services->get('Common\EasyMeta'),
+        $settings
+    );
+
+    $totalTemplates = 0;
+    foreach (array_keys(\Thesaurus\Stdlib\ConceptTemplates::PROPERTIES) as $label) {
+        $templateId = $conceptTemplates->templateId($label);
+        if ($templateId && $conceptTemplates->isUsedByItems($templateId)) {
+            $totalTemplates += $conceptTemplates->allowItems();
+            break;
+        }
+    }
+
+    if ($totalTemplates) {
+        $message = new PsrMessage(
+            'The data type of the items was restored in {count} template properties: the concepts of this site are still items. Run the task "Convert items into concepts" to use the dedicated resource type.', // @translate
+            ['count' => $totalTemplates]
         );
         $messenger->addWarning($message);
     }
