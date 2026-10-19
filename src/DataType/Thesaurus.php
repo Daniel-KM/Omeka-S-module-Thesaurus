@@ -4,6 +4,7 @@ namespace Thesaurus\DataType;
 
 use Laminas\View\Renderer\PhpRenderer;
 use Omeka\Api\Adapter\AbstractEntityAdapter;
+use Omeka\Api\Manager as ApiManager;
 use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Api\Representation\ValueRepresentation;
 use Omeka\DataType\DataTypeInterface;
@@ -21,7 +22,20 @@ use Thesaurus\Stdlib\Thesaurus as ThesaurusStdlib;
 class Thesaurus implements DataTypeInterface, ValueAnnotatingInterface
 {
     /**
-     * @var \Omeka\Api\Representation\ItemRepresentation
+     * @var int
+     */
+    protected $schemeId;
+
+    /**
+     * @var \Omeka\Api\Manager
+     */
+    protected $api;
+
+    /**
+     * The scheme is fetched only when needed: its own values may use this data
+     * type, so fetching it earlier would build this data type again.
+     *
+     * @var \Omeka\Api\Representation\ItemRepresentation|null
      */
     protected $scheme;
 
@@ -37,16 +51,25 @@ class Thesaurus implements DataTypeInterface, ValueAnnotatingInterface
      */
     protected $selectOptions;
 
-    public function __construct(ItemRepresentation $scheme, ThesaurusStdlib $thesaurus, array $selectOptions = [])
+    public function __construct(int $schemeId, ApiManager $api, ThesaurusStdlib $thesaurus, array $selectOptions = [])
     {
-        $this->scheme = $scheme;
+        $this->schemeId = $schemeId;
+        $this->api = $api;
         $this->thesaurus = $thesaurus;
         $this->selectOptions = $selectOptions;
     }
 
+    protected function scheme(): ItemRepresentation
+    {
+        if ($this->scheme === null) {
+            $this->scheme = $this->api->read('items', ['id' => $this->schemeId])->getContent();
+        }
+        return $this->scheme;
+    }
+
     public function getName()
     {
-        return 'thesaurus:' . $this->scheme->id();
+        return 'thesaurus:' . $this->schemeId;
     }
 
     public function getOptgroupLabel()
@@ -56,7 +79,7 @@ class Thesaurus implements DataTypeInterface, ValueAnnotatingInterface
 
     public function getLabel()
     {
-        return $this->scheme->displayTitle();
+        return $this->scheme()->displayTitle();
     }
 
     public function prepareForm(PhpRenderer $view): void
@@ -75,7 +98,7 @@ class Thesaurus implements DataTypeInterface, ValueAnnotatingInterface
     public function form(PhpRenderer $view)
     {
         return $view->partial('common/data-type/thesaurus', [
-            'schemeId' => $this->scheme->id(),
+            'schemeId' => $this->schemeId,
         ]);
     }
 
