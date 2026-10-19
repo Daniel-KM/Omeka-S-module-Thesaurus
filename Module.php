@@ -423,6 +423,12 @@ class Module extends AbstractModule
      *
      * The data type "resource:concept" is not registered yet when the templates
      * are imported during the installation, so the import skips it.
+     *
+     * The templates are not restricted to the concepts when items still use
+     * them: on a site where the thesaurus are not converted yet, the concepts
+     * are items with values of type "resource:item", that would be refused on
+     * save. So the data type of the concepts is only appended and the template
+     * remains available for the items until the conversion.
      */
     protected function updateThesaurusTemplates(): self
     {
@@ -434,24 +440,16 @@ class Module extends AbstractModule
         $connection = $services->get('Omeka\Connection');
         $easyMeta = $services->get('Common\EasyMeta');
 
-        $conceptTerms = [
-            'Thesaurus Concept' => ['skos:broader', 'skos:narrower', 'skos:related', 'skos:semanticRelation', 'skos:closeMatch', 'skos:exactMatch'],
-            'Thesaurus Scheme' => ['skos:hasTopConcept'],
-        ];
-        foreach ($conceptTerms as $label => $terms) {
-            $templateId = (int) $connection
-                ->executeQuery('SELECT `id` FROM `resource_template` WHERE `label` = ?', [$label])
-                ->fetchOne();
-            $propertyIds = array_values($easyMeta->propertyIds($terms));
-            if (!$templateId || !$propertyIds) {
-                continue;
-            }
-            $connection->executeStatement(
-                'UPDATE `resource_template_property` SET `data_type` = :data_type WHERE `resource_template_id` = :template_id AND `property_id` IN (:property_ids)',
-                ['data_type' => json_encode(['resource:concept']), 'template_id' => $templateId, 'property_ids' => $propertyIds],
-                ['property_ids' => Connection::PARAM_INT_ARRAY]
-            );
-        }
+        // The classes of the module are not autoloaded during an upgrade.
+        require_once __DIR__ . '/src/Stdlib/ConceptTemplates.php';
+
+        $conceptTemplates = new \Thesaurus\Stdlib\ConceptTemplates(
+            $connection,
+            $easyMeta,
+            $services->get('Omeka\Settings'),
+            $services->get('Omeka\EntityManager')
+        );
+        $conceptTemplates->restrictToConcepts();
 
         // The query to select a scheme is a setting of the module Advanced
         // Resource Template, so it is set only when its table exists.
@@ -466,8 +464,14 @@ class Module extends AbstractModule
             return $this;
         }
 
-        // The template of the concepts is reserved to the concepts. The option
-        // is copied in the main settings by the module, so it is updated too.
+        // The template of the concepts is reserved to the concepts, but only
+        // when no item uses it any more: else the items could not be edited.
+        if ($conceptTemplates->isUsedByItems($templateId)) {
+            return $this;
+        }
+
+        // The option is copied in the main settings by the module, so it is
+        // updated too.
         $row = $connection
             ->executeQuery('SELECT `id`, `data` FROM `resource_template_data` WHERE `resource_template_id` = ?', [$templateId])
             ->fetchAssociative();
