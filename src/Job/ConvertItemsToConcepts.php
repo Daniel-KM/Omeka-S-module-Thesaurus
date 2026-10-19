@@ -11,9 +11,10 @@ use Thesaurus\Stdlib\TemplateDataTypes;
  * Convert the items of a thesaurus into the dedicated resource type "concept".
  *
  * Until version 3.4.25, the concepts were stored as items and indexed in the
- * table "thesaurus_term". The upgrade converts the existing thesaurus, but the
- * items created later as concepts (bulk import, manual creation, third party
- * import) must be converted too, so this job does the same process, but the
+ * table "thesaurus_term". The conversion is not done automatically during the
+ * upgrade, because it updates and removes data: the administrator selects the
+ * thesaurus to convert. The items created as concepts by a bulk import, a
+ * manual creation or a third party import are converted the same way: the
  * structure is determined from the skos values, not from the old index table.
  *
  * The values pointing to the converted concepts are updated to the data type
@@ -80,7 +81,7 @@ class ConvertItemsToConcepts extends AbstractJob
         $schemeIds = $this->schemeIds();
         if (!$schemeIds) {
             $this->logger->warn(
-                'No thesaurus to convert.' // @translate
+                'No thesaurus to convert: select the thesaurus to process.' // @translate
             );
             return;
         }
@@ -109,7 +110,8 @@ class ConvertItemsToConcepts extends AbstractJob
             return;
         }
 
-        $totalTemplates = (new TemplateDataTypes($this->connection))->allowUsedThesaurusTypes();
+        $totalTemplates = (new TemplateDataTypes($this->connection))
+            ->allowUsedThesaurusTypes($convertedSchemeIds);
         if ($totalTemplates) {
             $this->logger->notice(
                 'The data type of the thesaurus was added to {count} template properties used by values of concepts.', // @translate
@@ -133,55 +135,48 @@ class ConvertItemsToConcepts extends AbstractJob
     }
 
     /**
-     * Get the schemes to process: the argument one or all the existing ones.
+     * Get the thesaurus to process, specified by the administrator.
+     *
+     * The conversion updates and removes data, so the thesaurus are never
+     * determined automatically.
+     *
+     * @return int[]
      */
     protected function schemeIds(): array
     {
+        $schemeIds = $this->getArg('schemes') ?: [];
+        if (!is_array($schemeIds)) {
+            $schemeIds = [$schemeIds];
+        }
         $schemeId = (int) $this->getArg('scheme');
         if ($schemeId) {
-            $sql = <<<'SQL'
-                SELECT `id` FROM `resource`
-                WHERE `id` = :scheme_id
-                    AND `resource_type` = 'Omeka\\Entity\\Item'
-                SQL;
-            $result = $this->connection
-                ->executeQuery($sql, ['scheme_id' => $schemeId])
-                ->fetchFirstColumn();
-            if (!$result) {
-                $this->logger->err(
-                    'The thesaurus #{item_id} does not exist or is not an item.', // @translate
-                    ['item_id' => $schemeId]
-                );
-            }
-            return array_map('intval', $result);
+            $schemeIds[] = $schemeId;
         }
 
-        // All the resources used as a scheme by a value "skos:inScheme",
-        // "skos:topConceptOf" or "skos:hasTopConcept".
-        $sql = <<<'SQL'
-            SELECT DISTINCT `scheme_id` FROM (
-                SELECT `value_resource_id` AS `scheme_id` FROM `value`
-                WHERE `property_id` IN (:in_scheme, :top_concept_of)
-                    AND `value_resource_id` IS NOT NULL
-                UNION
-                SELECT `resource_id` AS `scheme_id` FROM `value`
-                WHERE `property_id` = :has_top_concept
-                    AND `value_resource_id` IS NOT NULL
-            ) AS `schemes`
-            SQL;
-        $result = $this->connection
-            ->executeQuery($sql, [
-                'in_scheme' => $this->properties['skos:inScheme'],
-                'top_concept_of' => $this->properties['skos:topConceptOf'],
-                'has_top_concept' => $this->properties['skos:hasTopConcept'],
-            ], [
-                'in_scheme' => \PDO::PARAM_INT,
-                'top_concept_of' => \PDO::PARAM_INT,
-                'has_top_concept' => \PDO::PARAM_INT,
-            ])
-            ->fetchFirstColumn();
+        $schemeIds = array_values(array_unique(array_filter(array_map('intval', $schemeIds))));
+        if (!$schemeIds) {
+            return [];
+        }
 
-        return array_map('intval', $result);
+        $sql = <<<'SQL'
+            SELECT `id` FROM `resource`
+            WHERE `id` IN (:ids)
+                AND `resource_type` = 'Omeka\\Entity\\Item'
+            ORDER BY `id`
+            SQL;
+        $result = array_map('intval', $this->connection
+            ->executeQuery($sql, ['ids' => $schemeIds], ['ids' => Connection::PARAM_INT_ARRAY])
+            ->fetchFirstColumn());
+
+        $missing = array_diff($schemeIds, $result);
+        foreach ($missing as $missingId) {
+            $this->logger->err(
+                'The thesaurus #{item_id} does not exist or is not an item.', // @translate
+                ['item_id' => $missingId]
+            );
+        }
+
+        return $result;
     }
 
     /**
@@ -249,7 +244,11 @@ class ConvertItemsToConcepts extends AbstractJob
 
             // A concept is not an item, so it is no more assigned to item sets
             // or sites, and the data of the modules about items are removed.
-            (new ItemReferences($this->connection))->removeForConcepts();
+            (new ItemReferences($this->connection))->removeForConcepts([$schemeId]);
+
+            // The old index table, used until version 3.4.25, references the
+            // concepts as items, so its rows are removed with them.
+            $this->cleanOldIndex($itemIds);
 
             // A custom vocab contains items, so a value filled with a concept
             // via the custom vocab of the thesaurus is no longer valid: it uses
@@ -275,6 +274,44 @@ class ConvertItemsToConcepts extends AbstractJob
         );
 
         return count($itemIds);
+    }
+
+    /**
+     * Remove the converted concepts from the old index table "thesaurus_term".
+     *
+     * The table is dropped once all the concepts are converted: it is useless
+     * for the concepts, that are a dedicated resource type since version
+     * 3.4.26.
+     *
+     * @param int[] $itemIds
+     */
+    protected function cleanOldIndex(array $itemIds): void
+    {
+        $sql = <<<'SQL'
+            SELECT COUNT(*)
+            FROM information_schema.TABLES
+            WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_NAME = 'thesaurus_term'
+            SQL;
+        if (!(int) $this->connection->executeQuery($sql)->fetchOne()) {
+            return;
+        }
+
+        $this->connection->executeStatement(
+            'DELETE FROM `thesaurus_term` WHERE `item_id` IN (:ids) OR `scheme_id` IN (:ids)',
+            ['ids' => $itemIds],
+            ['ids' => Connection::PARAM_INT_ARRAY]
+        );
+
+        $remaining = (int) $this->connection
+            ->executeQuery('SELECT COUNT(*) FROM `thesaurus_term`')
+            ->fetchOne();
+        if (!$remaining) {
+            $this->connection->executeStatement('DROP TABLE `thesaurus_term`');
+            $this->logger->notice(
+                'All the concepts are converted: the old index table was removed.' // @translate
+            );
+        }
     }
 
     /**

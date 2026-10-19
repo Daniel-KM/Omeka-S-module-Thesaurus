@@ -379,10 +379,16 @@ class ThesaurusController extends ItemController
             return $this->redirect()->toRoute('admin/thesaurus/default');
         }
 
-        $id = (int) $this->params('id');
+        $schemeIds = $this->postedSchemeIds();
+        if (!$schemeIds) {
+            $this->messenger()->addError(
+                'Select the thesaurus to convert.' // @translate
+            );
+            return $this->redirect()->toRoute('admin/thesaurus/default');
+        }
 
         $dispatcher = $this->jobDispatcher();
-        $job = $dispatcher->dispatch(\Thesaurus\Job\ConvertItemsToConcepts::class, $id ? ['scheme' => $id] : []);
+        $job = $dispatcher->dispatch(\Thesaurus\Job\ConvertItemsToConcepts::class, ['schemes' => $schemeIds]);
         $message = new PsrMessage(
             'Converting items into concepts in background ({link}job #{job_id}{link_end}, {link_log}logs{link_end}).', // @translate
             [
@@ -436,6 +442,24 @@ class ThesaurusController extends ItemController
     }
 
     /**
+     * Get the thesaurus selected by the administrator for a task.
+     *
+     * @return int[]
+     */
+    protected function postedSchemeIds(): array
+    {
+        $schemeIds = $this->params()->fromPost('schemes') ?: [];
+        if (!is_array($schemeIds)) {
+            $schemeIds = [$schemeIds];
+        }
+        $id = (int) $this->params('id');
+        if ($id) {
+            $schemeIds[] = $id;
+        }
+        return array_values(array_unique(array_filter(array_map('intval', $schemeIds))));
+    }
+
+    /**
      * Explain and confirm a one time task in the sidebar.
      */
     public function maintenanceSidebarAction()
@@ -450,6 +474,7 @@ class ThesaurusController extends ItemController
                 'label' => 'Convert items into concepts', // @translate
                 'description' => 'The items that belong to a thesaurus are converted into concepts, that are a dedicated resource type since version 3.4.26. The ids and the values are kept, so the links to the concepts remain valid, but the items are removed from the browse of the items. The items with a media cannot be converted.', // @translate
                 'button' => 'Convert items into concepts', // @translate
+                'schemes' => true,
             ],
             'fix-concept-references' => [
                 'label' => 'Fix the data of the concepts', // @translate
@@ -464,10 +489,37 @@ class ThesaurusController extends ItemController
             throw new NotFoundException();
         }
 
+        /** @var \Omeka\Form\ConfirmForm $form */
+        $form = $this->getForm(ConfirmForm::class);
+
+        // The tasks that update or remove data are limited to the thesaurus
+        // selected by the administrator.
+        if (!empty($tasks[$task]['schemes'])) {
+            $schemes = $this->api()
+                ->search('items', ['thesaurus_scheme' => 1, 'sort_by' => 'title'], ['returnScalar' => 'title'])
+                ->getContent();
+            $form->add([
+                'name' => 'schemes',
+                'type' => \Laminas\Form\Element\Select::class,
+                'options' => [
+                    'label' => 'Thesaurus to process', // @translate
+                    'info' => 'The task updates and removes data, so the thesaurus are selected explicitly.', // @translate
+                    'value_options' => $schemes,
+                ],
+                'attributes' => [
+                    'id' => 'task-schemes',
+                    'class' => 'chosen-select',
+                    'multiple' => true,
+                    'required' => true,
+                    'data-placeholder' => 'Select thesaurus…', // @translate
+                ],
+            ]);
+        }
+
         $view = new ViewModel([
             'task' => $task,
             'taskData' => $tasks[$task],
-            'form' => $this->getForm(ConfirmForm::class),
+            'form' => $form,
         ]);
         return $view
             ->setTerminal(true)
