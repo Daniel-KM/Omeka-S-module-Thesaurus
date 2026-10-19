@@ -13,6 +13,7 @@ if (empty($data) && !empty($options['hideIfEmpty'])):
 endif;
 
 $plugins = $this->getHelperPluginManager();
+$escape = $plugins->get('escapeHtml');
 $translate = $plugins->get('translate');
 
 if (isset($options['title'])):

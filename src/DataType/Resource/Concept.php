@@ -30,6 +30,19 @@ class Concept extends AbstractResource implements ValueAnnotatingInterface
         return [ConceptEntity::class];
     }
 
+    public function prepareForm(PhpRenderer $view)
+    {
+        $view->headScript()->appendFile($view->assetUrl('js/concept-resource-form.js', 'Thesaurus'), 'text/javascript', ['defer' => 'defer']);
+    }
+
+    /**
+     * The core renders the button of selection only for its own resources.
+     */
+    public function form(PhpRenderer $view)
+    {
+        return $view->partial('common/data-type/resource-concept');
+    }
+
     public function valueAnnotationPrepareForm(PhpRenderer $view): void
     {
     }

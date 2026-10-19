@@ -88,6 +88,26 @@ class ConceptController extends AbstractActionController
             ->setTemplate('common/delete-confirm-details');
     }
 
+    /**
+     * List the concepts to select in the sidebar of the resource form.
+     */
+    public function sidebarSelectAction()
+    {
+        $this->browse()->setDefaults('concepts');
+        $query = $this->params()->fromQuery();
+        $response = $this->api()->search('concepts', $query);
+        $this->paginator($response->getTotalResults());
+
+        $view = new ViewModel([
+            'concepts' => $response->getContent(),
+            'search' => $query['search'] ?? '',
+            'schemeId' => $query['scheme_id'] ?? null,
+            'id' => $query['id'] ?? null,
+            'showDetails' => true,
+        ]);
+        return $view->setTerminal(true);
+    }
+
     public function deleteAction()
     {
         if ($this->getRequest()->isPost()) {

@@ -1,0 +1,95 @@
+<?php
+/**
+ * Select concepts in the sidebar of the resource form.
+ *
+ * @see application/view/omeka/admin/item/sidebar-select.phtml
+ *
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Thesaurus\Api\Representation\ConceptRepresentation[] $concepts
+ * @var string $search
+ * @var int|string|null $schemeId
+ * @var int|string|null $id
+ * @var bool $showDetails
+ */
+
+$plugins = $this->getHelperPluginManager();
+$escape = $plugins->get('escapeHtml');
+$translate = $plugins->get('translate');
+$hyperlink = $plugins->get('hyperlink');
+
+$conceptsFound = count($concepts) > 0;
+$expanded = $schemeId || $id;
+
+$schemes = $this->api()->search('items', ['thesaurus_scheme' => 1, 'sort_by' => 'title'], ['returnScalar' => 'title'])->getContent();
+?>
+
+<div id="sidebar-section-item" class="sidebar-section active">
+
+<div id="item-results">
+    <div class="sidebar-header">
+        <h4><?= $translate('Select concept') ?></h4>
+        <a href="#" class="sidebar-close o-icon-close"><span class="screen-reader-text"><?= $translate('Close') ?></span></a>
+    </div>
+    <div class="search-nav">
+        <div id="sidebar-resource-search" class="resource-search" data-search-url="<?= $escape($this->url(null, [], [], true)) ?>">
+            <?= $this->queryToHiddenInputs(['sort_by', 'sort_order', 'page', 'search', 'scheme_id', 'id']) ?>
+            <input type="text" name="search" id="resource-list-search" value="<?= $escape($search) ?>">
+            <button type="button" class="o-icon-search"><?= $translate('Search') ?></button>
+            <div class="resource-search-filters">
+                <a href="#"
+                    class="<?= $expanded ? 'collapse' : 'expand' ?>"
+                    aria-label="<?= $expanded ? $translate('Collapse') : $translate('Expand') ?>"><?= $translate('Filter search') ?>
+                </a>
+                <div class="collapsible">
+                    <select name="scheme_id" id="filter-scheme" class="chosen-select" data-placeholder="<?= $escape($translate('Filter by thesaurus')) ?>">
+                        <option value=""></option>
+                        <?php foreach ($schemes as $schemeIdOption => $schemeTitle): ?>
+                        <option value="<?= $schemeIdOption ?>"<?= (int) $schemeId === (int) $schemeIdOption ? ' selected="selected"' : '' ?>><?= $escape($schemeTitle) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <input type="number" name="id" min="1" step="1" value="<?= $escape($id) ?>" placeholder="<?= $escape($translate('Filter by concept ID')) ?>">
+                </div>
+            </div>
+        </div>
+        <?php if ($conceptsFound): ?>
+        <?= $this->pagination('common/sidebar-pagination.phtml') ?>
+        <?php endif; ?>
+    </div>
+
+    <?php if ($conceptsFound): ?>
+    <?= $this->partial('common/sidebar-select-quick-add') ?>
+
+    <div class="items resource-list">
+        <?php foreach ($concepts as $concept): ?>
+        <?php $conceptId = $concept->id(); ?>
+        <div class="resource item" data-resource-values="<?= $escape(json_encode($concept->valueRepresentation())) ?>">
+            <div class="select-resource-checkbox-wrapper">
+                <input type="checkbox" class="select-resource-checkbox" name="resource_ids[]" aria-labelledby="select-item-<?= $conceptId ?>" value="<?= $conceptId ?>">
+            </div>
+            <?php
+            $content = sprintf('<span class="resource-name">%s</span>', $escape($concept->displayTitle()));
+            $attrs = $showDetails
+                ? [
+                    'class' => 'sidebar-content select-resource resource-link',
+                    'data-sidebar-content-url' => $concept->url('show-details'),
+                    'data-sidebar-selector' => '#resource-details',
+                ]
+                : [
+                    'class' => 'select-resource resource-link',
+                    'id' => 'select-item-' . $conceptId,
+                ];
+            echo $hyperlink->raw($content, '#', $attrs);
+            ?>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php else: ?>
+    <span class="no-resources"><?= $translate('Omeka could not find any concepts.') ?></span>
+    <?php endif; ?>
+</div>
+
+<div class="confirm-panel">
+    <button type="button" class="select-resources-button"><?= $translate('Add selected') ?></button>
+</div>
+
+</div>

@@ -454,7 +454,7 @@ class Module extends AbstractModule
             ->allow('reviewer', [$conceptEntity], ['delete'], $ownsAssertion)
             ->allow('editor', [$conceptAdapter], $writeOperations)
             ->allow('editor', [$conceptEntity], ['create', 'update', 'delete'])
-            ->allow(null, [Controller\Admin\ConceptController::class], ['show', 'show-details'])
+            ->allow(null, [Controller\Admin\ConceptController::class], ['show', 'show-details', 'sidebar-select'])
             // A concept is created by the thesaurus, so only edition and
             // deletion are available, with the same roles than the items.
             ->allow(['author', 'reviewer', 'editor'], [Controller\Admin\ConceptController::class], ['edit', 'delete', 'delete-confirm']);
@@ -898,6 +898,21 @@ class Module extends AbstractModule
         // The sort by thesaurus position is now done on the concepts, that are
         // a dedicated resource type with a "position" field, via their own
         // adapter, so there is no more item hack here.
+
+        // The query "thesaurus_scheme" limits the items to the schemes, for
+        // example to select the scheme of a concept in the resource form. The
+        // class is used, because the id of the class differs by installation.
+        $query = $event->getParam('request')->getContent();
+        if (!empty($query['thesaurus_scheme'])) {
+            /** @var \Doctrine\ORM\QueryBuilder $qb */
+            $qb = $event->getParam('queryBuilder');
+            $schemeClassId = (int) $this->getServiceLocator()->get('Omeka\Settings')->get('thesaurus_skos_scheme_class_id');
+            $qb->andWhere($qb->expr()->eq(
+                'omeka_root.resourceClass',
+                $event->getTarget()->createNamedParameter($qb, $schemeClassId)
+            ));
+        }
+
         $this->handleApiSearchQuery($event);
     }
 
