@@ -69,6 +69,63 @@ class CreateThesaurusTest extends AbstractHttpControllerTestCase
     }
 
     /**
+     * By default, the thesaurus is made of concepts.
+     */
+    public function testImportCreatesConcepts(): void
+    {
+        $scheme = $this->createThesaurus('zz concepts', ['Europe', "\tFrance"]);
+
+        $connection = $this->getServiceLocator()->get('Omeka\Connection');
+        $total = (int) $connection
+            ->executeQuery('SELECT COUNT(*) FROM `concept` WHERE `scheme_id` = ?', [$scheme->id()])
+            ->fetchOne();
+        $this->assertSame(2, $total);
+    }
+
+    /**
+     * The concepts may be created as items, in order to expose them with them.
+     */
+    public function testImportCanCreateItems(): void
+    {
+        $services = $this->getServiceLocator();
+
+        // The job allows the template of the concepts for the items, but the
+        // module Advanced Resource Template caches the data of the templates in
+        // a static variable, so a restriction read earlier in the process
+        // cannot be invalidated: this is not an issue for a real job, that runs
+        // in a new process.
+        (new \Thesaurus\Stdlib\ConceptTemplates(
+            $services->get('Omeka\Connection'),
+            $services->get('Common\EasyMeta'),
+            $services->get('Omeka\Settings'),
+            $services->get('Omeka\EntityManager')
+        ))->allowItems();
+        $template = $this->api()
+            ->read('resource_templates', ['label' => 'Thesaurus Concept'])
+            ->getContent();
+        if (method_exists($template, 'dataValue') && $template->dataValue('use_for_resources')) {
+            $this->markTestSkipped('The data of the templates are cached by the module Advanced Resource Template.');
+        }
+
+        $scheme = $this->createThesaurus('zz items', ['Europe', "\tFrance"], 'items');
+
+        $connection = $services->get('Omeka\Connection');
+        $this->assertSame(0, (int) $connection
+            ->executeQuery('SELECT COUNT(*) FROM `concept` WHERE `scheme_id` = ?', [$scheme->id()])
+            ->fetchOne());
+
+        // The structure is read from the items, so the thesaurus is not empty.
+        $thesaurus = $services->build('Thesaurus\Thesaurus');
+        $flatTree = $thesaurus($scheme->id())->flatTree();
+        $this->assertCount(2, $flatTree);
+        foreach (array_keys($flatTree) as $id) {
+            $this->assertSame(1, (int) $connection
+                ->executeQuery('SELECT COUNT(*) FROM `item` WHERE `id` = ?', [$id])
+                ->fetchOne());
+        }
+    }
+
+    /**
      * The item set of the thesaurus shares the same slugified identifier.
      */
     public function testImportSlugifiesItemSetIdentifier(): void

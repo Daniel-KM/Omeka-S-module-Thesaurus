@@ -89,4 +89,37 @@ class ThesaurusControllerTest extends AbstractHttpControllerTestCase
         $this->dispatch('/admin/thesaurus/upload');
         $this->assertResponseStatusCode(302);
     }
+
+    /**
+     * The sidebar of the rollback says that there is no backup.
+     */
+    public function testRollbackSidebarWithoutBackup(): void
+    {
+        $this->cleanupBackups();
+        $this->dispatch('/admin/thesaurus/maintenance-sidebar?task=convert-concepts-to-items');
+        $this->assertResponseStatusCode(200);
+        $this->assertStringContainsString('There is no backup', $this->getResponse()->getContent());
+    }
+
+    /**
+     * The sidebar of the rollback displays the date of the last backup and says
+     * that the current data are kept.
+     */
+    public function testRollbackSidebarWithBackup(): void
+    {
+        $scheme = $this->createItem(['dcterms:title' => [['@value' => 'ZZ scheme']]]);
+        $connection = $this->getServiceLocator()->get('Omeka\Connection');
+        $backupId = (new \Thesaurus\Stdlib\ReferencesBackup($connection))
+            ->save([(int) $scheme->id()], ['item_site' => ['column' => 'item_id', 'rows' => [['item_id' => 1, 'site_id' => 1]]]]);
+        $created = (string) $connection
+            ->executeQuery('SELECT `created` FROM `thesaurus_backup` WHERE `id` = ?', [$backupId])
+            ->fetchOne();
+
+        $this->dispatch('/admin/thesaurus/maintenance-sidebar?task=convert-concepts-to-items');
+
+        $content = $this->getResponse()->getContent();
+        $this->assertStringContainsString('The current data are kept', $content);
+        $this->assertStringContainsString('#' . $backupId . ', ' . $created, $content);
+        $this->cleanupBackups();
+    }
 }

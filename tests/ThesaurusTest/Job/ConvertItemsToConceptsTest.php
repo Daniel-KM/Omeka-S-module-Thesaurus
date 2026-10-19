@@ -133,6 +133,124 @@ class ConvertItemsToConceptsTest extends AbstractHttpControllerTestCase
     }
 
     /**
+     * A concept is not an item, so it is no more assigned to item sets, else
+     * doctrine would load it as an item that does not exist.
+     */
+    public function testAssignmentsToItemSetsAreRemoved(): void
+    {
+        [$schemeId, $topId, $childId] = $this->createThesaurusOfItems();
+
+        $itemSet = $this->api()->create('item_sets', [])->getContent();
+        $this->createdResources[] = ['type' => 'item_sets', 'id' => $itemSet->id()];
+        foreach ([$schemeId, $topId, $childId] as $id) {
+            $this->connection()->executeStatement(
+                'INSERT INTO `item_item_set` (`item_id`, `item_set_id`) VALUES (?, ?)',
+                [$id, $itemSet->id()]
+            );
+        }
+
+        $this->runJob(ConvertItemsToConcepts::class, ['scheme' => $schemeId]);
+
+        $this->createdResources[] = ['type' => 'concepts', 'id' => $topId];
+        $this->createdResources[] = ['type' => 'concepts', 'id' => $childId];
+
+        $itemIds = $this->connection()
+            ->executeQuery('SELECT `item_id` FROM `item_item_set` WHERE `item_set_id` = ?', [$itemSet->id()])
+            ->fetchFirstColumn();
+        $this->assertEquals([$schemeId], array_map('intval', $itemIds));
+    }
+
+    /**
+     * The rows of the modules that reference the items via a foreign key are
+     * removed too, for example the mapping features.
+     */
+    public function testReferencesOfModulesAreRemoved(): void
+    {
+        [$schemeId, $topId, $childId] = $this->createThesaurusOfItems();
+
+        // The attachments of a block use the rule "set null".
+        $site = $this->api()->create('sites', [
+            'o:title' => 'ZZ site',
+            'o:slug' => 'zz-site-' . uniqid(),
+            'o:theme' => 'default',
+        ])->getContent();
+        $this->createdResources[] = ['type' => 'sites', 'id' => $site->id()];
+        $page = $this->api()->create('site_pages', [
+            'o:site' => ['o:id' => $site->id()],
+            'o:title' => 'ZZ page',
+            'o:slug' => 'zz-page',
+            'o:block' => [[
+                'o:layout' => 'media',
+                'o:attachment' => [['o:item' => ['o:id' => $topId]]],
+            ]],
+        ])->getContent();
+        $blockId = $page->blocks()[0]->id();
+
+        $this->runJob(ConvertItemsToConcepts::class, ['scheme' => $schemeId]);
+
+        $this->createdResources[] = ['type' => 'concepts', 'id' => $topId];
+        $this->createdResources[] = ['type' => 'concepts', 'id' => $childId];
+
+        $attachments = $this->connection()
+            ->executeQuery('SELECT `item_id` FROM `site_block_attachment` WHERE `block_id` = ?', [$blockId])
+            ->fetchFirstColumn();
+        $this->assertEquals([null], $attachments);
+    }
+
+    /**
+     * Create a custom vocab based on an item set, like a thesaurus does.
+     */
+    protected function createCustomVocab(string $label): int
+    {
+        if (!$this->getServiceLocator()->get('Omeka\ApiAdapterManager')->has('custom_vocabs')) {
+            $this->markTestSkipped('Requires the module Custom Vocab.');
+        }
+
+        $itemSet = $this->api()->create('item_sets', [
+            'dcterms:title' => [[
+                'type' => 'literal',
+                'property_id' => $this->propertyId('dcterms:title'),
+                '@value' => $label,
+            ]],
+        ])->getContent();
+        $this->createdResources[] = ['type' => 'item_sets', 'id' => $itemSet->id()];
+
+        $customVocab = $this->api()->create('custom_vocabs', [
+            'o:label' => $label,
+            'o:item_set' => ['o:id' => $itemSet->id()],
+        ])->getContent();
+
+        return $customVocab->id();
+    }
+
+    /**
+     * A value filled with a concept via a custom vocab uses the data type of
+     * the thesaurus after the conversion, else it is refused on save.
+     */
+    public function testValuesOfCustomVocabUseTheThesaurus(): void
+    {
+        [$schemeId, $topId, $childId] = $this->createThesaurusOfItems();
+
+        // The custom vocab of a thesaurus is based on its item set.
+        $customVocabId = $this->createCustomVocab('ZZ vocab of thesaurus');
+
+        $this->connection()->executeStatement(
+            'INSERT INTO `value` (`resource_id`, `property_id`, `value_resource_id`, `type`, `is_public`) VALUES (?, ?, ?, ?, 1)',
+            [$schemeId, $this->propertyId('dcterms:subject'), $topId, 'customvocab:' . $customVocabId]
+        );
+
+        $this->runJob(ConvertItemsToConcepts::class, ['scheme' => $schemeId]);
+
+        $this->createdResources[] = ['type' => 'concepts', 'id' => $topId];
+        $this->createdResources[] = ['type' => 'concepts', 'id' => $childId];
+
+        $types = $this->connection()
+            ->executeQuery('SELECT DISTINCT `type` FROM `value` WHERE `value_resource_id` = ? ORDER BY `type`', [$topId])
+            ->fetchFirstColumn();
+        $this->assertEquals(['resource:concept', 'thesaurus:' . $schemeId], $types);
+    }
+
+    /**
      * A concept has no media, so a thesaurus with files is not converted at
      * all, else it would be partly converted and no more consistent.
      */

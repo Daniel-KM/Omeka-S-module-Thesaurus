@@ -91,7 +91,7 @@ class ConceptApiTest extends AbstractHttpControllerTestCase
             ]);
             $this->fail('A concept without scheme should be refused.');
         } catch (ValidationException $e) {
-            $this->assertArrayHasKey('o:scheme', $e->getErrorStore()->getErrors());
+            $this->assertArrayHasKey('o-module-thesaurus:scheme', $e->getErrorStore()->getErrors());
         }
     }
 
@@ -148,12 +148,49 @@ class ConceptApiTest extends AbstractHttpControllerTestCase
                 'value_resource_id' => $scheme->id(),
             ]],
             'skos:broader' => $this->valueBroader($top->id()),
-            'o:broader' => ['o:id' => $other->id()],
-            'o:position' => 5,
+            'o-module-thesaurus:broader' => ['o:id' => $other->id()],
+            'o-module-thesaurus:position' => 5,
         ]);
 
         $this->assertEquals($other->id(), $concept->broader()->id());
         $this->assertEquals(5, $concept->position());
+    }
+
+    /**
+     * The keys of the core, used until version 3.4.26, are still accepted on
+     * input, but the keys of the module take precedence.
+     */
+    public function testLegacyStructureKeysAreAccepted(): void
+    {
+        $scheme = $this->createScheme();
+        $top = $this->createConcept('ZZ racine', [
+            'skos:topConceptOf' => $this->valueTopConceptOf($scheme->id()),
+        ]);
+        $other = $this->createConcept('ZZ autre racine', [
+            'skos:topConceptOf' => $this->valueTopConceptOf($scheme->id()),
+        ]);
+
+        $legacy = $this->createConcept('ZZ ancien', [
+            'o:scheme' => ['o:id' => $scheme->id()],
+            'o:broader' => ['o:id' => $top->id()],
+            'o:position' => 7,
+        ]);
+        $this->assertEquals($scheme->id(), $legacy->scheme()->id());
+        $this->assertEquals($top->id(), $legacy->broader()->id());
+        $this->assertEquals(7, $legacy->position());
+
+        $both = $this->createConcept('ZZ les deux', [
+            'o:scheme' => ['o:id' => $scheme->id()],
+            'o:broader' => ['o:id' => $top->id()],
+            'o-module-thesaurus:broader' => ['o:id' => $other->id()],
+        ]);
+        $this->assertEquals($other->id(), $both->broader()->id());
+
+        // The legacy key works on a partial update too.
+        $updated = $this->api()
+            ->update('concepts', $legacy->id(), ['o:position' => 9], [], ['isPartial' => true])
+            ->getContent();
+        $this->assertEquals(9, $updated->position());
     }
 
     /**
@@ -180,20 +217,20 @@ class ConceptApiTest extends AbstractHttpControllerTestCase
                     'property_id' => $this->propertyId('skos:inScheme'),
                     'value_resource_id' => $schemeB->id(),
                 ]],
-                'o:broader' => ['o:id' => $topA->id()],
+                'o-module-thesaurus:broader' => ['o:id' => $topA->id()],
             ]);
             $this->fail('A broader concept of another scheme should be refused.');
         } catch (ValidationException $e) {
-            $this->assertArrayHasKey('o:broader', $e->getErrorStore()->getErrors());
+            $this->assertArrayHasKey('o-module-thesaurus:broader', $e->getErrorStore()->getErrors());
         }
 
         try {
             $this->api()->update('concepts', $topA->id(), [
-                'o:broader' => ['o:id' => $topA->id()],
+                'o-module-thesaurus:broader' => ['o:id' => $topA->id()],
             ], [], ['isPartial' => true]);
             $this->fail('A concept cannot be its own broader concept.');
         } catch (ValidationException $e) {
-            $this->assertArrayHasKey('o:broader', $e->getErrorStore()->getErrors());
+            $this->assertArrayHasKey('o-module-thesaurus:broader', $e->getErrorStore()->getErrors());
         }
     }
 
@@ -219,10 +256,15 @@ class ConceptApiTest extends AbstractHttpControllerTestCase
         $json = json_decode(json_encode($child), true);
 
         $this->assertContains('o-module-thesaurus:Concept', (array) $json['@type']);
-        foreach (['o:scheme', 'o:broader', 'o:top', 'o:position'] as $key) {
+        foreach (['o-module-thesaurus:scheme', 'o-module-thesaurus:broader', 'o-module-thesaurus:top', 'o-module-thesaurus:position'] as $key) {
             $this->assertArrayHasKey($key, $json);
         }
-        $this->assertEquals($top->id(), $json['o:broader']['o:id']);
+        $this->assertEquals($top->id(), $json['o-module-thesaurus:broader']['o:id']);
+
+        // The keys of the core, used until version 3.4.26, are no more output.
+        foreach (['o:scheme', 'o:broader', 'o:top', 'o:position'] as $key) {
+            $this->assertArrayNotHasKey($key, $json);
+        }
 
         // The skos relations are values, so they are lists, not references.
         $this->assertArrayHasKey('skos:broader', $json);

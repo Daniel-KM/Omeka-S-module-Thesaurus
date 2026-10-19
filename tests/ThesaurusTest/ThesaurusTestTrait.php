@@ -150,6 +150,15 @@ trait ThesaurusTestTrait
     }
 
     /**
+     * Remove the backups saved by the conversions.
+     */
+    protected function cleanupBackups(): void
+    {
+        $this->getServiceLocator()->get('Omeka\Connection')
+            ->executeStatement('DELETE FROM `thesaurus_backup`');
+    }
+
+    /**
      * Get the path to the fixtures directory.
      */
     protected function getFixturesPath(): string
@@ -167,6 +176,25 @@ trait ThesaurusTestTrait
             throw new \RuntimeException("Fixture not found: $path");
         }
         return file_get_contents($path);
+    }
+
+    /**
+     * Run the upgrade script of the module.
+     *
+     * The module uses "require_once" to include the script, so it would be
+     * skipped after the first upgrade of the process: the script is included
+     * directly, in the scope of the module.
+     */
+    protected function runUpgrade(string $oldVersion, string $newVersion): void
+    {
+        $services = $this->getServiceLocator();
+        $module = new \Thesaurus\Module();
+        $module->setServiceLocator($services);
+
+        $include = function (string $oldVersion, string $newVersion, $services): void {
+            require dirname(__DIR__, 2) . '/data/scripts/upgrade.php';
+        };
+        \Closure::bind($include, $module, \Thesaurus\Module::class)($oldVersion, $newVersion, $services);
     }
 
     /**
@@ -208,6 +236,15 @@ trait ThesaurusTestTrait
             $this->lastJobException = $e;
             $job->setStatus(Job::STATUS_ERROR);
             if (!$expectError) {
+                // The message of a validation exception is empty, so the errors
+                // are appended to understand the failure.
+                if ($e instanceof \Omeka\Api\Exception\ValidationException) {
+                    throw new \RuntimeException(
+                        'Validation error: ' . json_encode($e->getErrorStore()->getErrors(), 320),
+                        0,
+                        $e
+                    );
+                }
                 throw $e;
             }
         }
@@ -248,13 +285,17 @@ trait ThesaurusTestTrait
      *
      * @param array $lines Descriptors, a leading tabulation by level.
      */
-    protected function createThesaurus(string $name, array $lines): ItemRepresentation
-    {
+    protected function createThesaurus(
+        string $name,
+        array $lines,
+        string $conceptResourceType = 'concepts'
+    ): ItemRepresentation {
         $this->runJob(\Thesaurus\Job\CreateThesaurus::class, [
             'name' => $name,
             'format' => 'tab_offset',
             'input' => $lines,
             'fill' => ['descriptor' => 'skos:prefLabel'],
+            'concept_resource_type' => $conceptResourceType,
         ]);
 
         $schemeClassId = (int) $this->getServiceLocator()->get('Omeka\Settings')
