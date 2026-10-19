@@ -4,6 +4,7 @@ namespace Thesaurus\Job;
 
 use Doctrine\DBAL\Connection;
 use Omeka\Job\AbstractJob;
+use Thesaurus\Stdlib\TemplateDataTypes;
 
 /**
  * Convert the items of a thesaurus into the dedicated resource type "concept".
@@ -105,6 +106,14 @@ class ConvertItemsToConcepts extends AbstractJob
                 'No item to convert into concept: the thesaurus are up to date.' // @translate
             );
             return;
+        }
+
+        $totalTemplates = (new TemplateDataTypes($this->connection))->allowUsedThesaurusTypes();
+        if ($totalTemplates) {
+            $this->logger->notice(
+                'The data type of the thesaurus was added to {count} template properties used by values of concepts.', // @translate
+                ['count' => $totalTemplates]
+            );
         }
 
         // Only the converted thesaurus are indexed: they may have no resource
