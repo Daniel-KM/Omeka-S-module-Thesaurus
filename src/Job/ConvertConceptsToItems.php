@@ -22,10 +22,10 @@ use Thesaurus\Stdlib\TemplatesSnapshot;
  *
  * The assignments to item sets and sites, the data of the other modules and the
  * data types of the values, removed or modified by the conversion, are restored
- * from the file saved by it, unless the argument "restore" is false. Another
- * file can be used with this argument. Without this file, the values get the
- * data type "resource:item": the custom vocab they used before the conversion
- * is unknown.
+ * from the backup saved by it, unless the argument "restore" is false. Another
+ * backup can be set with the argument "backup". Without backup, the values get
+ * the data type "resource:item": the custom vocab they used before the
+ * conversion is unknown.
  */
 class ConvertConceptsToItems extends AbstractJob
 {
@@ -135,9 +135,12 @@ class ConvertConceptsToItems extends AbstractJob
             return;
         }
 
-        $backup = new ReferencesBackup($this->basePath());
-        $content = is_string($restore) && $restore !== '' && $restore !== '1' && $restore !== 'yes'
-            ? $backup->read($restore)
+        // A specific backup may be set with its id, else the last one of the
+        // thesaurus is used.
+        $backup = new ReferencesBackup($this->connection);
+        $backupId = (int) $this->getArg('backup');
+        $content = $backupId
+            ? $backup->read($backupId)
             : $backup->readLast($schemeIds);
         if (!$content) {
             $this->logger->warn(
@@ -146,28 +149,25 @@ class ConvertConceptsToItems extends AbstractJob
             return;
         }
 
+        $this->logger->notice(
+            'The current data are kept and completed by the backup #{backup_id} of {date}: only the missing rows and the data types unchanged since the conversion are restored.', // @translate
+            ['backup_id' => $content['id'], 'date' => $content['created']]
+        );
+
         $total = (new ItemReferences($this->connection))->restoreForConcepts($content['tables'] ?? []);
         $totalValues = (new ConceptValues($this->connection))->restoreTypes($content['values'] ?? []);
         $totalTemplates = (new TemplatesSnapshot($this->connection))->restore($content['templates'] ?? [], $schemeIds);
         $this->restored = true;
         $this->logger->notice(
-            '{count} rows referencing the items and the data types of {count_values} values were restored and the data type of the thesaurus was removed from {count_templates} configurations of templates, from {filename}.', // @translate
+            '{count} rows referencing the items and the data types of {count_values} values were restored and the data type of the thesaurus was removed from {count_templates} configurations of templates, from the backup #{backup_id} of {date}.', // @translate
             [
                 'count' => $total,
                 'count_values' => $totalValues,
                 'count_templates' => $totalTemplates,
-                'filename' => basename((string) $content['filepath']),
+                'backup_id' => $content['id'],
+                'date' => $content['created'],
             ]
         );
-    }
-
-    /**
-     * Get the base path of the files.
-     */
-    protected function basePath(): string
-    {
-        $config = $this->getServiceLocator()->get('Config');
-        return $config['file_store']['local']['base_path'] ?: (OMEKA_PATH . '/files');
     }
 
     /**

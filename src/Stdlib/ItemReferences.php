@@ -76,14 +76,34 @@ class ItemReferences
      */
     public function exportForConcepts(?array $schemeIds = null): array
     {
-        [$concepts, $params, $types] = $this->conceptIds($schemeIds);
+        return $this->export(...$this->conceptIds($schemeIds));
+    }
 
+    /**
+     * Export the rows that reference some items, before their conversion.
+     *
+     * @param int[] $resourceIds
+     * @return array Rows and metadata by table.
+     */
+    public function exportForResources(array $resourceIds): array
+    {
+        $resourceIds = array_values(array_unique(array_filter(array_map('intval', $resourceIds))));
+        return $resourceIds
+            ? $this->export(':ids', ['ids' => $resourceIds], ['ids' => Connection::PARAM_INT_ARRAY])
+            : [];
+    }
+
+    /**
+     * Export the rows that reference the resources of a sub-query or a list.
+     */
+    protected function export(string $resources, array $params, array $types): array
+    {
         $result = [];
         foreach ($this->foreignKeys() as [$table, $column, $deleteRule]) {
             $quotedTable = $this->connection->quoteIdentifier($table);
             $quotedColumn = $this->connection->quoteIdentifier($column);
             $rows = $this->connection
-                ->executeQuery("SELECT * FROM $quotedTable WHERE $quotedColumn IN ($concepts)", $params, $types)
+                ->executeQuery("SELECT * FROM $quotedTable WHERE $quotedColumn IN ($resources)", $params, $types)
                 ->fetchAllAssociative();
             if (!$rows) {
                 continue;
@@ -101,9 +121,10 @@ class ItemReferences
     /**
      * Restore the rows exported before a conversion into concepts.
      *
-     * A row removed from a table is inserted again and a column set to null is
-     * filled again, when the table has a single primary key. The rows that
-     * reference a resource that does not exist any more are skipped.
+     * The current data are kept: a row removed from a table is inserted again
+     * only when it does not exist, and a column set to null is filled again
+     * only when it is still null, when the table has a single primary key. The
+     * rows that reference a resource that does not exist any more are skipped.
      *
      * @param array $data Result of exportForConcepts().
      * @return int The number of restored rows.
@@ -130,10 +151,13 @@ class ItemReferences
                         if (!$primaryKey || !isset($row[$primaryKey]) || !$column) {
                             continue;
                         }
-                        $total += $this->connection->update(
-                            (string) $table,
-                            [$column => $row[$column]],
-                            [$primaryKey => $row[$primaryKey]]
+                        // The column is filled only when it is still null, so a
+                        // value set since the conversion is kept.
+                        $quotedColumn = $this->connection->quoteIdentifier($column);
+                        $quotedKey = $this->connection->quoteIdentifier((string) $primaryKey);
+                        $total += $this->connection->executeStatement(
+                            "UPDATE $quotedTable SET $quotedColumn = ? WHERE $quotedKey = ? AND $quotedColumn IS NULL",
+                            [$row[$column], $row[$primaryKey]]
                         );
                         continue;
                     }

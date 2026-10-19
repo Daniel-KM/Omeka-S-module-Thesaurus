@@ -7,6 +7,7 @@ use Thesaurus\Stdlib\ConceptValues;
 use Thesaurus\Stdlib\ItemReferences;
 use Thesaurus\Stdlib\ReferencesBackup;
 use Thesaurus\Stdlib\TemplateDataTypes;
+use Thesaurus\Stdlib\TemplatesSnapshot;
 
 /**
  * Fix the values and the references of the concepts of some thesaurus.
@@ -56,18 +57,24 @@ class FixConceptReferences extends AbstractJob
             ->fetchFirstColumn());
         $references = $itemReferences->exportForConcepts($schemeIds);
         $valueTypes = $conceptValues->exportTypesForResources($conceptIds);
+        $templates = (new TemplatesSnapshot($connection))->export();
         if ($references || $valueTypes) {
-            $config = $services->get('Config');
-            $basePath = $config['file_store']['local']['base_path'] ?: (OMEKA_PATH . '/files');
-            $filepath = (new ReferencesBackup($basePath))->save($schemeIds, $references, $valueTypes);
-            $filepath
-                ? $logger->notice(
-                    'The rows referencing the concepts as items and the data types of the values were saved in {filename}.', // @translate
-                    ['filename' => basename($filepath)]
-                )
-                : $logger->warn(
-                    'Unable to save the rows referencing the concepts as items and the data types of the values. Check the rights of the directory "files/thesaurus".' // @translate
+            try {
+                $backupId = (new ReferencesBackup($connection))->save($schemeIds, $references, $valueTypes, $templates);
+            } catch (\Exception $e) {
+                $backupId = null;
+                $logger->err($e->getMessage());
+            }
+            if (!$backupId) {
+                $logger->err(
+                    'Unable to save the rows referencing the concepts as items and the data types of the values, so the data are not fixed.' // @translate
                 );
+                return;
+            }
+            $logger->notice(
+                'The rows referencing the concepts as items and the data types of the values were saved in the backup #{backup_id}.', // @translate
+                ['backup_id' => $backupId]
+            );
         }
 
         $totalValues = $conceptValues->retypeCustomVocabValues($schemeIds);

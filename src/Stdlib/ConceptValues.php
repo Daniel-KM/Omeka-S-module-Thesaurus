@@ -84,7 +84,8 @@ class ConceptValues
      * it exactly.
      *
      * @param int[] $resourceIds Ids of the concepts or of the items.
-     * @return array List of ["id" => value id, "type" => data type].
+     * @return array List of ["id" => value id, "type" => data type,
+     * "value_resource_id" => linked resource].
      */
     public function exportTypesForResources(array $resourceIds): array
     {
@@ -94,7 +95,7 @@ class ConceptValues
         }
         return $this->connection
             ->executeQuery(
-                'SELECT `id`, `type` FROM `value` WHERE `value_resource_id` IN (:ids) ORDER BY `id`',
+                'SELECT `id`, `type`, `value_resource_id` FROM `value` WHERE `value_resource_id` IN (:ids) ORDER BY `id`',
                 ['ids' => $resourceIds],
                 ['ids' => Connection::PARAM_INT_ARRAY]
             )
@@ -102,29 +103,52 @@ class ConceptValues
     }
 
     /**
-     * Restore the data types of some values.
+     * Restore the data types of some values, based on the current values.
      *
-     * @param array $values List of ["id" => value id, "type" => data type].
+     * The current data are kept: a data type is restored only when the value
+     * still exists, still points to the same resource and still has the data
+     * type set by the rollback ("resource:item"), so a value updated since the
+     * conversion is not overwritten.
+     *
+     * @param array $values Result of exportTypesForResources().
      * @return int The number of updated values.
      */
     public function restoreTypes(array $values): int
     {
-        $byType = [];
+        $saved = [];
         foreach ($values as $value) {
             $id = (int) ($value['id'] ?? 0);
             $type = (string) ($value['type'] ?? '');
-            if ($id && $type !== '') {
-                $byType[$type][] = $id;
+            if ($id && $type !== '' && $type !== 'resource:item') {
+                $saved[$id] = $value;
             }
         }
 
         $total = 0;
-        foreach ($byType as $type => $ids) {
-            $total += (int) $this->connection->executeStatement(
-                'UPDATE `value` SET `type` = :type WHERE `id` IN (:ids)',
-                ['type' => $type, 'ids' => $ids],
-                ['ids' => Connection::PARAM_INT_ARRAY]
-            );
+        foreach (array_chunk(array_keys($saved), 1000) as $ids) {
+            $currents = $this->connection
+                ->executeQuery(
+                    'SELECT `id`, `type`, `value_resource_id` FROM `value` WHERE `id` IN (:ids)',
+                    ['ids' => $ids],
+                    ['ids' => Connection::PARAM_INT_ARRAY]
+                )
+                ->fetchAllAssociative();
+            $byType = [];
+            foreach ($currents as $current) {
+                $value = $saved[(int) $current['id']];
+                $sameTarget = !isset($value['value_resource_id'])
+                    || (int) $value['value_resource_id'] === (int) $current['value_resource_id'];
+                if ($current['type'] === 'resource:item' && $sameTarget) {
+                    $byType[$value['type']][] = (int) $current['id'];
+                }
+            }
+            foreach ($byType as $type => $typeIds) {
+                $total += (int) $this->connection->executeStatement(
+                    'UPDATE `value` SET `type` = :type WHERE `id` IN (:ids)',
+                    ['type' => $type, 'ids' => $typeIds],
+                    ['ids' => Connection::PARAM_INT_ARRAY]
+                );
+            }
         }
         return $total;
     }

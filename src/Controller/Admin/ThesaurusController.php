@@ -511,13 +511,13 @@ class ThesaurusController extends ItemController
             ],
             'convert-items-to-concepts' => [
                 'label' => 'Convert items into concepts', // @translate
-                'description' => 'The items that belong to a thesaurus are converted into concepts, that are a dedicated resource type since version 3.4.26. The ids and the values are kept, so the links to the concepts remain valid, but the items are removed from the browse of the items. The items with a media cannot be converted. The assignments to item sets and sites, the data of the other modules and the data types of the values are saved in the directory "files/thesaurus", so the conversion can be reverted with the task "Convert concepts into items".', // @translate
+                'description' => 'The items that belong to a thesaurus are converted into concepts, that are a dedicated resource type since version 3.4.26. The ids and the values are kept, so the links to the concepts remain valid, but the items are removed from the browse of the items. The items with a media cannot be converted. The assignments to item sets and sites, the data of the other modules and the data types of the values are saved in the database before any change, so the conversion can be reverted with the task "Convert concepts into items". Without backup, the thesaurus is not converted.', // @translate
                 'button' => 'Convert items into concepts', // @translate
                 'schemes' => true,
             ],
             'convert-concepts-to-items' => [
                 'label' => 'Convert concepts into items', // @translate
-                'description' => 'The concepts of a thesaurus are converted back into items, in order to rollback a conversion. The ids and the values are kept, so the links remain valid, and the structure remains available via the skos values, so the thesaurus can be converted again. The assignments to item sets and sites, the data of the other modules and the data types of the values are restored from the file saved by the conversion. Warning: the rollback may be incomplete when this file is missing, when the resources changed since the conversion, or when the data were saved by an older version, and the data type of the thesaurus added manually to a template since the conversion is removed too, so a backup of the database remains recommended.', // @translate
+                'description' => 'The concepts of a thesaurus are converted back into items, in order to rollback a conversion. The ids and the values are kept, so the links remain valid, and the structure remains available via the skos values, so the thesaurus can be converted again. The assignments to item sets and sites, the data of the other modules and the data types of the values are restored from the backup saved by the conversion. Warning: the rollback may be incomplete when this backup is missing, when the resources changed since the conversion, or when the data were saved by an older version, and the data type of the thesaurus added manually to a template since the conversion is removed too, so a backup of the database remains recommended.', // @translate
                 'button' => 'Convert concepts into items', // @translate
                 'schemes' => true,
                 'restore' => true,
@@ -562,14 +562,28 @@ class ThesaurusController extends ItemController
             ]);
         }
 
-        // The reverse task restores the rows removed by the conversion.
+        // The reverse task restores the rows removed by the conversion. The
+        // current data are kept and completed by the backup, so its date is
+        // displayed.
         if (!empty($tasks[$task]['restore'])) {
+            $connection = $this->getEvent()->getApplication()->getServiceManager()->get('Omeka\Connection');
+            $backups = (new \Thesaurus\Stdlib\ReferencesBackup($connection))->lastBackups();
+            $list = [];
+            foreach ($backups as $schemeId => $backup) {
+                $list[] = sprintf('%s (#%d, %s)', $schemes[$schemeId] ?? ('#' . $schemeId), $backup['id'], $backup['created']);
+            }
+            $info = $list
+                ? strtr(
+                    $this->translate('The current data are kept and completed by the last backup of each thesaurus: only the missing rows and the data types unchanged since the conversion are restored. Backups: {list}.'), // @translate
+                    ['{list}' => implode('; ', $list)]
+                )
+                : $this->translate('There is no backup: the assignments to item sets and sites and the data types of the values will not be restored.'); // @translate
             $form->add([
                 'name' => 'restore',
                 'type' => \Laminas\Form\Element\Checkbox::class,
                 'options' => [
                     'label' => 'Restore the assignments to item sets and sites', // @translate
-                    'info' => 'The rows removed by the conversion are restored from the last file saved in the directory "files/thesaurus".', // @translate
+                    'info' => $info,
                 ],
                 'attributes' => [
                     'id' => 'task-restore',
