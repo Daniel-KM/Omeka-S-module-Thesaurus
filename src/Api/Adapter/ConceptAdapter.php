@@ -10,7 +10,6 @@ use Omeka\Entity\EntityInterface;
 use Omeka\Entity\Item;
 use Omeka\Entity\Resource;
 use Omeka\Stdlib\ErrorStore;
-use Thesaurus\Api\Representation\ConceptRepresentation;
 use Thesaurus\Entity\Concept;
 
 class ConceptAdapter extends AbstractResourceEntityAdapter
@@ -82,20 +81,29 @@ class ConceptAdapter extends AbstractResourceEntityAdapter
         $this->buildQueryFields($qb, $query);
     }
 
+    /**
+     * Keys of the structure of a concept, prefixed by the module.
+     *
+     * The keys of the namespace of the core ("o:scheme", etc.) were used until
+     * version 3.4.26, so they are still accepted on input.
+     */
+    const STRUCTURE_KEYS = ['scheme', 'broader', 'top', 'position'];
+
     public function hydrate(Request $request, EntityInterface $entity, ErrorStore $errorStore): void
     {
         parent::hydrate($request, $entity, $errorStore);
 
-        $data = $request->getContent();
+        $data = $this->normalizeStructureKeys($request);
 
-        // The structure of a concept can be set with the keys "o:scheme",
-        // "o:broader" and "o:top", or with the skos values, that are the source
-        // used by the job IndexThesaurus. The keys take precedence, so a client
-        // can always set the structure explicitly.
+        // The structure of a concept can be set with the keys of the module
+        // ("o-module-thesaurus:scheme", "o-module-thesaurus:broader" and
+        // "o-module-thesaurus:top"), or with the skos values, that are the
+        // source used by the job IndexThesaurus. The keys take precedence, so a
+        // client can always set the structure explicitly.
 
         if ($request->getOperation() === Request::CREATE) {
-            if (isset($data['o:scheme']['o:id'])) {
-                $scheme = $this->getAdapter('items')->findEntity($data['o:scheme']['o:id']);
+            if (isset($data['o-module-thesaurus:scheme']['o:id'])) {
+                $scheme = $this->getAdapter('items')->findEntity($data['o-module-thesaurus:scheme']['o:id']);
                 $entity->setScheme($scheme);
             } else {
                 $scheme = $this->valueResource($entity, ['skos:inScheme', 'skos:topConceptOf']);
@@ -107,9 +115,9 @@ class ConceptAdapter extends AbstractResourceEntityAdapter
 
         // The method shouldHydrate() returns true for any key on creation, so
         // the presence of the key is checked to know if it is an explicit one.
-        $hasBroader = array_key_exists('o:broader', $data) && $this->shouldHydrate($request, 'o:broader');
+        $hasBroader = array_key_exists('o-module-thesaurus:broader', $data) && $this->shouldHydrate($request, 'o-module-thesaurus:broader');
         if ($hasBroader) {
-            $broaderId = $request->getValue('o:broader')['o:id'] ?? $request->getValue('o:broader');
+            $broaderId = $request->getValue('o-module-thesaurus:broader')['o:id'] ?? $request->getValue('o-module-thesaurus:broader');
             $broader = $broaderId ? $this->findEntity(['id' => $broaderId]) : null;
             $entity->setBroader($broader);
         } else {
@@ -124,8 +132,8 @@ class ConceptAdapter extends AbstractResourceEntityAdapter
             }
         }
 
-        if (array_key_exists('o:top', $data) && $this->shouldHydrate($request, 'o:top')) {
-            $topId = $request->getValue('o:top')['o:id'] ?? $request->getValue('o:top');
+        if (array_key_exists('o-module-thesaurus:top', $data) && $this->shouldHydrate($request, 'o-module-thesaurus:top')) {
+            $topId = $request->getValue('o-module-thesaurus:top')['o:id'] ?? $request->getValue('o-module-thesaurus:top');
             $top = $topId ? $this->findEntity(['id' => $topId]) : null;
             $entity->setTop($top);
         } elseif ($hasBroader) {
@@ -140,10 +148,36 @@ class ConceptAdapter extends AbstractResourceEntityAdapter
             $entity->setTop($entity);
         }
 
-        if ($this->shouldHydrate($request, 'o:position')) {
-            $position = $request->getValue('o:position');
+        if ($this->shouldHydrate($request, 'o-module-thesaurus:position')) {
+            $position = $request->getValue('o-module-thesaurus:position');
             $entity->setPosition($position === null || $position === '' ? null : (int) $position);
         }
+    }
+
+    /**
+     * Use the keys of the module for the structure, with the legacy ones.
+     *
+     * @return array The normalized content of the request.
+     */
+    protected function normalizeStructureKeys(Request $request): array
+    {
+        $data = $request->getContent();
+        $changed = false;
+        foreach (self::STRUCTURE_KEYS as $key) {
+            $legacyKey = 'o:' . $key;
+            $moduleKey = 'o-module-thesaurus:' . $key;
+            if (array_key_exists($legacyKey, $data)) {
+                if (!array_key_exists($moduleKey, $data)) {
+                    $data[$moduleKey] = $data[$legacyKey];
+                }
+                unset($data[$legacyKey]);
+                $changed = true;
+            }
+        }
+        if ($changed) {
+            $request->setContent($data);
+        }
+        return $data;
     }
 
     /**
@@ -171,7 +205,7 @@ class ConceptAdapter extends AbstractResourceEntityAdapter
         /** @var \Thesaurus\Entity\Concept $entity */
         $scheme = $entity->getScheme();
         if (!$scheme) {
-            $errorStore->addError('o:scheme', 'A concept must belong to a thesaurus scheme.'); // @translate
+            $errorStore->addError('o-module-thesaurus:scheme', 'A concept must belong to a thesaurus scheme.'); // @translate
             return;
         }
 
@@ -183,9 +217,9 @@ class ConceptAdapter extends AbstractResourceEntityAdapter
             return;
         }
         if ($broader->getScheme()->getId() !== $scheme->getId()) {
-            $errorStore->addError('o:broader', 'The broader concept must belong to the same scheme.'); // @translate
+            $errorStore->addError('o-module-thesaurus:broader', 'The broader concept must belong to the same scheme.'); // @translate
         } elseif ($this->isSelfAncestor($entity, $broader)) {
-            $errorStore->addError('o:broader', 'A concept cannot be an ancestor of itself.'); // @translate
+            $errorStore->addError('o-module-thesaurus:broader', 'A concept cannot be an ancestor of itself.'); // @translate
         }
     }
 

@@ -261,13 +261,14 @@ class CreateThesaurus extends AbstractJob
         );
 
         // A concept is a dedicated resource type: it belongs to a scheme (an
-        // item) via the column "o:scheme", not to an item set. The value
-        // skos:inScheme is kept for the rdf output and existing queries.
+        // item) via the key "o-module-thesaurus:scheme", not to an item set.
+        // The value skos:inScheme is kept for the rdf output and existing
+        // queries.
         $baseConcept = [
             'o:owner' => ['o:id' => $ownerId],
             'o:resource_class' => ['o:id' => $conceptClass->id()],
             'o:resource_template' => ['o:id' => $conceptTemplate->id()],
-            'o:scheme' => ['o:id' => $schemeId],
+            'o-module-thesaurus:scheme' => ['o:id' => $schemeId],
             'skos:inScheme' => [
                 [
                     'type' => 'resource:item',

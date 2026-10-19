@@ -56,7 +56,7 @@ class ConceptController extends AbstractActionController
             if ($form->isValid()) {
                 // The concept is appended to its siblings, so the tree does not
                 // need to be reindexed.
-                $data['o:position'] ??= $this->nextPosition(
+                $data['o-module-thesaurus:position'] ??= $this->nextPosition(
                     $scheme->id(),
                     (int) ($data['skos:broader'][0]['value_resource_id'] ?? 0)
                 );

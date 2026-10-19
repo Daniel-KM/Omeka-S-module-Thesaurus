@@ -89,10 +89,10 @@ class ConceptRepresentation extends AbstractResourceEntityRepresentation
         $broader = $this->broader();
         $top = $this->top();
         return [
-            'o:scheme' => $this->scheme()->getReference(),
-            'o:broader' => $broader ? $broader->getReference() : null,
-            'o:top' => $top ? $top->getReference() : null,
-            'o:position' => $this->position(),
+            'o-module-thesaurus:scheme' => $this->scheme()->getReference(),
+            'o-module-thesaurus:broader' => $broader ? $broader->getReference() : null,
+            'o-module-thesaurus:top' => $top ? $top->getReference() : null,
+            'o-module-thesaurus:position' => $this->position(),
         ];
     }
 
