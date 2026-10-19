@@ -1045,13 +1045,11 @@ class Module extends AbstractModule
     protected function handleApiSearchQueryProperty(Event $event, array $query): void
     {
         /**
-         * @var \Omeka\Api\Manager $api
          * @var \Thesaurus\Stdlib\Thesaurus $thesaurus
          * @var \Doctrine\ORM\QueryBuilder $qb
          * @var \Omeka\Api\Adapter\ItemAdapter $adapter
          */
         $services = $this->getServiceLocator();
-        $api = $services->get('Omeka\ApiManager');
         $thesaurus = $services->get('Thesaurus\Thesaurus');
 
         $qb = $event->getParam('queryBuilder');
@@ -1071,18 +1069,10 @@ class Module extends AbstractModule
                 continue;
             }
 
-            // TODO Improve performance: currently, the thesaurus is built manually each time.
-            try {
-                $item = $api->read('items', ['id' => (int) $queryProperty['text']])->getContent();
-            } catch (\Omeka\Api\Exception\NotFoundException $e) {
-                continue;
-            }
-
-            $thesaurus = $thesaurus($item);
-            if (!$thesaurus->isSkos()) {
-                continue;
-            }
-            $list = array_keys($thesaurus->descendantsOrSelf());
+            // The descendants are read level by level, without building the
+            // whole thesaurus, so the cost depends on the number of results.
+            // The concept may be an item or a concept.
+            $list = $thesaurus->descendantIds((int) $queryProperty['text'], true);
 
             // TODO Fix the issue with the index of the alias of the adapter without "cat_" (when site_id is used in the query too).
             $valuesAlias = $adapter->createAlias('omeka_cat_');

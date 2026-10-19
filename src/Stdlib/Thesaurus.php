@@ -94,6 +94,11 @@ class Thesaurus
     protected $entityClass = \Thesaurus\Entity\Concept::class;
 
     /**
+     * @var \Thesaurus\Stdlib\ConceptHierarchy|null
+     */
+    protected $hierarchy;
+
+    /**
      * Cache all parents, children and titles of all terms, by id.
      *
      * @todo Check internationalized title.
@@ -718,6 +723,33 @@ class Thesaurus
         }
         return $this->selfItem()
             + $this->descendants();
+    }
+
+    /**
+     * Get the ids of the descendants of a concept, without building the tree.
+     *
+     * The cost depends on the number of results, not on the size of the
+     * thesaurus, so this method is recommended to filter a search.
+     *
+     * @param int|null $id The concept, else the current item.
+     * @return int[]
+     */
+    public function descendantIds(?int $id = null, bool $self = false): array
+    {
+        $id ??= $this->itemId;
+        return $id ? $this->hierarchy()->descendantIds((int) $id, $self) : [];
+    }
+
+    /**
+     * Get the ids of the ascendants of a concept, without building the tree.
+     *
+     * @param int|null $id The concept, else the current item.
+     * @return int[] Ids from the closest ascendant to the top concept.
+     */
+    public function ascendantIds(?int $id = null, bool $self = false): array
+    {
+        $id ??= $this->itemId;
+        return $id ? $this->hierarchy()->ascendantIds((int) $id, $self) : [];
     }
 
     /**
@@ -1499,6 +1531,19 @@ class Thesaurus
             $this->terms['class'] = $this->easyMeta->resourceClassIds();
         }
         return $this->terms['class'];
+    }
+
+    protected function hierarchy(): ConceptHierarchy
+    {
+        if ($this->hierarchy === null) {
+            $this->cacheTerms();
+            $this->hierarchy = new ConceptHierarchy(
+                $this->entityManager->getConnection(),
+                (int) $this->terms['property'][self::PROPERTY_PARENT],
+                (int) $this->terms['property'][self::PROPERTY_CHILD]
+            );
+        }
+        return $this->hierarchy;
     }
 
     protected function init(): self
