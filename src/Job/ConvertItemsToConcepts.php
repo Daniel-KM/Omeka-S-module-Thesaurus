@@ -238,6 +238,19 @@ class ConvertItemsToConcepts extends AbstractJob
                     ['scheme_id' => \PDO::PARAM_INT, 'ids' => Connection::PARAM_INT_ARRAY]
                 );
             }
+
+            // A custom vocab contains items, so a value filled with a concept
+            // via the custom vocab of the thesaurus is no longer valid: it uses
+            // the data type of the thesaurus, that manages the concepts.
+            $this->connection->executeStatement(
+                <<<'SQL'
+                    UPDATE `value` SET `type` = :thesaurus_type
+                    WHERE `value_resource_id` IN (:ids)
+                        AND `type` LIKE 'customvocab:%'
+                    SQL,
+                ['thesaurus_type' => 'thesaurus:' . $schemeId, 'ids' => $itemIds],
+                ['ids' => Connection::PARAM_INT_ARRAY]
+            );
         } finally {
             // The check is restored in all cases, else the connection would
             // keep it disabled after a failure.
