@@ -405,6 +405,42 @@ class ThesaurusController extends ItemController
         return $this->redirect()->toRoute('admin/thesaurus/default');
     }
 
+    public function convertConceptsToItemsAction()
+    {
+        // The task is destructive, so it is confirmed via the sidebar.
+        $form = $this->getForm(ConfirmForm::class);
+        $form->setData($this->getRequest()->getPost());
+        if (!$this->getRequest()->isPost() || !$form->isValid()) {
+            $this->messenger()->addFormErrors($form);
+            return $this->redirect()->toRoute('admin/thesaurus/default');
+        }
+
+        $schemeIds = $this->postedSchemeIds();
+        if (!$schemeIds) {
+            $this->messenger()->addError(
+                'Select the thesaurus to convert.' // @translate
+            );
+            return $this->redirect()->toRoute('admin/thesaurus/default');
+        }
+
+        $dispatcher = $this->jobDispatcher();
+        $job = $dispatcher->dispatch(\Thesaurus\Job\ConvertConceptsToItems::class, ['schemes' => $schemeIds]);
+        $message = new PsrMessage(
+            'Converting concepts into items in background ({link}job #{job_id}{link_end}, {link_log}logs{link_end}).', // @translate
+            [
+                'link' => sprintf('<a href="%s">', htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))),
+                'job_id' => $job->getId(),
+                'link_end' => '</a>',
+                'link_log' => class_exists('Log\Module', false)
+                    ? sprintf('<a href="%1$s">', htmlspecialchars($this->url()->fromRoute('admin/default', ['controller' => 'log'], ['query' => ['job_id' => $job->getId()]])))
+                    : sprintf('<a href="%1$s" target="_blank" rel="noopener noreferrer">', htmlspecialchars($this->url()->fromRoute('admin/id', ['controller' => 'job', 'action' => 'log', 'id' => $job->getId()]))),
+            ]
+        );
+        $message->setEscapeHtml(false);
+        $this->messenger()->addSuccess($message);
+        return $this->redirect()->toRoute('admin/thesaurus/default');
+    }
+
     public function fixConceptReferencesAction()
     {
         // The task is destructive, so it is confirmed via the sidebar.
@@ -474,6 +510,12 @@ class ThesaurusController extends ItemController
                 'label' => 'Convert items into concepts', // @translate
                 'description' => 'The items that belong to a thesaurus are converted into concepts, that are a dedicated resource type since version 3.4.26. The ids and the values are kept, so the links to the concepts remain valid, but the items are removed from the browse of the items. The items with a media cannot be converted.', // @translate
                 'button' => 'Convert items into concepts', // @translate
+                'schemes' => true,
+            ],
+            'convert-concepts-to-items' => [
+                'label' => 'Convert concepts into items', // @translate
+                'description' => 'The concepts of a thesaurus are converted back into items, in order to rollback a conversion. The ids and the values are kept, so the links remain valid, and the structure remains available via the skos values, so the thesaurus can be converted again.', // @translate
+                'button' => 'Convert concepts into items', // @translate
                 'schemes' => true,
             ],
             'fix-concept-references' => [
