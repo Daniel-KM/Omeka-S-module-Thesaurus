@@ -774,6 +774,7 @@ class ThesaurusController extends ItemController
 
         if ($destination === 'thesaurus') {
             $options['create_customvocab'] = !empty($data['create_customvocab']);
+            $options['concept_resource_type'] = $data['concept_resource_type'] ?? 'concepts';
             // Messages are included.
             $this->importThesaurus($file['tmp_name'], $file['name'], $options, $file['type']);
             return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'browse'], true);
@@ -817,7 +818,7 @@ class ThesaurusController extends ItemController
         }
 
         if (isset($post['submit-thesaurus'])) {
-            $this->importFlatListAsThesaurus($result, $name, $separator);
+            $this->importFlatListAsThesaurus($result, $name, $separator, $post['concept_resource_type'] ?? 'concepts');
             return $this->redirect()->toRoute('admin/thesaurus/default', ['action' => 'browse'], true);
         }
 
@@ -910,8 +911,12 @@ class ThesaurusController extends ItemController
      * The flat list is serialized as a tabulation offset list, then imported
      * through the standard engine.
      */
-    protected function importFlatListAsThesaurus(string $flatList, string $name, string $separator): void
-    {
+    protected function importFlatListAsThesaurus(
+        string $flatList,
+        string $name,
+        string $separator,
+        string $conceptResourceType = 'concepts'
+    ): void {
         $lines = [];
         foreach ($this->stringToList($flatList, true) as $line) {
             $segments = explode($separator, $line);
@@ -940,6 +945,7 @@ class ThesaurusController extends ItemController
             'separator' => $separator,
             'clean' => [],
             'skip_first_line' => false,
+            'concept_resource_type' => $conceptResourceType,
         ];
 
         $this->dispatchCreateThesaurus($lines, mb_strtolower($name), $options);

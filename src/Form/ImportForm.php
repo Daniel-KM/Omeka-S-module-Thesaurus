@@ -182,6 +182,23 @@ class ImportForm extends Form
             ])
 
             ->add([
+                'name' => 'concept_resource_type',
+                'type' => CommonElement\OptionalRadio::class,
+                'options' => [
+                    'label' => 'Type of resources of the concepts', // @translate
+                    'info' => 'The concepts are a dedicated resource type since version 3.4.26: they are managed in the thesaurus and they are not mixed with the items in browse, search, facets and references. Create them as items to expose them with the items, for example to display them in the public pages or to index them in the search engines.', // @translate
+                    'value_options' => [
+                        'concepts' => 'Concepts (managed in the thesaurus only)', // @translate
+                        'items' => 'Items (exposed with the items in browse, search and facets)', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'concept_resource_type',
+                    'value' => 'concepts',
+                ],
+            ])
+
+            ->add([
                 'name' => 'customvocab_label',
                 'type' => Element\Text::class,
                 'options' => [

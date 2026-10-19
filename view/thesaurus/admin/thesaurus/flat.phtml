@@ -62,6 +62,19 @@ $action = $url('admin/thesaurus/default', ['action' => 'upload']);
         </div>
     </div>
 
+    <div class="field">
+        <div class="field-meta">
+            <label for="preview-concept-resource-type"><?= $translate('Type of resources of the concepts') ?></label>
+            <div class="field-description"><?= $translate('The concepts are managed in the thesaurus only. Create them as items to expose them with the items in browse, search and facets.') ?></div>
+        </div>
+        <div class="inputs">
+            <select id="preview-concept-resource-type" name="concept_resource_type">
+                <option value="concepts"><?= $translate('Concepts (managed in the thesaurus only)') ?></option>
+                <option value="items"><?= $translate('Items (exposed with the items in browse, search and facets)') ?></option>
+            </select>
+        </div>
+    </div>
+
     <button type="submit" name="submit-download" class="button"><?= $translate('Download the list') ?></button>
     <?php if ($hasCustomVocab): ?>
     <button type="submit" name="submit-customvocab" class="button"><?= $translate('Create the custom vocabulary') ?></button>
