@@ -28,11 +28,12 @@ class ReferencesBackup
      * @param int[] $schemeIds
      * @param array $tables Result of ItemReferences::exportForConcepts().
      * @param array $values Result of ConceptValues::exportTypesForResources().
+     * @param array $templates Result of TemplatesSnapshot::export().
      * @return string|null The path of the file, or null when not saved.
      */
-    public function save(array $schemeIds, array $tables, array $values = []): ?string
+    public function save(array $schemeIds, array $tables, array $values = [], array $templates = []): ?string
     {
-        if (!$tables && !$values) {
+        if (!$tables && !$values && !$templates) {
             return null;
         }
         if (!$this->prepareDirectory()) {
@@ -44,6 +45,7 @@ class ReferencesBackup
             'schemes' => array_values(array_map('intval', $schemeIds)),
             'tables' => $tables,
             'values' => $values,
+            'templates' => $templates,
         ];
         $filepath = sprintf(
             '%s/references-%s-%s.json',
@@ -87,11 +89,14 @@ class ReferencesBackup
             return null;
         }
         $content = json_decode((string) file_get_contents($filepath), true);
-        if (!is_array($content) || (empty($content['tables']) && empty($content['values']))) {
+        if (!is_array($content)
+            || (empty($content['tables']) && empty($content['values']) && empty($content['templates']))
+        ) {
             return null;
         }
         $content['tables'] ??= [];
         $content['values'] ??= [];
+        $content['templates'] ??= [];
         $content['filepath'] = $filepath;
         return $content;
     }

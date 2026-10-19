@@ -10,9 +10,30 @@ use Omeka\Job\AbstractJob;
  * custom vocab of a thesaurus (resource templates, advanced resource template),
  * without removing the custom vocab. Settings are only reported for a manual
  * review, since the meaning of a data type in a setting is module specific.
+ *
+ * The migration may be limited to some thesaurus with the argument "schemes" or
+ * with setSchemeIds(), else all the thesaurus are processed.
  */
 class MigrateDataTypes extends AbstractJob
 {
+    /**
+     * Thesaurus to process, else all of them.
+     *
+     * @var int[]
+     */
+    protected $schemeIds = [];
+
+    /**
+     * Limit the migration to some thesaurus, for example the converted ones.
+     *
+     * @param int[] $schemeIds
+     */
+    public function setSchemeIds(array $schemeIds): self
+    {
+        $this->schemeIds = array_values(array_unique(array_filter(array_map('intval', $schemeIds))));
+        return $this;
+    }
+
     public function perform(): void
     {
         $services = $this->getServiceLocator();
@@ -28,6 +49,10 @@ class MigrateDataTypes extends AbstractJob
         }
 
         $cvToScheme = $this->mapCustomVocabToScheme($connection, $schemeClassId);
+        $schemeIds = $this->schemeIds ?: array_filter(array_map('intval', (array) $this->getArg('schemes', [])));
+        if ($schemeIds) {
+            $cvToScheme = array_filter($cvToScheme, fn ($schemeId) => in_array((int) $schemeId, $schemeIds, true));
+        }
         if (!$cvToScheme) {
             $logger->notice('No thesaurus custom vocab found; nothing to migrate.'); // @translate
             return;

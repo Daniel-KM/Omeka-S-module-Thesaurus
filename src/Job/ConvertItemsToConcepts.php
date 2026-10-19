@@ -8,6 +8,7 @@ use Thesaurus\Stdlib\ConceptValues;
 use Thesaurus\Stdlib\ItemReferences;
 use Thesaurus\Stdlib\ReferencesBackup;
 use Thesaurus\Stdlib\TemplateDataTypes;
+use Thesaurus\Stdlib\TemplatesSnapshot;
 
 /**
  * Convert the items of a thesaurus into the dedicated resource type "concept".
@@ -47,6 +48,13 @@ class ConvertItemsToConcepts extends AbstractJob
      * @var array
      */
     protected $properties;
+
+    /**
+     * Configurations of the templates before the conversion.
+     *
+     * @var array
+     */
+    protected $templatesSnapshot = [];
 
     public function perform(): void
     {
@@ -88,6 +96,10 @@ class ConvertItemsToConcepts extends AbstractJob
             return;
         }
 
+        // The configurations of the templates are modified below, so they are
+        // saved first, with the rows and the data types of each thesaurus.
+        $this->templatesSnapshot = (new TemplatesSnapshot($this->connection))->export();
+
         $totalConverted = 0;
         $convertedSchemeIds = [];
         foreach ($schemeIds as $schemeId) {
@@ -120,6 +132,14 @@ class ConvertItemsToConcepts extends AbstractJob
                 ['count' => $totalTemplates]
             );
         }
+
+        // The concepts are no longer items, so the custom vocab of a thesaurus
+        // is empty: the templates that use it must accept the data type of the
+        // thesaurus, else no concept could be selected any more. Only the
+        // converted thesaurus are processed.
+        (new MigrateDataTypes($this->job, $services))
+            ->setSchemeIds($convertedSchemeIds)
+            ->perform();
 
         // Only the converted thesaurus are indexed: they may have no resource
         // template or class allowing to detect them as a scheme. Do not
@@ -307,7 +327,8 @@ class ConvertItemsToConcepts extends AbstractJob
             $total += count($tableData['rows'] ?? []);
         }
 
-        $filepath = (new ReferencesBackup($this->basePath()))->save([$schemeId], $references, $valueTypes);
+        $filepath = (new ReferencesBackup($this->basePath()))
+            ->save([$schemeId], $references, $valueTypes, $this->templatesSnapshot);
         if ($filepath) {
             $this->logger->notice(
                 'Thesaurus #{item_id}: {count} rows referencing the concepts as items and the data types of {count_values} values were saved in {filename}, so the conversion can be reverted.', // @translate

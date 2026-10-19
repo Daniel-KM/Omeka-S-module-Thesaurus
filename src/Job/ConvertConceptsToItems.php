@@ -8,6 +8,7 @@ use Thesaurus\Stdlib\ConceptTemplates;
 use Thesaurus\Stdlib\ConceptValues;
 use Thesaurus\Stdlib\ItemReferences;
 use Thesaurus\Stdlib\ReferencesBackup;
+use Thesaurus\Stdlib\TemplatesSnapshot;
 
 /**
  * Convert the concepts of a thesaurus back into items.
@@ -37,6 +38,11 @@ class ConvertConceptsToItems extends AbstractJob
      * @var \Doctrine\DBAL\Connection
      */
     protected $connection;
+
+    /**
+     * @var bool Whether the data saved by the conversion were restored.
+     */
+    protected $restored = false;
 
     public function perform(): void
     {
@@ -105,9 +111,13 @@ class ConvertConceptsToItems extends AbstractJob
             ['total' => $totalConverted]
         );
 
-        $this->logger->warn(
-            'The rollback may be incomplete: the rows whose target was removed since the conversion, the rows of the tables without a single primary key and the data that were not saved are not restored. Check the thesaurus and the related resources.' // @translate
-        );
+        $this->restored
+            ? $this->logger->warn(
+                'The rollback may be incomplete: the rows whose target was removed since the conversion and the rows of the tables without a single primary key are not restored, and the data type of the thesaurus added manually to a template since the conversion is removed too. Check the thesaurus, the templates and the related resources.' // @translate
+            )
+            : $this->logger->warn(
+                'The rollback may be incomplete: the data of the conversion were not saved, so the assignments to item sets and sites, the data types of the values and the configurations of the templates are not restored. Check the thesaurus and the related resources.' // @translate
+            );
     }
 
     /**
@@ -138,11 +148,14 @@ class ConvertConceptsToItems extends AbstractJob
 
         $total = (new ItemReferences($this->connection))->restoreForConcepts($content['tables'] ?? []);
         $totalValues = (new ConceptValues($this->connection))->restoreTypes($content['values'] ?? []);
+        $totalTemplates = (new TemplatesSnapshot($this->connection))->restore($content['templates'] ?? [], $schemeIds);
+        $this->restored = true;
         $this->logger->notice(
-            '{count} rows referencing the items and the data types of {count_values} values were restored from {filename}.', // @translate
+            '{count} rows referencing the items and the data types of {count_values} values were restored and the data type of the thesaurus was removed from {count_templates} configurations of templates, from {filename}.', // @translate
             [
                 'count' => $total,
                 'count_values' => $totalValues,
+                'count_templates' => $totalTemplates,
                 'filename' => basename((string) $content['filepath']),
             ]
         );

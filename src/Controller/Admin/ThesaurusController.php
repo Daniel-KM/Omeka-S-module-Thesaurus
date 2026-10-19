@@ -517,7 +517,7 @@ class ThesaurusController extends ItemController
             ],
             'convert-concepts-to-items' => [
                 'label' => 'Convert concepts into items', // @translate
-                'description' => 'The concepts of a thesaurus are converted back into items, in order to rollback a conversion. The ids and the values are kept, so the links remain valid, and the structure remains available via the skos values, so the thesaurus can be converted again. The assignments to item sets and sites, the data of the other modules and the data types of the values are restored from the file saved by the conversion. Warning: the rollback may be incomplete when this file is missing, when the resources changed since the conversion, or when the data were saved by an older version, so a backup of the database remains recommended.', // @translate
+                'description' => 'The concepts of a thesaurus are converted back into items, in order to rollback a conversion. The ids and the values are kept, so the links remain valid, and the structure remains available via the skos values, so the thesaurus can be converted again. The assignments to item sets and sites, the data of the other modules and the data types of the values are restored from the file saved by the conversion. Warning: the rollback may be incomplete when this file is missing, when the resources changed since the conversion, or when the data were saved by an older version, and the data type of the thesaurus added manually to a template since the conversion is removed too, so a backup of the database remains recommended.', // @translate
                 'button' => 'Convert concepts into items', // @translate
                 'schemes' => true,
                 'restore' => true,
