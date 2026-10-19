@@ -402,10 +402,10 @@ class Module extends AbstractModule
             throw new \Omeka\Module\Exception\ModuleCannotInstallException((string) $message);
         }
 
-        if (!method_exists($this, 'checkModuleActiveVersion') || !$this->checkModuleActiveVersion('Common', '3.4.91')) {
+        if (!method_exists($this, 'checkModuleActiveVersion') || !$this->checkModuleActiveVersion('Common', '3.4.94')) {
             $message = new \Omeka\Stdlib\Message(
                 $translator->translate('The module %1$s should be upgraded to version %2$s or later.'), // @translate
-                'Common', '3.4.91'
+                'Common', '3.4.94'
             );
             throw new \Omeka\Module\Exception\ModuleCannotInstallException((string) $message);
         }
