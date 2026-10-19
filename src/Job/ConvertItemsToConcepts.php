@@ -4,6 +4,7 @@ namespace Thesaurus\Job;
 
 use Doctrine\DBAL\Connection;
 use Omeka\Job\AbstractJob;
+use Thesaurus\Stdlib\ItemReferences;
 use Thesaurus\Stdlib\TemplateDataTypes;
 
 /**
@@ -211,10 +212,8 @@ class ConvertItemsToConcepts extends AbstractJob
             return 0;
         }
 
-        // The item rows are removed without cascade, so the assignment to item
-        // sets and sites is kept: the custom vocab of a thesaurus is based on
-        // an item set and it should continue to work until its migration to the
-        // data type "thesaurus".
+        // The item rows are removed without cascade, so the rows that reference
+        // them are removed separately.
         $this->connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
 
         $sqls = [
@@ -247,6 +246,10 @@ class ConvertItemsToConcepts extends AbstractJob
                     ['scheme_id' => \PDO::PARAM_INT, 'ids' => Connection::PARAM_INT_ARRAY]
                 );
             }
+
+            // A concept is not an item, so it is no more assigned to item sets
+            // or sites, and the data of the modules about items are removed.
+            (new ItemReferences($this->connection))->removeForConcepts();
 
             // A custom vocab contains items, so a value filled with a concept
             // via the custom vocab of the thesaurus is no longer valid: it uses
