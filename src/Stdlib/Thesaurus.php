@@ -164,7 +164,7 @@ class Thesaurus
         $this->logger = $logger;
         $this->user = $user;
         $this->isPublic = empty($user)
-            || $this->user->getRole() === 'guest';
+            || in_array($this->user->getRole(), ['guest', 'guest_private', 'guest_private_site']);
         $this->separator = $separator;
         $this->templateConceptId = $templateConceptId;
     }
