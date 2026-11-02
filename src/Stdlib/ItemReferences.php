@@ -180,6 +180,9 @@ class ItemReferences
     /**
      * Get the foreign keys that reference the table "item".
      *
+     * The tables of the module that reference the scheme are not references of
+     * the concepts as items, so they are skipped.
+     *
      * @return array List of [table, column, delete rule].
      */
     protected function foreignKeys(): array
@@ -193,7 +196,7 @@ class ItemReferences
             WHERE `k`.`TABLE_SCHEMA` = DATABASE()
                 AND `k`.`REFERENCED_TABLE_NAME` = 'item'
                 AND `k`.`REFERENCED_COLUMN_NAME` = 'id'
-                AND `k`.`TABLE_NAME` != 'concept'
+                AND `k`.`TABLE_NAME` NOT IN ('concept', 'thesaurus_tree_cache')
             SQL;
         return $this->connection->executeQuery($sql)->fetchAllNumeric();
     }

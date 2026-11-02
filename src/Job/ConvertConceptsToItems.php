@@ -90,6 +90,9 @@ class ConvertConceptsToItems extends AbstractJob
 
         $this->restoreReferences($convertedSchemeIds);
 
+        // The concepts are items now, so the cached relations are outdated.
+        (new \Thesaurus\Stdlib\RelationsCache($this->connection))->clear($convertedSchemeIds);
+
         // The templates of the thesaurus may be reserved to the concepts, so
         // the values of the new items could not be saved any more.
         $services = $this->getServiceLocator();

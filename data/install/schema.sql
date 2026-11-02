@@ -21,3 +21,10 @@ CREATE TABLE `thesaurus_backup` (
     `data` LONGTEXT NOT NULL COMMENT '(DC2Type:json)',
     PRIMARY KEY(`id`)
 ) DEFAULT CHARACTER SET `utf8mb4` COLLATE `utf8mb4_unicode_ci` ENGINE = `InnoDB`;
+CREATE TABLE `thesaurus_tree_cache` (
+    `scheme_id` INT NOT NULL,
+    `created` DATETIME NOT NULL,
+    `data` LONGTEXT NOT NULL COMMENT '(DC2Type:json)',
+    PRIMARY KEY(`scheme_id`)
+) DEFAULT CHARACTER SET `utf8mb4` COLLATE `utf8mb4_unicode_ci` ENGINE = `InnoDB`;
+ALTER TABLE `thesaurus_tree_cache` ADD CONSTRAINT `FK_74BD0F4965797862` FOREIGN KEY (`scheme_id`) REFERENCES `item` (`id`) ON DELETE CASCADE;

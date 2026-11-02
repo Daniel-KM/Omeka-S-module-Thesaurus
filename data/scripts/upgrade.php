@@ -526,3 +526,29 @@ if (version_compare($oldVersion, '3.4.27', '<')) {
         $messenger->addWarning($message);
     }
 }
+
+if (version_compare($oldVersion, '3.4.28', '<')) {
+    // The relations of the concepts are kept in a cache to build the tree of a
+    // thesaurus quickly.
+    $sqls = [
+        <<<'SQL'
+            CREATE TABLE IF NOT EXISTS `thesaurus_tree_cache` (
+                `scheme_id` INT NOT NULL,
+                `created` DATETIME NOT NULL,
+                `data` LONGTEXT NOT NULL COMMENT '(DC2Type:json)',
+                PRIMARY KEY(`scheme_id`)
+            ) DEFAULT CHARACTER SET `utf8mb4` COLLATE `utf8mb4_unicode_ci` ENGINE = `InnoDB`
+            SQL,
+        <<<'SQL'
+            ALTER TABLE `thesaurus_tree_cache`
+            ADD CONSTRAINT `FK_74BD0F4965797862` FOREIGN KEY (`scheme_id`) REFERENCES `item` (`id`) ON DELETE CASCADE
+            SQL,
+    ];
+    foreach ($sqls as $sql) {
+        try {
+            $connection->executeStatement($sql);
+        } catch (\Exception $e) {
+            // The constraint may exist already.
+        }
+    }
+}

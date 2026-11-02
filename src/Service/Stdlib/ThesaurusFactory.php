@@ -20,7 +20,8 @@ class ThesaurusFactory implements FactoryInterface
             $services->get('Omeka\Logger'),
             $plugins->get('identity')(),
             $settings->get('thesaurus_separator', \Thesaurus\Module::SEPARATOR),
-            (int) $settings->get('thesaurus_skos_concept_template_id')
+            (int) $settings->get('thesaurus_skos_concept_template_id'),
+            $services->get('Omeka\Acl')
         );
     }
 }

@@ -51,6 +51,13 @@ class Module extends AbstractModule
     const SEPARATOR = ' :: ';
 
     /**
+     * Thesaurus of the resources being updated or deleted, by request.
+     *
+     * @var int[]
+     */
+    protected $treeCacheSchemeIds = [];
+
+    /**
      * Warn only once by request that a thesaurus should be reindexed.
      *
      * @var bool
@@ -708,6 +715,18 @@ class Module extends AbstractModule
             [$this, 'deleteSchemeConcepts']
         );
 
+        // Remove the cached relations of the thesaurus of a modified resource.
+        // The thesaurus are collected before the change too, since a concept
+        // may be moved or deleted.
+        foreach ([\Omeka\Api\Adapter\ItemAdapter::class, \Thesaurus\Api\Adapter\ConceptAdapter::class] as $adapter) {
+            foreach (['api.update.pre', 'api.delete.pre', 'api.batch_update.pre'] as $eventName) {
+                $sharedEventManager->attach($adapter, $eventName, [$this, 'collectTreeCacheSchemes']);
+            }
+            foreach (['api.create.post', 'api.update.post', 'api.delete.post', 'api.batch_update.post'] as $eventName) {
+                $sharedEventManager->attach($adapter, $eventName, [$this, 'clearTreeCache']);
+            }
+        }
+
         // Warn in the sidebar of confirmation of the deletion of a scheme. The
         // event "view.details" is used by the sidebar of the browse; the event
         // "view.delete.confirm" is used by the page of edition, but it requires
@@ -988,6 +1007,57 @@ class Module extends AbstractModule
      *
      * @param Event $event
      */
+    /**
+     * Collect the thesaurus of the resources before their update or deletion.
+     */
+    public function collectTreeCacheSchemes(Event $event): void
+    {
+        $this->treeCacheSchemeIds = array_merge(
+            $this->treeCacheSchemeIds,
+            $this->treeCacheSchemeIdsOf($event)
+        );
+    }
+
+    /**
+     * Remove the cached relations of the thesaurus of the modified resources.
+     */
+    public function clearTreeCache(Event $event): void
+    {
+        $schemeIds = array_merge($this->treeCacheSchemeIds, $this->treeCacheSchemeIdsOf($event));
+        $this->treeCacheSchemeIds = [];
+        if ($schemeIds) {
+            (new \Thesaurus\Stdlib\RelationsCache($this->getServiceLocator()->get('Omeka\Connection')))
+                ->clear($schemeIds);
+        }
+    }
+
+    /**
+     * Get the thesaurus of the resources of an api event.
+     *
+     * @return int[]
+     */
+    protected function treeCacheSchemeIdsOf(Event $event): array
+    {
+        /** @var \Omeka\Api\Request $request */
+        $request = $event->getParam('request');
+        if ($request->getOperation() === \Omeka\Api\Request::BATCH_UPDATE) {
+            $ids = $request->getIds();
+        } elseif ($request->getOperation() === \Omeka\Api\Request::CREATE) {
+            $response = $event->getParam('response');
+            $entity = $response ? $response->getContent() : null;
+            $ids = $entity && method_exists($entity, 'getId') ? [$entity->getId()] : [];
+        } else {
+            $ids = [$request->getId()];
+        }
+        $ids = array_filter(array_map('intval', (array) $ids));
+        if (!$ids) {
+            return [];
+        }
+        $easyMeta = $this->getServiceLocator()->get('Common\EasyMeta');
+        return (new \Thesaurus\Stdlib\RelationsCache($this->getServiceLocator()->get('Omeka\Connection')))
+            ->schemeIdsOf($ids, array_values($easyMeta->propertyIds(['skos:inScheme', 'skos:topConceptOf'])));
+    }
+
     /**
      * Declare the prefix used by the json-ld type of the concepts, else it is
      * silently skipped by the json-ld processors.

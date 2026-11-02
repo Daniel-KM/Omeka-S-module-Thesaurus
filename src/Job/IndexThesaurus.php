@@ -105,6 +105,11 @@ class IndexThesaurus extends AbstractJob
      */
     protected function indexScheme(int $schemeId): bool
     {
+        // The relations may have been updated without the api, for example by
+        // a conversion, so the cache is removed first.
+        (new \Thesaurus\Stdlib\RelationsCache($this->entityManager->getConnection()))
+            ->clear([$schemeId]);
+
         try {
             $scheme = $this->api->read('items', ['id' => $schemeId])->getContent();
         } catch (\Omeka\Api\Exception\NotFoundException $e) {

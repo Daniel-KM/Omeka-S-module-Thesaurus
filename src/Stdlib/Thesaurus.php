@@ -15,6 +15,7 @@ use Omeka\Api\Representation\ItemRepresentation;
 use Omeka\Api\Representation\ItemSetRepresentation;
 use Thesaurus\Api\Representation\ConceptRepresentation;
 use Omeka\Entity\User;
+use Omeka\Permissions\Acl;
 
 /**
  * Manage a thesaurus via an item and sub-items.
@@ -69,6 +70,11 @@ class Thesaurus
      * @var \Laminas\Log\Logger
      */
     protected $logger;
+
+    /**
+     * @var \Omeka\Permissions\Acl|null
+     */
+    protected $acl;
 
     /**
      * @var \Omeka\Entity\User|null
@@ -200,7 +206,8 @@ class Thesaurus
         Logger $logger,
         ?User $user,
         string $separator,
-        int $templateConceptId
+        int $templateConceptId,
+        ?Acl $acl = null
     ) {
         $this->api = $api;
         $this->easyMeta = $easyMeta;
@@ -212,6 +219,7 @@ class Thesaurus
             || in_array($this->user->getRole(), ['guest', 'guest_private', 'guest_private_site']);
         $this->separator = $separator;
         $this->templateConceptId = $templateConceptId;
+        $this->acl = $acl;
     }
 
     /**
@@ -1833,16 +1841,30 @@ class Thesaurus
             return $qb->getQuery()->getScalarResult();
         };
 
+        $pairs = fn (array $rows): array => array_map(fn ($row) => [(int) $row['id'], (int) $row['related']], $rows);
+        return $this->mergeRelations(
+            $pairs($relations(self::PROPERTY_PARENT)),
+            $pairs($relations(self::PROPERTY_CHILD))
+        );
+    }
+
+    /**
+     * Get the parents and the children from the ordered relations.
+     *
+     * @param array $broaderPairs Ordered pairs [concept, broader concept].
+     * @param array $narrowerPairs Ordered pairs [concept, narrower concept].
+     * @return array The parents by concept and the ordered children by concept.
+     */
+    protected function mergeRelations(array $broaderPairs, array $narrowerPairs): array
+    {
         // There is only one parent for each concept: the first one is kept.
         $parents = [];
-        foreach ($relations(self::PROPERTY_PARENT) as $row) {
-            $parents[(int) $row['id']] ??= (int) $row['related'];
+        foreach ($broaderPairs as [$id, $related]) {
+            $parents[$id] ??= $related;
         }
 
         $children = [];
-        foreach ($relations(self::PROPERTY_CHILD) as $row) {
-            $id = (int) $row['id'];
-            $related = (int) $row['related'];
+        foreach ($narrowerPairs as [$id, $related]) {
             if (!in_array($related, $children[$id] ?? [], true)) {
                 $children[$id][] = $related;
             }
@@ -1983,6 +2005,85 @@ class Thesaurus
         }
     }
 
+    /**
+     * Get the relations of the whole tree, from the cache when possible.
+     *
+     * The cache stores the relations with the visibility of their values, so it
+     * is used for the users who can view all resources and for the visitors,
+     * who can view the public values only. The other users may view their own
+     * private values, so the relations are read directly for them.
+     *
+     * @param int[] $concepts The concepts of the scheme visible by the user.
+     * @return array The parents by concept and the ordered children by concept.
+     */
+    protected function wholeRelationsOf(array $concepts): array
+    {
+        $viewAll = $this->acl && $this->acl->userIsAllowed(\Omeka\Entity\Resource::class, 'view-all');
+        $isVisitor = $this->acl && !$viewAll && !$this->acl->getAuthenticationService()->hasIdentity();
+        if (!$viewAll && !$isVisitor) {
+            return $this->relationsOf($concepts);
+        }
+
+        $cache = new RelationsCache($this->entityManager->getConnection());
+        $schemeId = (int) $this->scheme->id();
+        $data = $cache->read($schemeId);
+        if ($data === null) {
+            $data = $cache->build(
+                $this->schemeMemberIds(),
+                (int) $this->terms['property'][self::PROPERTY_PARENT],
+                (int) $this->terms['property'][self::PROPERTY_CHILD]
+            );
+            $cache->write($schemeId, $data);
+        }
+
+        // The relations are limited to the concepts visible by the user.
+        $visible = array_flip($concepts);
+        $filter = function (array $pairs) use ($visible, $viewAll): array {
+            $result = [];
+            foreach ($pairs as [$id, $related, $isPublic]) {
+                if (isset($visible[$id], $visible[$related]) && ($viewAll || $isPublic)) {
+                    $result[] = [$id, $related];
+                }
+            }
+            return $result;
+        };
+        return $this->mergeRelations($filter($data['broader']), $filter($data['narrower']));
+    }
+
+    /**
+     * Get all the concepts of the current scheme, whatever their visibility.
+     *
+     * @return int[]
+     */
+    protected function schemeMemberIds(): array
+    {
+        $connection = $this->entityManager->getConnection();
+        if ($this->resourceName === 'concepts') {
+            return array_map('intval', $connection
+                ->executeQuery('SELECT `id` FROM `concept` WHERE `scheme_id` = ?', [$this->scheme->id()])
+                ->fetchFirstColumn());
+        }
+        $sql = <<<'SQL'
+            SELECT DISTINCT `value`.`resource_id`
+            FROM `value`
+            INNER JOIN `item` ON `item`.`id` = `value`.`resource_id`
+            WHERE `value`.`property_id` IN (:property_ids)
+                AND `value`.`value_resource_id` = :scheme_id
+            SQL;
+        return array_map('intval', $connection
+            ->executeQuery($sql, [
+                'property_ids' => [
+                    (int) $this->terms['property']['skos:inScheme'],
+                    (int) $this->terms['property']['skos:topConceptOf'],
+                ],
+                'scheme_id' => (int) $this->scheme->id(),
+            ], [
+                'property_ids' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+                'scheme_id' => \PDO::PARAM_INT,
+            ])
+            ->fetchFirstColumn());
+    }
+
     protected function cacheStructure(): self
     {
         $this->structure = [];
@@ -2032,7 +2133,7 @@ class Thesaurus
             'children' => [],
         ]);
 
-        [$parents, $children] = $this->relationsOf($concepts);
+        [$parents, $children] = $this->wholeRelationsOf($concepts);
 
         // Fill the full structure.
         // The check for public parent/children is done above.
