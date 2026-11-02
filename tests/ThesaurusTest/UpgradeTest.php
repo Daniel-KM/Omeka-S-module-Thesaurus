@@ -5,10 +5,12 @@ namespace ThesaurusTest;
 use CommonTest\AbstractHttpControllerTestCase;
 
 /**
- * Tests the migration that warns about the data of the concepts to fix.
+ * Tests the migrations.
  *
- * The migration does not update or remove any data: the administrator selects
- * the thesaurus to process via the task of maintenance.
+ * The migration 3.4.27 warns about the data of the concepts to fix, but does
+ * not update or remove any data: the administrator selects the thesaurus to
+ * process via the task of maintenance. The migration 3.4.28 creates the table
+ * of the cache of the trees.
  */
 class UpgradeTest extends AbstractHttpControllerTestCase
 {
@@ -125,5 +127,41 @@ class UpgradeTest extends AbstractHttpControllerTestCase
         $this->runUpgrade('3.4.26', '3.4.27');
 
         $this->assertEquals('customvocab:3', $this->valueType($valueId));
+    }
+
+    protected function treeCacheDefinition(): string
+    {
+        return $this->connection()
+            ->executeQuery('SHOW CREATE TABLE `thesaurus_tree_cache`')
+            ->fetchAssociative()['Create Table'];
+    }
+
+    /**
+     * The table of the cache is created as on a fresh install.
+     */
+    public function testTreeCacheTableIsCreated(): void
+    {
+        $definition = $this->treeCacheDefinition();
+        $this->connection()->executeStatement('DROP TABLE `thesaurus_tree_cache`');
+
+        $this->runUpgrade('3.4.27', '3.4.28');
+
+        $this->assertSame($definition, $this->treeCacheDefinition());
+    }
+
+    /**
+     * The migration can be replayed, even after an interrupted upgrade that
+     * created the table without its foreign key.
+     */
+    public function testTreeCacheMigrationIsReplayable(): void
+    {
+        $definition = $this->treeCacheDefinition();
+
+        $this->runUpgrade('3.4.27', '3.4.28');
+        $this->assertSame($definition, $this->treeCacheDefinition());
+
+        $this->connection()->executeStatement('ALTER TABLE `thesaurus_tree_cache` DROP FOREIGN KEY `FK_74BD0F4965797862`');
+        $this->runUpgrade('3.4.27', '3.4.28');
+        $this->assertSame($definition, $this->treeCacheDefinition());
     }
 }

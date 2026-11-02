@@ -7,8 +7,8 @@ use CommonTest\AbstractHttpControllerTestCase;
 /**
  * Tests the restriction of the templates of the thesaurus to the concepts.
  *
- * The templates are restricted only when no item uses them: on a site where the
- * thesaurus are not converted yet, the concepts are items with values of type
+ * The templates are restricted only when no item uses them: on a site where
+ * some thesaurus are made of items, the concepts are items with values of type
  * "resource:item", that would be refused on save.
  */
 class TemplateRestrictionTest extends AbstractHttpControllerTestCase
@@ -78,8 +78,8 @@ class TemplateRestrictionTest extends AbstractHttpControllerTestCase
     }
 
     /**
-     * Create an item that uses the template of the concepts, like a concept
-     * that is not converted yet.
+     * Create an item that uses the template of the concepts, like a concept of
+     * a thesaurus made of items.
      */
     protected function createItemWithTemplate(int $templateId): int
     {

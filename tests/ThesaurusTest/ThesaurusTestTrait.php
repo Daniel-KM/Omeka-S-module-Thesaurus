@@ -268,13 +268,20 @@ trait ThesaurusTestTrait
      */
     protected function cleanupResources(): void
     {
+        // The entities in memory may reference a resource deleted just before,
+        // for example a top concept, so the next deletions would fail on flush:
+        // the identity map is cleared before each deletion.
+        $entityManager = $this->getServiceLocator()->get('Omeka\EntityManager');
         foreach ($this->createdResources as $resource) {
+            $entityManager->clear();
             try {
                 $this->api()->delete($resource['type'], $resource['id']);
             } catch (\Exception $e) {
-                // Ignore errors during cleanup.
+                // Ignore errors during cleanup, for example a resource deleted
+                // with its scheme.
             }
         }
+        $entityManager->clear();
         $this->createdResources = [];
     }
 

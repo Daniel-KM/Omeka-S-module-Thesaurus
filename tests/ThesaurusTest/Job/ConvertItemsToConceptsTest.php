@@ -133,6 +133,45 @@ class ConvertItemsToConceptsTest extends AbstractHttpControllerTestCase
     }
 
     /**
+     * The module CustomVocab is optional: without its table, the conversion
+     * is complete, including the index of the concepts.
+     */
+    public function testConversionWithoutCustomVocab(): void
+    {
+        [$schemeId, $topId, $childId] = $this->createThesaurusOfItems();
+        // The scheme declares its top concept, so the index is built.
+        $this->api()->update('items', $schemeId, [
+            'skos:hasTopConcept' => [[
+                'type' => 'resource:item',
+                'property_id' => $this->propertyId('skos:hasTopConcept'),
+                'value_resource_id' => $topId,
+            ]],
+        ], [], ['isPartial' => true, 'collectionAction' => 'append']);
+
+        $connection = $this->connection();
+        $hasTable = (bool) $connection->executeQuery("SHOW TABLES LIKE 'custom_vocab'")->fetchOne();
+        if ($hasTable) {
+            $connection->executeStatement('RENAME TABLE `custom_vocab` TO `custom_vocab_hidden`');
+        }
+        try {
+            $job = $this->runJob(ConvertItemsToConcepts::class, ['schemes' => [$schemeId]]);
+        } finally {
+            if ($hasTable) {
+                $connection->executeStatement('RENAME TABLE `custom_vocab_hidden` TO `custom_vocab`');
+            }
+        }
+        $this->createdResources[] = ['type' => 'concepts', 'id' => $topId];
+        $this->createdResources[] = ['type' => 'concepts', 'id' => $childId];
+
+        $this->assertEquals(\Omeka\Entity\Job::STATUS_COMPLETED, $job->getStatus());
+        $this->assertEquals('Thesaurus\Entity\Concept', $this->resourceType($childId));
+        // The index is built at the end of the job.
+        $this->assertEquals($topId, (int) $connection
+            ->executeQuery('SELECT `broader_id` FROM `concept` WHERE `id` = ?', [$childId])
+            ->fetchOne());
+    }
+
+    /**
      * A concept is not an item, so it is no more assigned to item sets, else
      * doctrine would load it as an item that does not exist.
      */
