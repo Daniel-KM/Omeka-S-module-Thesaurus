@@ -73,6 +73,11 @@ class MigrateDataTypes extends AbstractJob
      */
     private function mapCustomVocabToScheme(Connection $connection, int $schemeClassId): array
     {
+        // The module CustomVocab is optional, so its table may not exist.
+        if (!$connection->executeQuery("SHOW TABLES LIKE 'custom_vocab'")->fetchOne()) {
+            return [];
+        }
+
         $sql = <<<'SQL'
             SELECT cv.id AS cv_id, (
                 SELECT i.id
