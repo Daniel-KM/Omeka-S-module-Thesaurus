@@ -511,7 +511,7 @@ class ThesaurusController extends ItemController
             ],
             'convert-items-to-concepts' => [
                 'label' => 'Convert items into concepts', // @translate
-                'description' => 'The items that belong to a thesaurus are converted into concepts, that are a dedicated resource type since version 3.4.26. The ids and the values are kept, so the links to the concepts remain valid, but the items are removed from the browse of the items. The items with a media cannot be converted. The assignments to item sets and sites, the data of the other modules and the data types of the values are saved in the database before any change, so the conversion can be reverted with the task "Convert concepts into items". Without backup, the thesaurus is not converted.', // @translate
+                'description' => 'This conversion is optional: a thesaurus may remain made of items, for example to expose its concepts with the items in browse, search and facets. If you do not need the concepts as items, the items that belong to the selected thesaurus are converted into concepts, that are a dedicated resource type since version 3.4.26. The ids and the values are kept, so the links to the concepts remain valid, but the items are removed from the browse of the items. The items with a media cannot be converted. The assignments to item sets and sites, the data of the other modules and the data types of the values are saved in the database before any change, so the conversion can be reverted with the task "Convert concepts into items". Without backup, the thesaurus is not converted.', // @translate
                 'button' => 'Convert items into concepts', // @translate
                 'schemes' => true,
             ],

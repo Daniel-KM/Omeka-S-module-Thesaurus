@@ -9,10 +9,9 @@ use Doctrine\DBAL\Connection;
  *
  * The templates of the thesaurus are reserved to the concepts, that are a
  * dedicated resource type since version 3.4.26. Nevertheless, a thesaurus may
- * be made of items, either because it is not converted yet, either because the
- * concepts are created as items in order to expose them with them. In that
- * case, the data type "resource:item" is required, else the values of these
- * items could not be saved.
+ * be made of items, in particular to expose its concepts with the items. In
+ * that case, the data type "resource:item" is required, else the values of
+ * these items could not be saved.
  */
 class ConceptTemplates
 {

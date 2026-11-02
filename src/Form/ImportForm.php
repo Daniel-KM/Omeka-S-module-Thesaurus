@@ -232,7 +232,7 @@ class ImportForm extends Form
                 'type' => CommonElement\OptionalCheckbox::class,
                 'options' => [
                     'label' => 'Create the linked custom vocabulary (item set) [deprecated]', // @translate
-                    'info' => 'Deprecated: the thesaurus data type does not require it and the module CustomVocab is optional. It is kept only for the thesaurus that are not migrated yet.', // @translate
+                    'info' => 'Deprecated: the thesaurus data type does not require it and the module CustomVocab is optional. It is kept for the thesaurus that still use a custom vocab.', // @translate
                 ],
                 'attributes' => [
                     'id' => 'create_customvocab',

@@ -14,7 +14,7 @@ use Thesaurus\Stdlib\Thesaurus;
  *
  * @deprecated Since version 3.4.26, use the data type "thesaurus:{schemeId}",
  * that does not require the module CustomVocab neither an item set. This
- * element is kept only for the thesaurus that are not migrated yet.
+ * element is kept for the thesaurus that still use a custom vocab.
  * @see \Thesaurus\Job\MigrateDataTypes
  *
  * @todo Use Common vocab select ?

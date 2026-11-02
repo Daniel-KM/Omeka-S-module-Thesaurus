@@ -1771,8 +1771,8 @@ class Thesaurus
     /**
      * Determine if the thesaurus is made of concepts or of items.
      *
-     * A thesaurus that was not converted yet is still made of items, so it is
-     * read as items, else it would appear empty.
+     * A thesaurus may be made of items, so it is read as items, else it would
+     * appear empty.
      */
     protected function cacheResourceKind(): self
     {
@@ -1898,9 +1898,9 @@ class Thesaurus
                 'scheme_id' => $this->scheme->id(),
                 // Is public is automatically managed via the api.
             ]
-            // A thesaurus that is not converted yet has no concept and the
-            // items may have no skos class, so they are determined with the
-            // relation to the scheme only.
+            // A thesaurus made of items has no concept and the items may have
+            // no skos class, so they are determined with the relation to the
+            // scheme only.
             : [
                 'property' => [
                     [

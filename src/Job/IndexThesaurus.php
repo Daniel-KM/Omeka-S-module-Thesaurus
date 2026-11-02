@@ -207,11 +207,11 @@ class IndexThesaurus extends AbstractJob
         $this->entityManager->clear();
         */
 
-        // A thesaurus that is not converted yet is made of items, that have no
-        // structure to index: the structure is read from the skos values.
+        // A thesaurus may be made of items, that have no structure to index:
+        // the structure is read from the skos values.
         if (!$totalIndexed) {
             $this->logger->notice(
-                'Thesaurus "{title}" (#{item_id}) is made of items: there is no structure to index. Run the task "Convert items into concepts" to index it.', // @translate
+                'Thesaurus "{title}" (#{item_id}) is made of items: its structure is read from the skos values, so there is no index to build. If you do not need the concepts as items, the task "Convert items into concepts" converts them into a dedicated resource type.', // @translate
                 ['title' => $scheme->displayTitle(), 'item_id' => $schemeId]
             );
             return true;

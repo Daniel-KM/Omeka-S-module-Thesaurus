@@ -431,11 +431,11 @@ class Module extends AbstractModule
      * The data type "resource:concept" is not registered yet when the templates
      * are imported during the installation, so the import skips it.
      *
-     * The templates are not restricted to the concepts when items still use
-     * them: on a site where the thesaurus are not converted yet, the concepts
-     * are items with values of type "resource:item", that would be refused on
-     * save. So the data type of the concepts is only appended and the template
-     * remains available for the items until the conversion.
+     * The templates are not restricted to the concepts when items use them: on
+     * a site where some thesaurus are made of items, the concepts are items
+     * with values of type "resource:item", that would be refused on save. So
+     * the data type of the concepts is only appended and the template remains
+     * available for the items.
      */
     protected function updateThesaurusTemplates(): self
     {
