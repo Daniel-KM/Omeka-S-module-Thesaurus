@@ -14,10 +14,21 @@ use Doctrine\DBAL\Connection;
  * the api, so the visibility for the current user is always checked.
  *
  * The cache of a thesaurus is removed when one of its concepts is created,
- * updated or deleted, and by the jobs that convert or index it.
+ * updated or deleted, and by the jobs that convert or index it. It expires
+ * after one day, in case of a change made without them.
  */
 class RelationsCache
 {
+    /**
+     * Lifetime of the cache, in seconds.
+     *
+     * The cache is removed by the api and by the jobs, so the lifetime limits
+     * only the duration of an outdated tree after a change made without them,
+     * for example directly in the database. An outdated cache is ignored and
+     * rebuilt on the next display of the whole tree: nothing is scheduled.
+     */
+    const LIFETIME = 86400;
+
     /**
      * @var \Doctrine\DBAL\Connection
      */
@@ -36,13 +47,18 @@ class RelationsCache
      */
     public function read(int $schemeId): ?array
     {
-        $data = $this->connection
-            ->executeQuery('SELECT `data` FROM `thesaurus_tree_cache` WHERE `scheme_id` = ?', [$schemeId])
-            ->fetchOne();
-        if ($data === false) {
+        $row = $this->connection
+            ->executeQuery('SELECT `created`, `data` FROM `thesaurus_tree_cache` WHERE `scheme_id` = ?', [$schemeId])
+            ->fetchAssociative();
+        if (!$row) {
             return null;
         }
-        $data = json_decode((string) $data, true);
+        // The date is written by php, so it is compared with php.
+        $created = strtotime((string) $row['created']);
+        if (!$created || $created < time() - self::LIFETIME) {
+            return null;
+        }
+        $data = json_decode((string) $row['data'], true);
         return is_array($data) && isset($data['broader'], $data['narrower'])
             ? $data
             : null;
