@@ -410,8 +410,9 @@ class Thesaurus
     /**
      * This item is a skos item if it has at a skos class or a skos property.
      *
-     * Required properties when class is not set are skos:hasTopConcept for
-     * scheme and inScheme for other classes.
+     * A concept is always a skos resource. Else, without a skos class, one of
+     * the properties skos:hasTopConcept, skos:inScheme, skos:topConceptOf,
+     * skos:broader or skos:narrower is required.
      *
      * The terms are checked with the prefix "skos" only.
      * The class may not be a skos class in order to manage sub classes of it,
@@ -420,12 +421,20 @@ class Thesaurus
     public function isSkos(): bool
     {
         if ($this->isSkos === null) {
+            // A concept is always a skos resource.
             $class = $this->resourceClassName($this->item);
-            $this->isSkos = strpos($class, 'skos:') === 0;
+            $this->isSkos = $this->item instanceof ConceptRepresentation
+                || strpos($class, 'skos:') === 0;
             if (!$this->isSkos) {
+                // A top concept may have the value "skos:topConceptOf" only
+                // and a concept may be related to the thesaurus via its broader
+                // or narrower concepts only.
                 $skosProperties = [
                     'skos:hasTopConcept' => null,
                     'skos:inScheme' => null,
+                    'skos:topConceptOf' => null,
+                    self::PROPERTY_PARENT => null,
+                    self::PROPERTY_CHILD => null,
                 ];
                 $values = array_intersect_key($this->item->values(), $skosProperties);
                 $this->isSkos = !empty($values);
@@ -509,7 +518,18 @@ class Thesaurus
                 if ($enabled) {
                     $filters->disable('resource_visibility');
                 }
-                $this->scheme = $this->resourceFromValue($this->item, 'skos:inScheme');
+                $this->scheme = $this->resourceFromValue($this->item, 'skos:inScheme')
+                    ?? $this->resourceFromValue($this->item, 'skos:topConceptOf');
+                // A concept may have no value "skos:inScheme", for example when
+                // it is related to the thesaurus via "skos:broader" only, but
+                // its scheme is stored in the table of the concepts.
+                if (!$this->scheme && $this->item instanceof ConceptRepresentation) {
+                    $schemeId = (int) $this->entityManager->getConnection()
+                        ->executeQuery('SELECT `scheme_id` FROM `concept` WHERE `id` = ?', [$this->itemId])
+                        ->fetchOne();
+                    $scheme = $schemeId ? $this->entityManager->find(\Omeka\Entity\Item::class, $schemeId) : null;
+                    $this->scheme = $scheme ? $this->itemAdapter->getRepresentation($scheme) : null;
+                }
                 if ($enabled) {
                     // Re-enabling recreates the filter, so the service locator
                     // must be set again.
@@ -1636,6 +1656,88 @@ class Thesaurus
         return $this;
     }
 
+    /**
+     * Get the parents and the children of a list of concepts.
+     *
+     * The relations are read from the skos values, limited to the list, and a
+     * relation set in one direction only completes the other one.
+     *
+     * @param int[] $concepts
+     * @return array The parents by concept and the ordered children by concept.
+     */
+    protected function relationsOf(array $concepts): array
+    {
+        if (!$concepts) {
+            return [[], []];
+        }
+
+        // The pairs are read without grouping: an aggregate is not ordered when
+        // the values are duplicated and it may be truncated by the database
+        // (group_concat_max_len), so the relations are grouped here, in the
+        // order of the values.
+        $relations = function (string $term) use ($concepts): array {
+            $qb = $this->createQueryBuilder();
+            $expr = $qb->expr();
+            $qb
+                ->select(
+                    'item.id AS id',
+                    'IDENTITY(value_list.valueResource) AS related'
+                )
+                ->from($this->entityClass, 'item')
+                ->innerJoin(
+                    \Omeka\Entity\Value::class,
+                    'value_list',
+                    \Doctrine\ORM\Query\Expr\Join::WITH,
+                    $expr->andX(
+                        $expr->eq('value_list.resource', 'item.id'),
+                        $expr->eq('value_list.property', ':property')
+                    )
+                )
+                // To speed preparation of big thesaurus, limit items to ids
+                // inside thesaurus. It allows to check visibility too.
+                ->andWhere($expr->in('item.id', ':concepts'))
+                ->andWhere($expr->in('value_list.valueResource', ':concepts'))
+                ->addOrderBy('value_list.id', 'ASC')
+                ->setParameters(new ArrayCollection([
+                    new Parameter('property', $this->terms['property'][$term], ParameterType::INTEGER),
+                    new Parameter('concepts', $concepts, \Doctrine\DBAL\Connection::PARAM_INT_ARRAY),
+                ]));
+            return $qb->getQuery()->getScalarResult();
+        };
+
+        // There is only one parent for each concept: the first one is kept.
+        $parents = [];
+        foreach ($relations(self::PROPERTY_PARENT) as $row) {
+            $parents[(int) $row['id']] ??= (int) $row['related'];
+        }
+
+        $children = [];
+        foreach ($relations(self::PROPERTY_CHILD) as $row) {
+            $id = (int) $row['id'];
+            $related = (int) $row['related'];
+            if (!in_array($related, $children[$id] ?? [], true)) {
+                $children[$id][] = $related;
+            }
+        }
+
+        // A relation may be set in one direction only, for example after a
+        // partial import, so each one completes the other.
+        foreach ($children as $parentId => $childIds) {
+            foreach ($childIds as $childId) {
+                if (!isset($parents[$childId])) {
+                    $parents[$childId] = $parentId;
+                }
+            }
+        }
+        foreach ($parents as $childId => $parentId) {
+            if ($parentId && !in_array($childId, $children[$parentId] ?? [], true)) {
+                $children[$parentId][] = $childId;
+            }
+        }
+
+        return [$parents, $children];
+    }
+
     protected function cacheStructure(): self
     {
         $this->structure = [];
@@ -1708,124 +1810,7 @@ class Thesaurus
             'children' => [],
         ]);
 
-        $qb = $this->createQueryBuilder();
-        $expr = $qb->expr();
-
-        // Get all parents. Does not get items without parent (top).
-        $qb = $this->createQueryBuilder()
-            ->select(
-                'item.id',
-                // There is only zero or one parent, but this is a grouped query.
-                'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource)) AS ids'
-            )
-            ->from($this->entityClass, 'item')
-
-            // This join is useless now, since the list is filtered below by the
-            // list of concept ids.
-            /*
-            ->leftJoin(\Omeka\Entity\Value::class, 'value', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('value.property', ':propertyInScheme'))
-            ->andWhere($expr->eq('item.resourceClass', ':concept'))
-            ->andWhere($expr->eq('value.valueResource', ':scheme'))
-            */
-
-            // Use an InnerJoin: no top is needed here.
-            // Furthermore, do not use where.
-            ->innerJoin(
-                \Omeka\Entity\Value::class,
-                'value_list',
-                \Doctrine\ORM\Query\Expr\Join::WITH,
-                $expr->andX(
-                    $expr->eq('value_list.resource', 'item.id'),
-                    $expr->eq('value_list.property', ':propertyBroader')
-                )
-            )
-
-            // To speed preparation of big thesaurus, limit items to ids inside
-            // thesaurus. It allows to check advanced visibility too.
-            // Do not use "in" in join to speed process.
-            ->andWhere($expr->in('item.id', ':concepts'))
-            ->andWhere($expr->in('value_list.valueResource', ':concepts'))
-            ->groupBy('item.id')
-            ->addOrderBy('item.id', 'ASC')
-            // Use array collections is quicker and allows to pass types.
-            ->setParameters(new ArrayCollection([
-                // new Parameter('propertyInScheme', $this->terms['property']['skos:inScheme'], ParameterType::INTEGER),
-                new Parameter('propertyBroader', $this->terms['property'][self::PROPERTY_PARENT], ParameterType::INTEGER),
-                // new Parameter('concept', $this->terms['class']['skos:Concept'], ParameterType::INTEGER),
-                // new Parameter('scheme', $this->scheme->id(), ParameterType::INTEGER),
-                new Parameter('concepts', $concepts, \Doctrine\DBAL\Connection::PARAM_INT_ARRAY),
-            ]));
-
-        // It is useless to check if the ids are public for visitors: the list
-        // is now limited to the list of ids that is get via the api.
-        /*
-        if ($this->isPublic) {
-            $qb
-                ->innerJoin(\Omeka\Entity\Resource::class, 'resource', \Doctrine\ORM\Query\Expr\Join::WITH, $expr->eq('resource.id', 'item.id'))
-                ->andWhere('resource.isPublic = 1');
-        }
-        */
-
-        $parents = array_column($qb->getQuery()->getScalarResult(), 'ids', 'id');
-        // There is only one parent for each concept.
-        // Hack to quick process.
-        // $parents = array_map('intval', $parents);
-        foreach ($parents as &$parent) {
-            $parent += 0;
-        }
-        unset($parent);
-
-        // Get all children.
-        // See previous commits for full old query.
-        $qb = $this->createQueryBuilder()
-            ->select(
-                'item.id',
-                'GROUP_CONCAT(DISTINCT IDENTITY(value_list.valueResource) ORDER BY value_list.id ASC) AS ids'
-            )
-            ->from($this->entityClass, 'item')
-            ->innerJoin(
-                \Omeka\Entity\Value::class,
-                'value_list',
-                \Doctrine\ORM\Query\Expr\Join::WITH,
-                $expr->andX(
-                    $expr->eq('value_list.resource', 'item.id'),
-                    $expr->eq('value_list.property', ':propertyNarrower')
-                )
-            )
-            ->andWhere($expr->in('item.id', ':concepts'))
-            ->andWhere($expr->in('value_list.valueResource', ':concepts'))
-            ->groupBy('item.id')
-            ->addOrderBy('item.id', 'ASC')
-            ->setParameters(new ArrayCollection([
-                new Parameter('propertyNarrower', $this->terms['property'][self::PROPERTY_CHILD], ParameterType::INTEGER),
-                new Parameter('concepts', $concepts, \Doctrine\DBAL\Connection::PARAM_INT_ARRAY),
-            ]));
-
-        $children = array_column($qb->getQuery()->getScalarResult(), 'ids', 'id');
-        foreach ($children as &$child) {
-            $v = [];
-            // Hack to cast int quickly: $child = array_map('intval', explode(',', $child));
-            foreach (explode(',', $child) as $c) {
-                $v[] = $c + 0;
-            }
-            $child = $v;
-        }
-        unset($child);
-
-        // A relation may be set in one direction only, for example after a
-        // partial import, so each one completes the other.
-        foreach ($children as $parentId => $childIds) {
-            foreach ($childIds as $childId) {
-                if (!isset($parents[$childId])) {
-                    $parents[$childId] = $parentId;
-                }
-            }
-        }
-        foreach ($parents as $childId => $parentId) {
-            if ($parentId && !in_array($childId, $children[$parentId] ?? [], true)) {
-                $children[$parentId][] = $childId;
-            }
-        }
+        [$parents, $children] = $this->relationsOf($concepts);
 
         // Fill the full structure.
         // The check for public parent/children is done above.
