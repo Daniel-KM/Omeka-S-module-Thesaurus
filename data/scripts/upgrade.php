@@ -395,7 +395,7 @@ if (version_compare($oldVersion, '3.4.26', '<')) {
         $totalTerms = (int) $connection->executeQuery('SELECT COUNT(*) FROM `thesaurus_term`')->fetchOne();
         if ($totalTerms) {
             $message = new PsrMessage(
-                'The concepts are now a dedicated resource type, no longer mixed with items in browse, search, facets and references. It is recommended to run the task "Convert items into concepts" on each of the thesaurus to convert: the {count} concepts stored as items still work, but they are not converted automatically.', // @translate
+                'The concepts may now be a dedicated resource type, not mixed with items in browse, search, facets and references. The {count} concepts stored as items are kept as items and still work, so they remain exposed with the items. If you do not need the concepts as items, the task "Convert items into concepts" converts the thesaurus you select.', // @translate
                 ['count' => $totalTerms]
             );
             $messenger->addWarning($message);
@@ -496,7 +496,7 @@ if (version_compare($oldVersion, '3.4.27', '<')) {
     $this->updateThesaurusTemplates();
 
     // The previous versions restricted the templates of the thesaurus to the
-    // concepts, even when the concepts of the site are still items: the values
+    // concepts, even when the concepts of the site are items: the values
     // of these items could not be saved any more. So the data type of the items
     // is restored and the templates are available for the items again. The
     // templates are restricted again by the task that converts the items into
@@ -520,7 +520,7 @@ if (version_compare($oldVersion, '3.4.27', '<')) {
 
     if ($totalTemplates) {
         $message = new PsrMessage(
-            'The data type of the items was restored in {count} template properties: the concepts of this site are still items. Run the task "Convert items into concepts" to use the dedicated resource type.', // @translate
+            'The data type of the items was restored in {count} template properties, because some concepts of this site are items. If you do not need the concepts as items, the task "Convert items into concepts" converts the thesaurus you select.', // @translate
             ['count' => $totalTemplates]
         );
         $messenger->addWarning($message);
@@ -529,26 +529,27 @@ if (version_compare($oldVersion, '3.4.27', '<')) {
 
 if (version_compare($oldVersion, '3.4.28', '<')) {
     // The relations of the concepts are kept in a cache to build the tree of a
-    // thesaurus quickly.
-    $sqls = [
-        <<<'SQL'
-            CREATE TABLE IF NOT EXISTS `thesaurus_tree_cache` (
-                `scheme_id` INT NOT NULL,
-                `created` DATETIME NOT NULL,
-                `data` LONGTEXT NOT NULL COMMENT '(DC2Type:json)',
-                PRIMARY KEY(`scheme_id`)
-            ) DEFAULT CHARACTER SET `utf8mb4` COLLATE `utf8mb4_unicode_ci` ENGINE = `InnoDB`
-            SQL,
-        <<<'SQL'
+    // thesaurus quickly. The block may be replayed, so the table and the key
+    // are created only when they do not exist.
+    $connection->executeStatement(<<<'SQL'
+        CREATE TABLE IF NOT EXISTS `thesaurus_tree_cache` (
+            `scheme_id` INT NOT NULL,
+            `created` DATETIME NOT NULL,
+            `data` LONGTEXT NOT NULL COMMENT '(DC2Type:json)',
+            PRIMARY KEY(`scheme_id`)
+        ) DEFAULT CHARACTER SET `utf8mb4` COLLATE `utf8mb4_unicode_ci` ENGINE = `InnoDB`
+        SQL);
+    $sql = <<<'SQL'
+        SELECT COUNT(*)
+        FROM `information_schema`.`TABLE_CONSTRAINTS`
+        WHERE `CONSTRAINT_SCHEMA` = DATABASE()
+            AND `TABLE_NAME` = 'thesaurus_tree_cache'
+            AND `CONSTRAINT_NAME` = 'FK_74BD0F4965797862'
+        SQL;
+    if (!(int) $connection->executeQuery($sql)->fetchOne()) {
+        $connection->executeStatement(<<<'SQL'
             ALTER TABLE `thesaurus_tree_cache`
             ADD CONSTRAINT `FK_74BD0F4965797862` FOREIGN KEY (`scheme_id`) REFERENCES `item` (`id`) ON DELETE CASCADE
-            SQL,
-    ];
-    foreach ($sqls as $sql) {
-        try {
-            $connection->executeStatement($sql);
-        } catch (\Exception $e) {
-            // The constraint may exist already.
-        }
+            SQL);
     }
 }
