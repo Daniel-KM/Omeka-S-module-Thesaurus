@@ -37,6 +37,15 @@ class Thesaurus
     const PROPERTY_RELATED = 'skos:related';
 
     /**
+     * Number of partial trees of a scheme before building the whole tree.
+     *
+     * A partial tree costs about 10 ms and the whole tree is kept in memory
+     * once built, so the whole tree is quicker when an instance is used for
+     * many concepts of the same thesaurus, for example during an indexation.
+     */
+    const PARTIAL_LIMIT = 10;
+
+    /**
      * @var \Omeka\Api\Manager
      */
     protected $api;
@@ -120,6 +129,13 @@ class Thesaurus
      * @var bool
      */
     protected $structureBuilt = true;
+
+    /**
+     * Number of partial trees built for each scheme by this instance.
+     *
+     * @var array
+     */
+    protected $partialCounts = [];
 
     /**
      * @var ItemRepresentation|ConceptRepresentation
@@ -1887,13 +1903,23 @@ class Thesaurus
      * The whole tree is not built: only the concepts required by the method are
      * read, with the same queries, so the result is the same than with the
      * whole tree, but the cost depends on the number of results, not on the
-     * size of the thesaurus.
+     * size of the thesaurus. After some calls for the same thesaurus, the whole
+     * tree is built and kept, since it is quicker.
      *
      * @param string $kind "descendants", "ascendants" or "narrowers".
      */
     protected function withPartialStructure(string $kind, callable $callback)
     {
         if (!$this->itemId || !$this->isSkos() || !$this->scheme()) {
+            $this->ensureStructure();
+            return $callback();
+        }
+
+        // When the instance is used for many concepts of the same thesaurus,
+        // the whole tree is built once and kept, like before.
+        $schemeId = (int) $this->scheme()->id();
+        $this->partialCounts[$schemeId] = ($this->partialCounts[$schemeId] ?? 0) + 1;
+        if ($this->partialCounts[$schemeId] > self::PARTIAL_LIMIT) {
             $this->ensureStructure();
             return $callback();
         }
