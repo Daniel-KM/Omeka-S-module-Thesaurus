@@ -50,11 +50,14 @@ class ConceptHierarchy
     /**
      * Get the ids of the descendants of a concept.
      *
+     * The index of the concepts is used when available, unless the values are
+     * required, for example to get the same tree than the one built from them.
+     *
      * @return int[]
      */
-    public function descendantIds(int $id, bool $self = false): array
+    public function descendantIds(int $id, bool $self = false, bool $fromValues = false): array
     {
-        $result = $this->walk($id, $this->isConcept($id) ? 'conceptChildren' : 'itemChildren');
+        $result = $this->walk($id, !$fromValues && $this->isConcept($id) ? 'conceptChildren' : 'itemChildren');
         return $self ? array_merge([$id], $result) : $result;
     }
 
@@ -63,10 +66,22 @@ class ConceptHierarchy
      *
      * @return int[]
      */
-    public function ascendantIds(int $id, bool $self = false): array
+    public function ascendantIds(int $id, bool $self = false, bool $fromValues = false): array
     {
-        $result = $this->walk($id, $this->isConcept($id) ? 'conceptParents' : 'itemParents');
+        $result = $this->walk($id, !$fromValues && $this->isConcept($id) ? 'conceptParents' : 'itemParents');
         return $self ? array_merge([$id], $result) : $result;
+    }
+
+    /**
+     * Get the ids of the direct children of some concepts, from the values.
+     *
+     * @param int[] $ids
+     * @return int[]
+     */
+    public function childIds(array $ids): array
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids))));
+        return $ids ? array_values(array_unique($this->itemChildren($ids))) : [];
     }
 
     /**

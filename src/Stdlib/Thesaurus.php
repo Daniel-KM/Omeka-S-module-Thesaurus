@@ -115,6 +115,13 @@ class Thesaurus
     protected $tops = [];
 
     /**
+     * The whole tree is built only when a method needs it.
+     *
+     * @var bool
+     */
+    protected $structureBuilt = true;
+
+    /**
      * @var ItemRepresentation|ConceptRepresentation
      */
     protected $item;
@@ -350,6 +357,8 @@ class Thesaurus
      */
     public function isInThesaurus($itemOrId = null): bool
     {
+        $this->ensureStructure();
+
         if (empty($itemOrId)) {
             $id = $this->itemId;
         } else {
@@ -393,6 +402,8 @@ class Thesaurus
      */
     public function itemToData($itemOrId = null): ?array
     {
+        $this->ensureStructure();
+
         if (empty($itemOrId)) {
             $id = $this->itemId;
         } else {
@@ -479,7 +490,9 @@ class Thesaurus
      */
     public function isTop(): bool
     {
-        return $this->isSkos
+        $this->ensureStructure();
+
+        return $this->isSkos()
             && !empty($this->structure[$this->itemId]['top']);
     }
 
@@ -490,6 +503,8 @@ class Thesaurus
      */
     public function selfItem(): array
     {
+        $this->ensureStructure();
+
         if ($this->returnItem) {
             return $this->item
                 ? [$this->itemId => $this->item]
@@ -548,6 +563,8 @@ class Thesaurus
      */
     public function tops(): array
     {
+        $this->ensureStructure();
+
         return $this->returnResourcesFromData($this->tops);
     }
 
@@ -560,7 +577,14 @@ class Thesaurus
      */
     public function top()
     {
-        return $this->isSkos && $this->isConcept()
+        // The whole tree is not needed to get the ascendants of the item.
+        if (!$this->structureBuilt) {
+            return $this->withPartialStructure('ascendants', fn () => $this->top());
+        }
+
+        $this->ensureStructure();
+
+        return $this->isSkos() && $this->isConcept()
             ? $this->returnResourcesFromData($this->ancestor($this->structure[$this->itemId] ?? null))
             : null;
     }
@@ -572,7 +596,14 @@ class Thesaurus
      */
     public function broader()
     {
-        return $this->isSkos && $this->isConcept()
+        // The whole tree is not needed to get the ascendants of the item.
+        if (!$this->structureBuilt) {
+            return $this->withPartialStructure('ascendants', fn () => $this->broader());
+        }
+
+        $this->ensureStructure();
+
+        return $this->isSkos() && $this->isConcept()
             ? $this->returnResourcesFromData($this->parent($this->structure[$this->itemId] ?? null))
             : null;
     }
@@ -584,7 +615,12 @@ class Thesaurus
      */
     public function broaderOrSelf()
     {
-        if (!$this->isSkos || $this->isScheme()) {
+        // The whole tree is not needed to get the ascendants of the item.
+        if (!$this->structureBuilt) {
+            return $this->withPartialStructure('ascendants', fn () => $this->broaderOrSelf());
+        }
+
+        if (!$this->isSkos() || $this->isScheme()) {
             return [];
         }
         $broader = $this->broader();
@@ -605,7 +641,14 @@ class Thesaurus
      */
     public function narrowers(): array
     {
-        return $this->isSkos && $this->isConcept()
+        // The whole tree is not needed to get the narrowers of the item.
+        if (!$this->structureBuilt) {
+            return $this->withPartialStructure('narrowers', fn () => $this->narrowers());
+        }
+
+        $this->ensureStructure();
+
+        return $this->isSkos() && $this->isConcept()
             ? $this->returnResourcesFromData($this->children($this->structure[$this->itemId] ?? null))
             : [];
     }
@@ -617,7 +660,12 @@ class Thesaurus
      */
     public function narrowersOrSelf(): array
     {
-        if (!$this->isSkos || $this->isScheme()) {
+        // The whole tree is not needed to get the narrowers of the item.
+        if (!$this->structureBuilt) {
+            return $this->withPartialStructure('narrowers', fn () => $this->narrowersOrSelf());
+        }
+
+        if (!$this->isSkos() || $this->isScheme()) {
             return [];
         }
         return $this->selfItem()
@@ -631,7 +679,9 @@ class Thesaurus
      */
     public function relateds(): array
     {
-        if (!$this->isSkos || $this->isScheme()) {
+        $this->ensureStructure();
+
+        if (!$this->isSkos() || $this->isScheme()) {
             return [];
         }
         return $this->returnItem
@@ -646,7 +696,7 @@ class Thesaurus
      */
     public function relatedsOrSelf(): array
     {
-        if (!$this->isSkos || $this->isScheme()) {
+        if (!$this->isSkos() || $this->isScheme()) {
             return [];
         }
         return $this->relateds()
@@ -660,7 +710,7 @@ class Thesaurus
      */
     public function siblings(): array
     {
-        if (!$this->isSkos || $this->isScheme) {
+        if (!$this->isSkos() || $this->isScheme()) {
             return [];
         }
         $result = $this->siblingsOrSelf();
@@ -675,7 +725,9 @@ class Thesaurus
      */
     public function siblingsOrSelf(): array
     {
-        if (!$this->isSkos || $this->isScheme()) {
+        $this->ensureStructure();
+
+        if (!$this->isSkos() || $this->isScheme()) {
             return [];
         }
         if ($this->isTop()) {
@@ -695,7 +747,14 @@ class Thesaurus
      */
     public function ascendants(bool $fromTop = false): array
     {
-        if (!$this->isSkos || !$this->isConcept()) {
+        // The whole tree is not needed to get the ascendants of the item.
+        if (!$this->structureBuilt) {
+            return $this->withPartialStructure('ascendants', fn () => $this->ascendants($fromTop));
+        }
+
+        $this->ensureStructure();
+
+        if (!$this->isSkos() || !$this->isConcept()) {
             return [];
         }
         $result = $this->returnResourcesFromData($this->ancestors($this->structure[$this->itemId] ?? null));
@@ -711,7 +770,12 @@ class Thesaurus
      */
     public function ascendantsOrSelf(bool $fromTop = false): array
     {
-        if (!$this->isSkos || $this->isScheme()) {
+        // The whole tree is not needed to get the ascendants of the item.
+        if (!$this->structureBuilt) {
+            return $this->withPartialStructure('ascendants', fn () => $this->ascendantsOrSelf($fromTop));
+        }
+
+        if (!$this->isSkos() || $this->isScheme()) {
             return [];
         }
         return $fromTop
@@ -726,7 +790,14 @@ class Thesaurus
      */
     public function descendants(): array
     {
-        return $this->isSkos && $this->isConcept()
+        // The whole tree is not needed to get the descendants of the item.
+        if (!$this->structureBuilt) {
+            return $this->withPartialStructure('descendants', fn () => $this->descendants());
+        }
+
+        $this->ensureStructure();
+
+        return $this->isSkos() && $this->isConcept()
             ? $this->returnResourcesFromData($this->listDescendants($this->structure[$this->itemId] ?? null))
             : [];
     }
@@ -738,7 +809,12 @@ class Thesaurus
      */
     public function descendantsOrSelf(): array
     {
-        if (!$this->isSkos || $this->isScheme()) {
+        // The whole tree is not needed to get the descendants of the item.
+        if (!$this->structureBuilt) {
+            return $this->withPartialStructure('descendants', fn () => $this->descendantsOrSelf());
+        }
+
+        if (!$this->isSkos() || $this->isScheme()) {
             return [];
         }
         return $this->selfItem()
@@ -777,7 +853,9 @@ class Thesaurus
      */
     public function tree(): array
     {
-        if (!$this->isSkos) {
+        $this->ensureStructure();
+
+        if (!$this->isSkos()) {
             return [];
         }
         $result = [];
@@ -806,7 +884,9 @@ class Thesaurus
      */
     public function branch(): array
     {
-        if (!$this->isSkos || $this->isScheme()) {
+        $this->ensureStructure();
+
+        if (!$this->isSkos() || $this->isScheme()) {
             return [];
         }
         $result = [];
@@ -844,7 +924,9 @@ class Thesaurus
      */
     public function branchFromItem(): array
     {
-        if (!$this->isSkos || $this->isScheme()) {
+        $this->ensureStructure();
+
+        if (!$this->isSkos() || $this->isScheme()) {
             return [];
         }
         if ($this->isTop()) {
@@ -883,7 +965,9 @@ class Thesaurus
      */
     public function flatTree(): array
     {
-        if (!$this->isSkos) {
+        $this->ensureStructure();
+
+        if (!$this->isSkos()) {
             return [];
         }
         $result = [];
@@ -912,7 +996,9 @@ class Thesaurus
      */
     public function flatBranch(): array
     {
-        if (!$this->isSkos || $this->isScheme()) {
+        $this->ensureStructure();
+
+        if (!$this->isSkos() || $this->isScheme()) {
             return [];
         }
         $result = [];
@@ -951,7 +1037,9 @@ class Thesaurus
      */
     public function flatBranchFromItem(): array
     {
-        if (!$this->isSkos || $this->isScheme()) {
+        $this->ensureStructure();
+
+        if (!$this->isSkos() || $this->isScheme()) {
             return [];
         }
         $result = [];
@@ -1043,7 +1131,9 @@ class Thesaurus
      */
     public function jsTree(): array
     {
-        if (!$this->isSkos) {
+        $this->ensureStructure();
+
+        if (!$this->isSkos()) {
             return [];
         }
 
@@ -1153,6 +1243,8 @@ class Thesaurus
      */
     protected function list(array $list, array $options): array
     {
+        $this->ensureStructure();
+
         if ($this->returnItem) {
             return array_combine(array_keys($list), array_column($list, 'self'));
         }
@@ -1296,6 +1388,8 @@ class Thesaurus
      */
     protected function resourcesFromValue(?array $itemData, $term): array
     {
+        $this->ensureStructure();
+
         if (!$itemData) {
             return [];
         }
@@ -1338,6 +1432,8 @@ class Thesaurus
      */
     protected function parent(?array $itemData): ?array
     {
+        $this->ensureStructure();
+
         if (!$itemData) {
             return null;
         }
@@ -1352,6 +1448,8 @@ class Thesaurus
      */
     protected function children(?array $itemData): array
     {
+        $this->ensureStructure();
+
         if (!$itemData) {
             return [];
         }
@@ -1476,6 +1574,8 @@ class Thesaurus
      */
     protected function recursiveBranchItems(ItemRepresentation|ConceptRepresentation $item, array $branch = [], $level = 0): array
     {
+        $this->ensureStructure();
+
         if ($level > $this->maxAncestors) {
             throw new \Omeka\Api\Exception\BadResponseException(new PsrMessage(
                 'There cannot be more than {total} levels of descendants.', // @translate
@@ -1572,6 +1672,7 @@ class Thesaurus
         if (empty($this->item)) {
             $this->structure = [];
             $this->tops = [];
+            $this->structureBuilt = true;
             $this->itemId = null;
             $this->itemSet = null;
             $this->itemSetId = null;
@@ -1596,19 +1697,30 @@ class Thesaurus
 
         // Don't rebuild the thesaurus if the current item is inside it.
         // Keep the related data null, so updated only when needed.
-        if ($this->isInThesaurus()) {
+        if ($this->structureBuilt && !empty($this->structure[$this->itemId])) {
             return $this;
         }
 
-        // Rebuild the thesaurus.
+        // The thesaurus is built only when a method needs the whole tree.
         $this->structure = [];
         $this->tops = [];
+        $this->structureBuilt = false;
         $this->scheme = null;
         $this->isSkos = null;
 
-        return $this
-            ->cacheTerms()
-            ->cacheStructure();
+        return $this->cacheTerms();
+    }
+
+    /**
+     * Build the whole tree of the thesaurus, only once.
+     */
+    protected function ensureStructure(): self
+    {
+        if (!$this->structureBuilt) {
+            $this->structureBuilt = true;
+            $this->cacheTerms()->cacheStructure();
+        }
+        return $this;
     }
 
     /**
@@ -1738,26 +1850,12 @@ class Thesaurus
         return [$parents, $children];
     }
 
-    protected function cacheStructure(): self
+    /**
+     * Get the query of the api to get the concepts of the current scheme.
+     */
+    protected function schemeQuery(): array
     {
-        $this->structure = [];
-
-        // Get thesaurus.
-        if (!$this->scheme()) {
-            $this->isSkos = false;
-            $this->isScheme = false;
-            $this->isConcept = false;
-            return $this;
-        }
-
-        $this->cacheResourceKind();
-
-        // Get all ids and titles via api.
-        // This allows to check visibility and to get the full list of concepts.
-        // The validity of top concepts is not checked.
-        // The scheme of a concept is stored in the table "concept", so neither
-        // the class nor the value "skos:inScheme" is required.
-        $query = $this->resourceName === 'concepts'
+        return $this->resourceName === 'concepts'
             ? [
                 'scheme_id' => $this->scheme->id(),
                 // Is public is automatically managed via the api.
@@ -1781,6 +1879,104 @@ class Thesaurus
                     ],
                 ],
             ];
+    }
+
+    /**
+     * Run a method on a partial tree, built from the hierarchy of the item.
+     *
+     * The whole tree is not built: only the concepts required by the method are
+     * read, with the same queries, so the result is the same than with the
+     * whole tree, but the cost depends on the number of results, not on the
+     * size of the thesaurus.
+     *
+     * @param string $kind "descendants", "ascendants" or "narrowers".
+     */
+    protected function withPartialStructure(string $kind, callable $callback)
+    {
+        if (!$this->itemId || !$this->isSkos() || !$this->scheme()) {
+            $this->ensureStructure();
+            return $callback();
+        }
+
+        $hierarchy = $this->hierarchy();
+        $id = (int) $this->itemId;
+        $ascendantIds = $hierarchy->ascendantIds($id, false, true);
+        $parentId = $ascendantIds ? [reset($ascendantIds)] : [];
+        switch ($kind) {
+            case 'descendants':
+                $ids = array_merge([$id], $parentId, $hierarchy->descendantIds($id, false, true));
+                break;
+            case 'narrowers':
+                $childIds = $hierarchy->childIds([$id]);
+                $ids = array_merge([$id], $parentId, $childIds, $hierarchy->childIds($childIds));
+                break;
+            case 'ascendants':
+            default:
+                $chain = array_merge([$id], $ascendantIds);
+                $ids = array_merge($chain, $hierarchy->childIds($chain));
+                break;
+        }
+
+        // The concepts are read via the api, so the visibility is checked, and
+        // they are limited to the scheme, like in the whole tree.
+        $this->cacheResourceKind();
+        $titles = $this->api
+            ->search(
+                $this->resourceName,
+                $this->schemeQuery() + ['id' => array_values(array_unique($ids))],
+                [
+                    'initialize' => false,
+                    'returnScalar' => 'title',
+                ]
+            )
+            ->getContent();
+
+        $structure = [];
+        if ($titles) {
+            [$parents, $children] = $this->relationsOf(array_keys($titles));
+            foreach ($titles as $titleId => $title) {
+                $structure[$titleId] = [
+                    'id' => $titleId,
+                    'title' => $title,
+                    'top' => !array_key_exists($titleId, $parents),
+                    'parent' => $parents[$titleId] ?? null,
+                    'children' => $children[$titleId] ?? [],
+                ];
+            }
+        }
+
+        $previous = [$this->structure, $this->tops];
+        $this->structure = $structure;
+        $this->tops = [];
+        $this->structureBuilt = true;
+        try {
+            return $callback();
+        } finally {
+            [$this->structure, $this->tops] = $previous;
+            $this->structureBuilt = false;
+        }
+    }
+
+    protected function cacheStructure(): self
+    {
+        $this->structure = [];
+
+        // Get thesaurus.
+        if (!$this->scheme()) {
+            $this->isSkos = false;
+            $this->isScheme = false;
+            $this->isConcept = false;
+            return $this;
+        }
+
+        $this->cacheResourceKind();
+
+        // Get all ids and titles via api.
+        // This allows to check visibility and to get the full list of concepts.
+        // The validity of top concepts is not checked.
+        // The scheme of a concept is stored in the table "concept", so neither
+        // the class nor the value "skos:inScheme" is required.
+        $query = $this->schemeQuery();
         $titles = $this->api
             ->search(
                 $this->resourceName,
