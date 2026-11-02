@@ -76,11 +76,14 @@ database table, that stores the scheme, the broader concept, the top concept of
 the branch and the position. The scheme itself remains an item with the class
 `skos:ConceptScheme`.
 
-An existing thesaurus built with items is converted with the maintenance task
-"Convert items into concepts…", available in the main admin page "Thesaurus". A
-concept has no media, so the conversion of a thesaurus is refused when at least
-one of its items has a media: remove the media, use an asset or exclude these
-items first.
+An existing thesaurus built with items keeps working as is: its concepts remain
+items, exposed with them in browse, search and facets, and this is a valid
+choice. If you do not need the concepts as items, the thesaurus can be converted
+with the maintenance task "Convert items into concepts…", available in the main
+admin page "Thesaurus", and converted back with the task "Convert concepts into
+items…". A concept has no media, so the conversion of a thesaurus is refused
+when at least one of its items has a media: remove the media, use an asset or
+exclude these items first.
 
 #### Structure and values
 
@@ -110,6 +113,26 @@ with the button "Update and reindex".
 The removal of a skos relation is a known limit: only the reindexation updates
 the structure in that case.
 
+#### Cache of the tree
+
+The tree of a thesaurus is built only when it is needed: the descendants, the
+ascendants, the broader and the narrower concepts of a concept are read from its
+own hierarchy, so their cost does not depend on the size of the thesaurus.
+
+To display a whole thesaurus quickly, the relations "broader" and "narrower" are
+kept in the table `thesaurus_tree_cache`, with the visibility of their values.
+The concepts and their titles are not cached: they are read on each request, so
+the visibility for the current user is always checked. The cache is used for
+the users who can view all resources and for the visitors; it is not used for
+the other users, who may view their own private values.
+
+The cache of a thesaurus is removed when one of its concepts or the scheme is
+created, updated or deleted via the api, and by the jobs that convert or index
+the thesaurus. A change made directly in the database is not detected, so the
+cache expires after one day: it is then rebuilt on the next display of the
+whole tree, without scheduled task. To refresh it immediately, reindex the
+thesaurus.
+
 You can create a thesaurus in various ways.
 
 ### Import a thesaurus (by file or url)
@@ -129,8 +152,8 @@ The source may be:
 
 Gzipped files (`.gz`, for example a [GEMET] export) are decompressed
 automatically when the php extension `zlib` is available. The maximum size of an
-uploaded file depends on the php settings `upload_max_filesize` and `post_max_size`;
-increase them to import a big thesaurus.
+uploaded file depends on the php settings `upload_max_filesize` and
+`post_max_size`; increase them to import a big thesaurus.
 
 All labels are normalized to Unicode NFC on import, so identical-looking labels
 are stored identically (no duplicates, reliable matching and truncation).
@@ -143,10 +166,10 @@ are stored identically (no duplicates, reliable matching and truncation).
 - Custom vocabulary: create a custom vocab of type "terms". The terms can be the
   full path ("Europe :: France :: Paris"), the indented label, or the leaf label
   only.
-- Thesaurus: create the item set (skos:Collection), the scheme (`skos:ConceptScheme`)
-  and one item by concept (skos:Concept) with the broader/narrower relations and
-  the positions. Optionally, the linked custom vocab (type "item set") can be
-  created too.
+- Thesaurus: create the item set (skos:Collection), the scheme
+  (`skos:ConceptScheme`) and one item by concept (skos:Concept) with the
+  broader/narrower relations and the positions. Optionally, the linked custom
+  vocab (type "item set") can be created too.
 
 The properties used to fill the concepts (descriptor, path, ascendance) and the
 ascendance separator are set in the main settings of Omeka (tab "Thesaurus").
@@ -186,18 +209,19 @@ values.
 
 Create the scheme as an item with the template "Thesaurus Scheme". The concepts
 are a resource of their own, so they are not created as items: import them, or
-convert existing items, or create them via the api with the values "skos:inScheme"
-or "skos:topConceptOf" and "skos:broader".
+convert existing items, or create them via the api with the values
+"skos:inScheme" or "skos:topConceptOf" and "skos:broader".
 
 In the template "Thesaurus Concept", the relations between concepts (broader,
 narrower, related, etc.) use the data type "Concept", so the concepts are
 selected in a dedicated sidebar, that can be filtered by thesaurus. The scheme
-("skos:inScheme" and "skos:topConceptOf") is an item: when the module [Advanced Resource Template]
-is installed, its selection is limited to the thesaurus with the query `thesaurus_scheme=1`,
-that can be used in any search of items.
+("skos:inScheme" and "skos:topConceptOf") is an item: when the module
+[Advanced Resource Template] is installed, its selection is limited to the
+thesaurus with the query `thesaurus_scheme=1`, that can be used in any search of
+items.
 
-To make the structure, you can link each concept via the resource form interface,
-or via the menu "Thesaurus".
+To make the structure, you can link each concept via the resource form
+interface, or via the menu "Thesaurus".
 
 ### Use of concepts as related items
 
@@ -212,7 +236,8 @@ formats. They can be created easily with a text editor or [LibreOffice] Calc.
 
 #### Hierarchical text with tabulation offset
 
-In this mode, the tabulations indicate the hierarchy (see example for [countries](data/examples/countries.txt)):
+In this mode, the tabulations indicate the hierarchy (see example for
+[countries](data/examples/countries.txt)):
 
 ```
 Europe
@@ -330,7 +355,8 @@ the scheme, the item set or any concept. Then, you can get any data for it with
 the methods.
 
 To get data for any other concept of the thesaurus, set it first. For example,
-to get the  ascendants for a concept, use `$ascendants = $thesaurus->setItem($item)->ascendants()`.
+to get the ascendants for a concept, use
+`$ascendants = $thesaurus->setItem($item)->ascendants()`.
 
 The view helper has the specific method `$this->thesaurus($item)->display()` to
 display the tree, a list, or anything else via a view template.
@@ -359,9 +385,9 @@ where xxx is the thesaurus item id.
 ### Api sort
 
 The concepts are a resource with their own api, so they are sorted by their
-position inside the thesaurus directly: `/api/concepts?scheme_id=xxx&sort_by=position`,
-where xxx is the item id of the scheme. They can be filtered by `scheme_id`,
-`top_id` and `broader_id` too.
+position inside the thesaurus directly:
+`/api/concepts?scheme_id=xxx&sort_by=position`, where xxx is the item id of the
+scheme. They can be filtered by `scheme_id`, `top_id` and `broader_id` too.
 
 The query `sort_by=thesaurus&sort_thesaurus=xxx` on items, available until
 version 3.4.25, was removed: the concepts are no longer items.
@@ -384,16 +410,23 @@ TODO
 ----
 
 * [x] Manage terms as a full resources, separately from items (like Annotation).
-* [ ] Support the [ISO 25964] extension of skos to replace the skos classes removed from the item sets.
-* [ ] Support [skos-xl] to manage labels as resources, in order to store their metadata (date, author, source) as value annotation.
-* [x] Declare the prefix `o-module-thesaurus` in the json-ld api context, else the type of the concepts is silently skipped by the json-ld processors.
-* [ ] Update the structure of a concept when a skos relation is removed: only the reindexation of the thesaurus does it currently.
-* [ ] Manage representation when a term belongs to multiple thesaurus? Probably useless with association.
+* [ ] Support the [ISO 25964] extension of skos to replace the skos classes
+  removed from the item sets.
+* [ ] Support [skos-xl] to manage labels as resources, in order to store their
+  metadata (date, author, source) as value annotation.
+* [x] Declare the prefix `o-module-thesaurus` in the json-ld api context, else
+  the type of the concepts is silently skipped by the json-ld processors.
+* [ ] Update the structure of a concept when a skos relation is removed: only
+  the reindexation of the thesaurus does it currently.
+* [ ] Manage representation when a term belongs to multiple thesaurus? Probably
+  useless with association.
 * [ ] Implement a tree iterator in representation, plugin and helper.
 * [ ] Uninstall vocabulary and resources templates if not used.
-* [ ] Create a data type to store the ascendance or the full path with resource ids and display with multiple links.
+* [ ] Create a data type to store the ascendance or the full path with resource
+  ids and display with multiple links.
 * [ ] Update ascendance of descendants with a single job after batch edit.
-* [ ] Remove the process with pref label / alt label to build select. Add an intermediate process.
+* [ ] Remove the process with pref label / alt label to build select. Add an
+  intermediate process.
 * [ ] Create public views (browse, arborescence and concept/show).
 
 
@@ -440,10 +473,11 @@ Copyright
 
 * Copyright Daniel Berthereau, 2018-2026 (see [Daniel-KM] on GitLab)
 
-First version of this module was developed for the project [Ontologie du christianisme médiéval en images]
-for the [Institut national d’histoire de l’art] (INHA). Improvements were done
-for various projects, in particular for the backend of the database [ConsiliaWeb]
-of the French higher administrative court [Conseil d’État].
+First version of this module was developed for the project
+[Ontologie du christianisme médiéval en images] for the
+[Institut national d’histoire de l’art] (INHA). Improvements were done for
+various projects, in particular for the backend of the database [ConsiliaWeb] of
+the French higher administrative court [Conseil d’État].
 
 
 [Omeka S]: https://omeka.org/s
