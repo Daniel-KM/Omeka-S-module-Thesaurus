@@ -3,7 +3,7 @@
  */
 const basePath = window.location.pathname.substring(0, window.location.pathname.indexOf('/admin/')) + '/';
 
-$(document).ready( function() {
+$( function() {
 
     // Initialize the thesaurus tree.
     const tree = $('#jstree');
@@ -43,14 +43,14 @@ $(document).ready( function() {
             this.element.on(
                 'click.jstree',
                 '.jstree-editlink, .jstree-displaylink',
-                $.proxy(function(e) {
+                (e) => {
                     e.preventDefault();
                     e.stopImmediatePropagation();
                     var icon = $(e.currentTarget);
                     var nodeObj = this.get_node(icon.closest('.jstree-node'));
                     var action = icon.hasClass('jstree-editlink') ? 'edit' : null;
                     window.open(urlConcept(nodeObj.id, action), '_blank');
-                }, this)
+                }
             );
         };
         this.redraw_node = function(node, deep, is_callback, force_render) {
@@ -110,7 +110,7 @@ $(document).ready( function() {
         });
 
     $('#thesaurus-tree-form')
-        .on('submit', $.proxy(function() {
+        .on('submit', () => {
             // Only id, parent and data are useful, but it's not possible in Omeka
             // version to remove other keys.
             let currentTree = $.jstree.reference('#jstree').get_json(null, {
@@ -130,7 +130,7 @@ $(document).ready( function() {
                 name: 'jstree',
                 val: JSON.stringify(currentTree),
             }).appendTo('#thesaurus-tree-form');
-        }, this));
+        });
 
     $('#tree-toggle-all').on('click', function () {
         var $button = $(this);
