@@ -5,13 +5,15 @@
         content: '';
     }
 
-    body.thesaurus .sidebar-actions,
-    body.thesaurus .toolbar-actions {
-        text-align: right;
-    }
+    body.thesaurus {
+        & .sidebar-actions,
+        & .toolbar-actions {
+            text-align: right;
+        }
 
-    body.thesaurus.show .jstree-node a i.jstree-icon.jstree-themeicon::before {
-        content: '';
+        &.show .jstree-node a i.jstree-icon.jstree-themeicon::before {
+            content: '';
+        }
     }
 
     /* Icon of the sub-head of the pages, like the core does for the items,
@@ -25,73 +27,79 @@
     /* Icons to open and edit a concept from the tree. The core styles only
        its own links, so the same rules are applied here, else the icons
        overlap the icon to open and close a node, that has a background. */
-    body.thesaurus i.jstree-icon.jstree-editlink {
-        width: 24px;
-        height: 36px;
-        line-height: 36px;
-        text-align: right;
-        background-color: transparent;
-        cursor: pointer;
-        z-index: 1;
+    body.thesaurus {
+        & i.jstree-icon.jstree-editlink {
+            width: 24px;
+            height: 36px;
+            line-height: 36px;
+            text-align: right;
+            background-color: transparent;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        /* The icons have not the same density of strokes, so a half opacity makes
+           the thin ones look lighter than the full ones. They all use the color of
+           the links of the admin theme, without opacity, so they are similar. */
+        & .jstree-anchor {
+            & i.jstree-icon.jstree-displaylink,
+            & i.jstree-icon.jstree-editlink,
+            & i.jstree-icon.jstree-removenode-remove {
+                color: #a91919;
+                opacity: 1;
+            }
+            & i.jstree-icon.jstree-displaylink:hover,
+            & i.jstree-icon.jstree-editlink:hover,
+            & i.jstree-icon.jstree-removenode-remove:hover {
+                color: #e11717;
+            }
+        }
+        & i.jstree-icon.jstree-editlink::before {
+            content: "\f303";
+        }
+
+        /* The icons are aligned on all the rows, so the place of the icon to open
+           and close a node (36px) is kept even when a concept has no narrower. */
+        &.show i.jstree-editlink,
+        &.show .jstree-open > .jstree-anchor .jstree-editlink,
+        &.show .jstree-closed > .jstree-anchor .jstree-editlink {
+            right: 48px;
+        }
+        &.show i.jstree-displaylink,
+        &.show .jstree-open > .jstree-anchor .jstree-displaylink,
+        &.show .jstree-closed > .jstree-anchor .jstree-displaylink {
+            right: 72px;
+        }
+
+        &.edit i.jstree-removenode-remove,
+        &.edit .jstree-open > .jstree-anchor .jstree-removenode-remove,
+        &.edit .jstree-closed > .jstree-anchor .jstree-removenode-remove {
+            right: 48px;
+        }
+        &.edit i.jstree-editlink,
+        &.edit .jstree-open > .jstree-anchor .jstree-editlink,
+        &.edit .jstree-closed > .jstree-anchor .jstree-editlink {
+            right: 72px;
+        }
+        &.edit i.jstree-displaylink,
+        &.edit .jstree-open > .jstree-anchor .jstree-displaylink,
+        &.edit .jstree-closed > .jstree-anchor .jstree-displaylink {
+            right: 96px;
+        }
+
+        &.convert form .field .inputs label,
+        &.update-concepts form .field .inputs label {
+            display: block;
+        }
     }
 
-    /* The icons have not the same density of strokes, so a half opacity makes
-       the thin ones look lighter than the full ones. They all use the color of
-       the links of the admin theme, without opacity, so they are similar. */
-    body.thesaurus .jstree-anchor i.jstree-icon.jstree-displaylink,
-    body.thesaurus .jstree-anchor i.jstree-icon.jstree-editlink,
-    body.thesaurus .jstree-anchor i.jstree-icon.jstree-removenode-remove {
-        color: #a91919;
-        opacity: 1;
-    }
-    body.thesaurus .jstree-anchor i.jstree-icon.jstree-displaylink:hover,
-    body.thesaurus .jstree-anchor i.jstree-icon.jstree-editlink:hover,
-    body.thesaurus .jstree-anchor i.jstree-icon.jstree-removenode-remove:hover {
-        color: #e11717;
-    }
-    body.thesaurus i.jstree-icon.jstree-editlink::before {
-        content: "\f303";
-    }
+    .field.resource-property {
+        & .chosen-container .chosen-results {
+            max-height: 65vh;
+        }
 
-    /* The icons are aligned on all the rows, so the place of the icon to open
-       and close a node (36px) is kept even when a concept has no narrower. */
-    body.thesaurus.show i.jstree-editlink,
-    body.thesaurus.show .jstree-open > .jstree-anchor .jstree-editlink,
-    body.thesaurus.show .jstree-closed > .jstree-anchor .jstree-editlink {
-        right: 48px;
-    }
-    body.thesaurus.show i.jstree-displaylink,
-    body.thesaurus.show .jstree-open > .jstree-anchor .jstree-displaylink,
-    body.thesaurus.show .jstree-closed > .jstree-anchor .jstree-displaylink {
-        right: 72px;
-    }
-
-    body.thesaurus.edit i.jstree-removenode-remove,
-    body.thesaurus.edit .jstree-open > .jstree-anchor .jstree-removenode-remove,
-    body.thesaurus.edit .jstree-closed > .jstree-anchor .jstree-removenode-remove {
-        right: 48px;
-    }
-    body.thesaurus.edit i.jstree-editlink,
-    body.thesaurus.edit .jstree-open > .jstree-anchor .jstree-editlink,
-    body.thesaurus.edit .jstree-closed > .jstree-anchor .jstree-editlink {
-        right: 72px;
-    }
-    body.thesaurus.edit i.jstree-displaylink,
-    body.thesaurus.edit .jstree-open > .jstree-anchor .jstree-displaylink,
-    body.thesaurus.edit .jstree-closed > .jstree-anchor .jstree-displaylink {
-        right: 96px;
-    }
-
-    body.thesaurus.convert form .field .inputs label,
-    body.thesaurus.update-concepts form .field .inputs label {
-        display: block;
-    }
-
-    .field.resource-property .chosen-container .chosen-results {
-        max-height: 65vh;
-    }
-
-    .field.resource-property .chosen-container-single .chosen-single span {
-        white-space: break-spaces;
+        & .chosen-container-single .chosen-single span {
+            white-space: break-spaces;
+        }
     }
 }

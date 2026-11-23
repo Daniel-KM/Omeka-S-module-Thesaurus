@@ -49,15 +49,14 @@
     padding: 5px 10px;
     cursor: pointer;
     border-bottom: 1px solid #eee;
-}
+    &:last-child {
+        border-bottom: 0;
+    }
 
-.thesaurus-result:last-child {
-    border-bottom: 0;
-}
-
-.thesaurus-result.active,
-.thesaurus-result:hover {
-    background: #eaf3fb;
+    &.active,
+    &:hover {
+        background: #eaf3fb;
+    }
 }
 
 .thesaurus-result-title {
@@ -85,27 +84,29 @@
     font-weight: 600;
 }
 
-.thesaurus-browser .dialog-panel {
-    display: flex;
-    flex-direction: column;
-    width: min(560px, 92vw);
-    max-height: 80vh;
-    overflow: hidden;
-}
+.thesaurus-browser {
+    & .dialog-panel {
+        display: flex;
+        flex-direction: column;
+        width: min(560px, 92vw);
+        max-height: 80vh;
+        overflow: hidden;
+    }
 
-.thesaurus-browser .dialog-contents {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    overflow: hidden;
-}
+    & .dialog-contents {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+    }
 
-.thesaurus-browser .dialog-body {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: hidden;
+    & .dialog-body {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+    }
 }
 
 .thesaurus-browser-toolbar {
@@ -130,13 +131,12 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
-}
+    & .jstree-themeicon {
+        display: none;
+    }
 
-.thesaurus-browser-tree .jstree-themeicon {
-    display: none;
-}
-
-.thesaurus-browser-tree .jstree-anchor {
-    height: auto;
-    line-height: 1.8;
+    & .jstree-anchor {
+        height: auto;
+        line-height: 1.8;
+    }
 }
