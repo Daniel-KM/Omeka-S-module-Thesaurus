@@ -2,6 +2,7 @@
 
 namespace Thesaurus\Job;
 
+use Common\Job\Exception\RuntimeException;
 use Omeka\Job\AbstractJob;
 
 class UpdateConcepts extends AbstractJob
@@ -51,20 +52,18 @@ class UpdateConcepts extends AbstractJob
 
         $schemeId = (int) $this->getArg('scheme');
         if (!$schemeId) {
-            $this->logger->err(
+            throw new RuntimeException(
                 'No thesaurus specified.' // @translate
             );
-            return;
         }
 
         $fill = $this->getArg('fill') ?: [];
         if (empty($fill['descriptor'])
             && empty($fill['path'])
         ) {
-            $this->logger->err(
+            throw new RuntimeException(
                 'A preferred label with the descriptor or the full path is required to fill concepts.' // @translate
             );
-            return;
         }
 
         if (empty($fill['path'])
@@ -78,11 +77,10 @@ class UpdateConcepts extends AbstractJob
 
         $scheme = $this->api->search('items', ['id' => $schemeId])->getContent();
         if (!$scheme) {
-            $this->logger->err(
+            throw new RuntimeException(
                 'Thesaurus #{item_id} not found.', // @translate
                 ['item_id' => $schemeId]
             );
-            return;
         }
         $scheme = reset($scheme);
 
@@ -90,11 +88,10 @@ class UpdateConcepts extends AbstractJob
         $thesaurusLib = $services->get('Thesaurus\Thesaurus');
         $thesaurus = $thesaurusLib($scheme);
         if (!$thesaurus->isSkos()) {
-            $this->logger->err(
+            throw new RuntimeException(
                 'Item #{item_id} is not a thesaurus.', // @translate
-                 ['item_id' => $schemeId]
+                ['item_id' => $schemeId]
             );
-            return;
         }
 
         $modes = [
@@ -105,11 +102,10 @@ class UpdateConcepts extends AbstractJob
         ];
         $mode = $this->getArg('mode') ?: 'replace';
         if (!in_array($mode, $modes)) {
-            $this->logger->err(
+            throw new RuntimeException(
                 'The mode "{mode}" is not supported.', // @translate
                 ['mode' => $mode]
             );
-            return;
         }
 
         $separator = $this->getArg('separator') ?? \Thesaurus\Module::SEPARATOR;
@@ -129,25 +125,22 @@ class UpdateConcepts extends AbstractJob
 
         // Check properties in options one time.
         if (!empty($fill['descriptor']) && empty($skosIds[$fill['descriptor']])) {
-            $this->logger->err(
+            throw new RuntimeException(
                 'The property "{property}" for descriptor is not managed.', // @translate
                 ['property' => $fill['descriptor']]
             );
-            return;
         }
         if (!empty($fill['path']) && empty($skosIds[$fill['path']])) {
-            $this->logger->err(
+            throw new RuntimeException(
                 'The property "{property}" for path is not managed.', // @translate
                 ['property' => $fill['path']]
             );
-            return;
         }
         if (!empty($fill['ascendance']) && empty($skosIds[$fill['ascendance']])) {
-            $this->logger->err(
+            throw new RuntimeException(
                 'The property "{property}" for ascendance is not managed.', // @translate
                 ['property' => $fill['ascendance']]
             );
-            return;
         }
 
         /** @var \Omeka\Api\Representation\ResourceTemplateRepresentation $conceptTemplate */
@@ -157,24 +150,21 @@ class UpdateConcepts extends AbstractJob
             : $this->api->read('resource_templates', ['label' => 'Thesaurus Concept'])->getContent();
         $titleProperty = $conceptTemplate->titleProperty();
         if (!$titleProperty) {
-            $this->logger->err(
+            throw new RuntimeException(
                 'The property to use as a title is not set in the template Thesaurus Concept.' // @translate
             );
-            return;
         }
         if ($titleProperty->term() !== 'skos:prefLabel') {
-            $this->logger->err(
+            throw new RuntimeException(
                 'To update data, the property used as a title in the template "Thesaurus Concept" must be "skos:prefLabel", not "{property}".', // @translate
                 ['property' => $titleProperty->term()]
             );
-            return;
         }
         if ($fill['descriptor'] !== 'skos:prefLabel') {
-            $this->logger->err(
+            throw new RuntimeException(
                 'To update data, the descriptor must be the preferred label, not "{property}".', // @translate
                 ['property' => $fill['descriptor']]
             );
-            return;
         }
 
         $this->logger->notice(

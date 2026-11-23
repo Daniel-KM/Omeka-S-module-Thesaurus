@@ -2,6 +2,7 @@
 
 namespace Thesaurus\Job;
 
+use Common\Job\Exception\RuntimeException;
 use Omeka\Job\AbstractJob;
 use Thesaurus\Stdlib\Thesaurus;
 
@@ -82,19 +83,17 @@ class UpdateStructure extends AbstractJob
 
         $schemeId = (int) $this->getArg('scheme');
         if (!$schemeId) {
-            $this->logger->err(
+            throw new RuntimeException(
                 'No thesaurus specified.' // @translate
             );
-            return;
         }
 
         $scheme = $this->api->search('items', ['id' => $schemeId])->getContent();
         if (!$scheme) {
-            $this->logger->err(
+            throw new RuntimeException(
                 'Thesaurus #{item_id} not found.', // @translate
                 ['item_id' => $schemeId]
             );
-            return;
         }
         $scheme = reset($scheme);
 
@@ -102,11 +101,10 @@ class UpdateStructure extends AbstractJob
         $thesaurusLib = $services->get('Thesaurus\Thesaurus');
         $thesaurus = $thesaurusLib($scheme);
         if (!$thesaurus->isSkos()) {
-            $this->logger->err(
+            throw new RuntimeException(
                 'Item #{item_id} is not a thesaurus.', // @translate
                 ['item_id' => $schemeId]
             );
-            return;
         }
 
         $scheme = $thesaurus->scheme();
@@ -143,7 +141,7 @@ class UpdateStructure extends AbstractJob
                 ['title' => $schemeTitle, 'item_id' => $schemeId]
             );
         } else {
-            $this->logger->warn(
+            throw new RuntimeException(
                 'An error occurred. Ended restructuration of thesaurus "{title}" (#{item_id}) .', // @translate
                 ['title' => $schemeTitle, 'item_id' => $schemeId]
             );
@@ -173,11 +171,10 @@ class UpdateStructure extends AbstractJob
         $topConcepts = [];
         foreach ($tree as $id => &$data) {
             if (!(int) $id || !array_key_exists('parent', $data)) {
-                $this->logger->err(
+                throw new RuntimeException(
                     'Missing id or parent key for id #{item_id}.', // @translate
                     ['item_id' => $id]
                 );
-                return false;
             }
             $parent = $data['parent'] = (int) $data['parent'] ?: null;
             // Because the structure is ordered, all sub-concepts are removed

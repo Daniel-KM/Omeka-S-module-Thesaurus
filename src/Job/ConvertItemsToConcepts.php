@@ -56,6 +56,11 @@ class ConvertItemsToConcepts extends AbstractJob
      */
     protected $templatesSnapshot = [];
 
+    /**
+     * @var int
+     */
+    protected $totalFailed = 0;
+
     public function perform(): void
     {
         $services = $this->getServiceLocator();
@@ -79,11 +84,10 @@ class ConvertItemsToConcepts extends AbstractJob
         ] as $term) {
             $id = $easyMeta->propertyId($term);
             if (!$id) {
-                $this->logger->err(
+                throw new \Common\Job\Exception\RuntimeException(
                     'The property {term} is not available: the vocabulary skos is required.', // @translate
                     ['term' => $term]
                 );
-                return;
             }
             $this->properties[$term] = $id;
         }
@@ -115,6 +119,13 @@ class ConvertItemsToConcepts extends AbstractJob
                 $totalConverted += $converted;
                 $convertedSchemeIds[] = $schemeId;
             }
+        }
+
+        if ($schemeIds && $this->totalFailed === count($schemeIds)) {
+            throw new \Common\Job\Exception\RuntimeException(
+                'No thesaurus was converted: {count} thesaurus failed.', // @translate
+                ['count' => $this->totalFailed]
+            );
         }
 
         if (!$totalConverted) {
@@ -226,6 +237,7 @@ class ConvertItemsToConcepts extends AbstractJob
                 'The conversion of the thesaurus #{item_id} is not possible: {count} items have media (#{item_ids}). Remove the media or exclude these items from the thesaurus first.', // @translate
                 ['item_id' => $schemeId, 'count' => count($withMedia), 'item_ids' => implode(', #', $withMedia)]
             );
+            ++$this->totalFailed;
             return 0;
         }
 
@@ -239,6 +251,7 @@ class ConvertItemsToConcepts extends AbstractJob
             (new ConceptValues($this->connection))->exportTypesForResources($itemIds)
         );
         if ($backupId === false) {
+            ++$this->totalFailed;
             return 0;
         }
 

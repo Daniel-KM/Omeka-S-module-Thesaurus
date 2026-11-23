@@ -2,6 +2,7 @@
 
 namespace Thesaurus\Job;
 
+use Common\Job\Exception\RuntimeException;
 use Omeka\Job\AbstractJob;
 
 class CreateThesaurus extends AbstractJob
@@ -144,8 +145,9 @@ class CreateThesaurus extends AbstractJob
         }
 
         if ($hasError) {
-            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
-            return;
+            throw new RuntimeException(
+                'The thesaurus cannot be created: the arguments are invalid.' // @translate
+            );
         }
 
         $separator = $this->getArg('separator') ?? \Thesaurus\Module::SEPARATOR;
@@ -172,28 +174,22 @@ class CreateThesaurus extends AbstractJob
 
         // Check properties in options one time.
         if (!empty($fill['descriptor']) && !isset($properties[$fill['descriptor']])) {
-            $this->logger->err(
+            throw new RuntimeException(
                 'The property {property} for descriptor is not managed.', // @translate
                 ['property' => $fill['descriptor']]
             );
-            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
-            return;
         }
         if (!empty($fill['path']) && empty($properties[$fill['path']])) {
-            $this->logger->err(
+            throw new RuntimeException(
                 'The property "{property}" for path is not managed.', // @translate
                 ['property' => $fill['path']]
             );
-            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
-            return;
         }
         if (!empty($fill['ascendance']) && empty($properties[$fill['ascendance']])) {
-            $this->logger->err(
+            throw new RuntimeException(
                 'The property "{property}" for ascendance is not managed.', // @translate
                 ['property' => $fill['ascendance']]
             );
-            $this->job->setStatus(\Omeka\Entity\Job::STATUS_ERROR);
-            return;
         }
 
         $this->logger->notice(

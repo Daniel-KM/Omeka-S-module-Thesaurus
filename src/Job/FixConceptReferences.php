@@ -37,10 +37,9 @@ class FixConceptReferences extends AbstractJob
 
         $schemeIds = $this->schemeIds();
         if (!$schemeIds) {
-            $logger->err(
+            throw new \Common\Job\Exception\RuntimeException(
                 'No thesaurus to process: select the thesaurus to fix.' // @translate
             );
-            return;
         }
 
         $conceptValues = new ConceptValues($connection);
@@ -66,10 +65,9 @@ class FixConceptReferences extends AbstractJob
                 $logger->err($e->getMessage());
             }
             if (!$backupId) {
-                $logger->err(
+                throw new \Common\Job\Exception\RuntimeException(
                     'Unable to save the rows referencing the concepts as items and the data types of the values, so the data are not fixed.' // @translate
                 );
-                return;
             }
             $logger->notice(
                 'The rows referencing the concepts as items and the data types of the values were saved in the backup #{backup_id}.', // @translate

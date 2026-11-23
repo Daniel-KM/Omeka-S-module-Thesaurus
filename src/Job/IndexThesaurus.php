@@ -89,10 +89,9 @@ class IndexThesaurus extends AbstractJob
         }
 
         if (!count($schemeIds)) {
-            $this->logger->err(
+            throw new \Common\Job\Exception\RuntimeException(
                 'No thesaurus in the database.' // @translate
             );
-            return;
         }
 
         foreach ($schemeIds as $schemeId) {
