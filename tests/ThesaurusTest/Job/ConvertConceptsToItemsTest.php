@@ -272,7 +272,7 @@ class ConvertConceptsToItemsTest extends AbstractHttpControllerTestCase
         // The table of the backups is unavailable.
         $connection->executeStatement('RENAME TABLE `thesaurus_backup` TO `thesaurus_backup_hidden`');
         try {
-            $this->runJob(ConvertItemsToConcepts::class, ['schemes' => [$scheme->id()]]);
+            $this->runJob(ConvertItemsToConcepts::class, ['schemes' => [$scheme->id()]], true);
         } finally {
             $connection->executeStatement('RENAME TABLE `thesaurus_backup_hidden` TO `thesaurus_backup`');
         }

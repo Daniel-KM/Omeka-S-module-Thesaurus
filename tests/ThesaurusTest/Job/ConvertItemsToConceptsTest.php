@@ -309,7 +309,9 @@ class ConvertItemsToConceptsTest extends AbstractHttpControllerTestCase
             [$mediaId, $childId, 'upload', 'file']
         );
 
-        $this->runJob(ConvertItemsToConcepts::class, ['scheme' => $schemeId]);
+        // The only thesaurus cannot be converted, so the job fails.
+        $job = $this->runJob(ConvertItemsToConcepts::class, ['scheme' => $schemeId], true);
+        $this->assertEquals(\Omeka\Entity\Job::STATUS_ERROR, $job->getStatus());
 
         // Nothing is converted, not even the concept without media.
         $this->assertEquals('Omeka\Entity\Item', $this->resourceType($topId));

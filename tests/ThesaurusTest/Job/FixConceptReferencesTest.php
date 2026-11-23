@@ -73,13 +73,14 @@ class FixConceptReferencesTest extends AbstractHttpControllerTestCase
     }
 
     /**
-     * Without selected thesaurus, the task does not change any data.
+     * Without selected thesaurus, the task fails and does not change any data.
      */
     public function testNoSelectionDoesNothing(): void
     {
         [, $valueId] = $this->createBrokenThesaurus('ZZ scheme');
 
-        $this->runJob(FixConceptReferences::class, []);
+        $job = $this->runJob(FixConceptReferences::class, [], true);
+        $this->assertEquals(\Omeka\Entity\Job::STATUS_ERROR, $job->getStatus());
 
         $this->assertEquals('customvocab:3', $this->valueType($valueId));
     }
